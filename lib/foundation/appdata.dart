@@ -371,4 +371,4 @@ async function processImage(image, cid, eid, page, sourceKey) {
 ''';
 
 const _defaultSourceListUrl =
-    "https://cdn.jsdelivr.net/gh/venera-app/venera-configs@main/index.json";
+    "https://raw.githubusercontent.com/fuyu1993/venera-configs-mine/main/index.json";
