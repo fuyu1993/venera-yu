@@ -29,6 +29,7 @@ part 'app.dart';
 part 'about.dart';
 part 'network.dart';
 part 'debug.dart';
+part 'lab.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({this.initialPage = -1, super.key});
@@ -54,6 +55,7 @@ class _SettingsPageState extends State<SettingsPage> {
     "APP",
     "Network",
     "About",
+    "Lab",
     "Debug"
   ];
 
@@ -65,6 +67,7 @@ class _SettingsPageState extends State<SettingsPage> {
     Icons.apps,
     Icons.public,
     Icons.info,
+    Icons.science_outlined,
     Icons.bug_report,
   ];
 
@@ -261,7 +264,8 @@ class _SettingsPageState extends State<SettingsPage> {
       4 => const AppSettings(),
       5 => const NetworkSettings(),
       6 => const AboutSettings(),
-      7 => const DebugPage(),
+      7 => const LabSettings(),
+      8 => const DebugPage(),
       _ => throw UnimplementedError()
     };
   }
@@ -289,7 +293,8 @@ class _SettingsDetailPage extends StatelessWidget {
       4 => const AppSettings(),
       5 => const NetworkSettings(),
       6 => const AboutSettings(),
-      7 => const DebugPage(),
+      7 => const LabSettings(),
+      8 => const DebugPage(),
       _ => throw UnimplementedError()
     };
   }

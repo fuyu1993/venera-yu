@@ -200,6 +200,18 @@ class ComicTile extends StatelessWidget {
   }
 
   Widget buildImage(BuildContext context) {
+    if (appdata.settings['lab_hideThumbnails'] == true) {
+      return Container(
+        color: Theme.of(context).colorScheme.secondaryContainer,
+        child: Center(
+          child: Icon(
+            Icons.image_not_supported_outlined,
+            size: 32,
+            color: Theme.of(context).colorScheme.onSecondaryContainer.withValues(alpha: 0.5),
+          ),
+        ),
+      );
+    }
     var image = _findImageProvider(comic);
     if (image == null) {
       return const SizedBox();
@@ -1638,17 +1650,26 @@ class SimpleComicTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var image = _findImageProvider(comic);
+    Widget child;
 
-    Widget child = image == null
-        ? const SizedBox()
-        : AnimatedImage(
-            image: image,
-            width: double.infinity,
-            height: double.infinity,
-            fit: BoxFit.cover,
-            filterQuality: FilterQuality.medium,
-          );
+    if (appdata.settings['lab_hideThumbnails'] == true) {
+      child = Icon(
+        Icons.image_not_supported_outlined,
+        size: 32,
+        color: Theme.of(context).colorScheme.onSecondaryContainer.withValues(alpha: 0.5),
+      );
+    } else {
+      var image = _findImageProvider(comic);
+      child = image == null
+          ? const SizedBox()
+          : AnimatedImage(
+              image: image,
+              width: double.infinity,
+              height: double.infinity,
+              fit: BoxFit.cover,
+              filterQuality: FilterQuality.medium,
+            );
+    }
 
     child = Container(
       width: 98,
@@ -1658,7 +1679,7 @@ class SimpleComicTile extends StatelessWidget {
         color: Theme.of(context).colorScheme.secondaryContainer,
       ),
       clipBehavior: Clip.antiAlias,
-      child: child,
+      child: Center(child: child),
     );
 
     if (heroID != null) {

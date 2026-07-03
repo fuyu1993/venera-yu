@@ -119,16 +119,22 @@ class _ComicThumbnailsState extends State<_ComicThumbnails> {
                           width: double.infinity,
                           height: double.infinity,
                           clipBehavior: Clip.antiAlias,
-                          child: AnimatedImage(
-                            image: CachedImageProvider(
-                              url,
-                              sourceKey: state.widget.sourceKey,
-                            ),
-                            fit: BoxFit.contain,
-                            width: double.infinity,
-                            height: double.infinity,
-                            part: part,
-                          ),
+                          child: appdata.settings['lab_hideThumbnails'] == true
+                              ? Icon(
+                                  Icons.image_not_supported_outlined,
+                                  size: 32,
+                                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
+                                )
+                              : AnimatedImage(
+                                  image: CachedImageProvider(
+                                    url,
+                                    sourceKey: state.widget.sourceKey,
+                                  ),
+                                  fit: BoxFit.contain,
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                  part: part,
+                                ),
                         ),
                       ),
                     ),

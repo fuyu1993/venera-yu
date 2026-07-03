@@ -319,15 +319,21 @@ class _ComicPageState extends LoadingState<ComicPage, ComicDetails>
                 height: 144,
                 width: 144 * 0.72,
                 clipBehavior: Clip.antiAlias,
-                child: AnimatedImage(
-                  image: CachedImageProvider(
-                    widget.cover ?? comic.cover,
-                    sourceKey: comic.sourceKey,
-                    cid: comic.id,
-                  ),
-                  width: double.infinity,
-                  height: double.infinity,
-                ),
+                child: appdata.settings['lab_hideThumbnails'] == true
+                    ? Icon(
+                        Icons.image_not_supported_outlined,
+                        size: 40,
+                        color: context.colorScheme.onPrimaryContainer.withValues(alpha: 0.5),
+                      )
+                    : AnimatedImage(
+                        image: CachedImageProvider(
+                          widget.cover ?? comic.cover,
+                          sourceKey: comic.sourceKey,
+                          cid: comic.id,
+                        ),
+                        width: double.infinity,
+                        height: double.infinity,
+                      ),
               ),
             ),
           ),
