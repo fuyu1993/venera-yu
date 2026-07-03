@@ -1,101 +1,152 @@
+# 应用包名
 name: venera
+# 应用描述
 description: "A comic app."
+# 不发布到 pub.dev，仅用于本地或自定义渠道
 publish_to: 'none'
 
-version: 2.0.0+200
+# 应用版本号，格式为 x.y.z+build
+version: 2.0.0
 
 environment:
+  # Dart SDK 和 Flutter SDK 版本约束
   sdk: '>=3.8.0 <4.0.0'
   flutter: 3.41.4
 
 dependencies:
+  # Flutter SDK 本身
   flutter:
     sdk: flutter
+  # 本地文件路径访问
   path_provider: any
+  # 国际化支持
   intl: any
+  # 桌面窗口管理
   window_manager: ^0.5.1
+  # SQLite 数据库支持
   sqlite3: ^2.7.4
   sqlite3_flutter_libs: ^0.5.30
+  # JS 引擎绑定，来自 Git 仓库特定提交
   flutter_qjs:
     git:
       url: https://github.com/venera-app/flutter_qjs
       ref: 8feae95df7fb00455df129ad7a0dfec1d0e8d8e4
+  # 加密库
   crypto: ^3.0.6
+  # 网络请求库
   dio: ^5.9.2
+  # HTML 解析
   html: ^0.15.6
+  # 密码学算法库
   pointycastle: ^4.0.0
+  # 打开外部链接
   url_launcher: ^6.3.2
+  # 路径操作
   path: ^1.9.0
+  # 图片查看器，来自 Git 仓库特定提交
   photo_view:
     git:
       url: https://github.com/venera-app/photo_view
       ref: a1255d1b5945aad4b7323303ec2ecdf0c90ffc4c
+  # MIME 类型支持
   mime: ^2.0.0
+  # 共享功能
   share_plus: ^12.0.1
+  # 可滚动定位列表，来自 Git 仓库特定提交
   scrollable_positioned_list:
     git:
       url: https://github.com/venera-app/flutter.widgets
       ref: 09e756b1f1b04e6298318d99ec20a787fb360f59
       path: packages/scrollable_positioned_list
+  # 可排序网格视图
   flutter_reorderable_grid_view: ^5.4.0
+  # 唯一 id 生成
   uuid: ^4.5.1
+  # 桌面内嵌 WebView 窗口
   desktop_webview_window:
     git:
       url: https://github.com/venera-app/flutter_desktop_webview
       path: packages/desktop_webview_window
       ref: 7801fc582ecf5a7351632887891ecf309a7b2583
+  # 内嵌浏览器组件，来自 Git 仓库特定提交
   flutter_inappwebview:
     git:
       url: https://github.com/venera-app/flutter_inappwebview
       path: flutter_inappwebview
       ref: 3ef899b3db57c911b080979f1392253b835f98ab
+  # 应用链接
   app_links: ^7.0.0
+  # Sliver 布局工具
   sliver_tools: ^0.2.12
+  # 文件对话框
   flutter_file_dialog: ^3.0.3
   file_selector: ^1.1.0
   zip_flutter: ^0.0.13
+  # PNG 编码/解码
   lodepng_flutter:
     git:
       url: https://github.com/venera-app/lodepng_flutter
       ref: ac7d05dde32e8d728102a9ff66e6b55f05d94ba1
+  # HTTP 客户端
   rhttp: ^0.15.1
+  # WebDAV 客户端，来自 Git 仓库特定提交
   webdav_client:
     git:
       url: https://github.com/venera-app/webdav_client
       ref: 2f669c98fb81cff1c64fee93466a1475c77e4273
+  # 电池信息
   battery_plus: ^7.0.0
+  # 本地身份验证
   local_auth: ^3.0.1
+  # Android SAF (Storage Access Framework)
   flutter_saf:
     git: 
       url: https://github.com/venera-app/flutter_saf
       ref: fe182cdf40e5fa6230f451bc1d643b860f610d13
+  # 动态配色
   dynamic_color: ^1.8.1
+  # 闪光动画
   shimmer_animation: ^2.1.0
+  # 内存信息查询
   flutter_memory_info: ^0.0.3
+  # 语法高亮支持
   syntax_highlight: ^0.4.0
+  # 7zip 压缩支持，来自 Git 仓库特定提交
   flutter_7zip:
     git:
       url: https://github.com/venera-app/flutter_7zip
       ref: b33344797f1d2469339e0e1b75f5f954f1da224c
+  # 色彩方案支持
   flex_seed_scheme: ^4.0.1
+  # Flutter 本地化支持
   flutter_localizations:
     sdk: flutter
+  # YAML 解析
   yaml: ^3.1.3
+  # 数据转换
   enough_convert: ^1.6.0
+  # 显示模式
   display_mode: ^0.0.2
+  # 瀑布流布局
   flutter_staggered_grid_view: ^0.7.0
 
 dev_dependencies:
+  # Flutter 测试框架
   flutter_test:
     sdk: flutter
+  # Lint 规则
   flutter_lints: ^5.0.0
+  # 构建到架构工具
   flutter_to_arch: ^1.0.1
+  # Debian 打包工具，来自 Git 仓库
   flutter_to_debian: 
     git:
       url: https://github.com/venera-app/flutter_to_debian.git
+  # 通用归档库
   archive: any
 
 flutter:
+  # 使用 Material Design 组件
   uses-material-design: true
   assets:
     - assets/translation.json
@@ -105,6 +156,7 @@ flutter:
     - assets/tags_tw.json
     - assets/opencc.txt
 
+# 自定义打包元数据，用于 flutter_to_arch 构建 Debian 包
 flutter_to_arch:
   name: Venera
   icon: debian/gui/venera.png
