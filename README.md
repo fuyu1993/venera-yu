@@ -8,7 +8,7 @@
 
 [![Download](https://img.shields.io/github/v/release/venera-app/venera)](https://github.com/venera-app/venera/releases)
 [![AUR Version](https://img.shields.io/aur/version/venera-bin)](https://aur.archlinux.org/packages/venera-bin)
-[![F-Droid Version](https://img.shields.io/f-droid/v/com.github.wgh136.venera)](https://f-droid.org/packages/com.github.wgh136.venera/)
+[![F-Droid Version](https://img.shields.io/f-droid/v/com.github.yfu.venera)](https://f-droid.org/packages/com.github.yfu.venera/)
 
 A comic reader that support reading local and network comics.
 
