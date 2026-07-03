@@ -1,273 +1,273 @@
-# Javascript API
+# JavaScript API
 
-## Overview
+## 概述
 
-The Javascript API is a set of functions that used to interact application.
+JavaScript API 是一组用于与应用交互的函数。
 
-There are following parts in the API:
-- [Convert](#Convert)
-- [Network](#Network)
-- [Html](#Html)
-- [UI](#UI)
-- [Utils](#Utils)
-- [Types](#Types)
+API 包含以下几个部分：
+- [Convert](#Convert) - 数据转换
+- [Network](#Network) - 网络请求
+- [Html](#Html) - HTML 解析
+- [UI](#UI) - 用户界面
+- [Utils](#Utils) - 工具函数
+- [Types](#Types) - 类型定义
 
 
 ## Convert
 
-Convert is a set of functions that used to convert data between different types.
+Convert 是一组用于在不同类型之间转换数据的函数。
 
 ### `Convert.encodeUtf8(str: string): ArrayBuffer`
 
-Convert a string to an ArrayBuffer.
+将字符串转换为 ArrayBuffer。
 
 ### `Convert.decodeUtf8(value: ArrayBuffer): string`
 
-Convert an ArrayBuffer to a string.
+将 ArrayBuffer 转换为字符串。
 
 ### `Convert.encodeBase64(value: ArrayBuffer): string`
 
-Convert an ArrayBuffer to a base64 string.
+将 ArrayBuffer 转换为 Base64 字符串。
 
 ### `Convert.decodeBase64(value: string): ArrayBuffer`
 
-Convert a base64 string to an ArrayBuffer.
+将 Base64 字符串转换为 ArrayBuffer。
 
 ### `Convert.md5(value: ArrayBuffer): ArrayBuffer`
 
-Calculate the md5 hash of an ArrayBuffer.
+计算 ArrayBuffer 的 MD5 哈希值。
 
 ### `Convert.sha1(value: ArrayBuffer): ArrayBuffer`
 
-Calculate the sha1 hash of an ArrayBuffer.
+计算 ArrayBuffer 的 SHA1 哈希值。
 
 ### `Convert.sha256(value: ArrayBuffer): ArrayBuffer`
 
-Calculate the sha256 hash of an ArrayBuffer.
+计算 ArrayBuffer 的 SHA256 哈希值。
 
 ### `Convert.sha512(value: ArrayBuffer): ArrayBuffer`
 
-Calculate the sha512 hash of an ArrayBuffer.
+计算 ArrayBuffer 的 SHA512 哈希值。
 
 ### `Convert.hmac(key: ArrayBuffer, value: ArrayBuffer, hash: string): ArrayBuffer`
 
-Calculate the hmac hash of an ArrayBuffer.
+计算 ArrayBuffer 的 HMAC 哈希值。
 
 ### `Convert.hmacString(key: ArrayBuffer, value: ArrayBuffer, hash: string): string`
 
-Calculate the hmac hash of an ArrayBuffer and return a string.
+计算 ArrayBuffer 的 HMAC 哈希值并返回字符串。
 
 ### `Convert.decryptAesEcb(value: ArrayBuffer, key: ArrayBuffer): ArrayBuffer`
 
-Decrypt an ArrayBuffer with AES ECB mode.
+使用 AES ECB 模式解密 ArrayBuffer。
 
 ### `Convert.decryptAesCbc(value: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer): ArrayBuffer`
 
-Decrypt an ArrayBuffer with AES CBC mode.
+使用 AES CBC 模式解密 ArrayBuffer。
 
 ### `Convert.decryptAesCfb(value: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer): ArrayBuffer`
 
-Decrypt an ArrayBuffer with AES CFB mode.
+使用 AES CFB 模式解密 ArrayBuffer。
 
 ### `Convert.decryptAesOfb(value: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer): ArrayBuffer`
 
-Decrypt an ArrayBuffer with AES OFB mode.
+使用 AES OFB 模式解密 ArrayBuffer。
 
 ### `Convert.decryptRsa(value: ArrayBuffer, key: ArrayBuffer): ArrayBuffer`
 
-Decrypt an ArrayBuffer with RSA.
+使用 RSA 解密 ArrayBuffer。
 
 ### `Convert.hexEncode(value: ArrayBuffer): string`
 
-Convert an ArrayBuffer to a hex string.
+将 ArrayBuffer 转换为十六进制字符串。
 
 ## Network
 
-Network is a set of functions that used to send network requests and manage network resources.
+Network 是一组用于发送网络请求和管理网络资源的函数。
 
 ### `Network.fetchBytes(method: string, url: string, headers: object, data: ArrayBuffer): Promise<{status: number, headers: object, body: ArrayBuffer}>`
 
-Send a network request and return the response as an ArrayBuffer.
+发送网络请求并将响应作为 ArrayBuffer 返回。
 
 ### `Network.sendRequest(method: string, url: string, headers: object, data: ArrayBuffer): Promise<{status: number, headers: object, body: string}>`
 
-Send a network request and return the response as a string.
+发送网络请求并将响应作为字符串返回。
 
 ### `Network.get(url: string, headers: object): Promise<{status: number, headers: object, body: string}>`
 
-Send a GET request and return the response as a string.
+发送 GET 请求并将响应作为字符串返回。
 
 ### `Network.post(url: string, headers: object, data: ArrayBuffer): Promise<{status: number, headers: object, body: string}>`
 
-Send a POST request and return the response as a string.
+发送 POST 请求并将响应作为字符串返回。
 
 ### `Network.put(url: string, headers: object, data: ArrayBuffer): Promise<{status: number, headers: object, body: string}>`
 
-Send a PUT request and return the response as a string.
+发送 PUT 请求并将响应作为字符串返回。
 
 ### `Network.delete(url: string, headers: object): Promise<{status: number, headers: object, body: string}>`
 
-Send a DELETE request and return the response as a string.
+发送 DELETE 请求并将响应作为字符串返回。
 
 ### `Network.patch(url: string, headers: object, data: ArrayBuffer): Promise<{status: number, headers: object, body: string}>`
 
-Send a PATCH request and return the response as a string.
+发送 PATCH 请求并将响应作为字符串返回。
 
 ### `Network.setCookies(url: string, cookies: Cookie[]): void`
 
-Set cookies for a specific url.
+为指定 URL 设置 Cookies。
 
 ### `Network.getCookies(url: string): Cookie[]`
 
-Get cookies for a specific url.
+获取指定 URL 的 Cookies。
 
 ### `Network.deleteCookies(url: string): void`
 
-Delete cookies for a specific url.
+删除指定 URL 的 Cookies。
 
 ### `fetch`
 
-The fetch function is a wrapper of the `Network.fetchBytes` function. Same as the `fetch` function in the browser.
+`fetch` 函数是对 `Network.fetchBytes` 的封装，用法与浏览器中的 `fetch` 函数一致。
 
 ## Html
 
-Api for parsing HTML.
+用于解析 HTML 的 API。
 
 ### `new HtmlDocument(html: string): HtmlDocument`
 
-Create a HtmlDocument object from a html string.
+从 HTML 字符串创建 HtmlDocument 对象。
 
 ### `HtmlDocument.querySelector(selector: string): HtmlElement`
 
-Find the first element that matches the selector.
+查找匹配选择器的第一个元素。
 
 ### `HtmlDocument.querySelectorAll(selector: string): HtmlElement[]`
 
-Find all elements that match the selector.
+查找匹配选择器的所有元素。
 
 ### `HtmlDocument.getElementById(id: string): HtmlElement`
 
-Find the element with the id.
+通过 ID 查找元素。
 
 ### `HtmlDocument.dispose(): void`
 
-Dispose the HtmlDocument object.
+销毁 HtmlDocument 对象。
 
 ### `HtmlElement.querySelector(selector: string): HtmlElement`
 
-Find the first element that matches the selector.
+查找匹配选择器的第一个元素。
 
 ### `HtmlElement.querySelectorAll(selector: string): HtmlElement[]`
 
-Find all elements that match the selector.
+查找匹配选择器的所有元素。
 
 ### `HtmlElement.getElementById(id: string): HtmlElement`
 
-Find the element with the id.
+通过 ID 查找元素。
 
 ### `get HtmlElement.text(): string`
 
-Get the text content of the element.
+获取元素的文本内容。
 
 ### `get HtmlElement.attributes(): object`
 
-Get the attributes of the element.
+获取元素的属性。
 
 ### `get HtmlElement.children(): HtmlElement[]`
 
-Get the children
+获取子元素。
 
 ### `get HtmlElement.nodes(): HtmlNode[]`
 
-Get the child nodes
+获取子节点。
 
 ### `get HtmlElement.parent(): HtmlElement | null`
 
-Get the parent element
+获取父元素。
 
 ### `get HtmlElement.innerHtml(): string`
 
-Get the inner html
+获取内部 HTML。
 
 ### `get HtmlElement.classNames(): string[]`
 
-Get the class names
+获取类名。
 
 ### `get HtmlElement.id(): string | null`
 
-Get the id
+获取 ID。
 
 ### `get HtmlElement.localName(): string`
 
-Get the local name
+获取本地名称。
 
 ### `get HtmlElement.previousSibling(): HtmlElement | null`
 
-Get the previous sibling
+获取前一个兄弟元素。
 
 ### `get HtmlElement.nextSibling(): HtmlElement | null`
 
-Get the next sibling
+获取后一个兄弟元素。
 
 ### `get HtmlNode.type(): string`
 
-Get the node type ("text", "element", "comment", "document", "unknown")
+获取节点类型（"text"、"element"、"comment"、"document"、"unknown"）。
 
 ### `HtmlNode.toElement(): HtmlElement | null`
 
-Convert the node to an element
+将节点转换为元素。
 
 ### `get HtmlNode.text(): string`
 
-Get the text content of the node
+获取节点的文本内容。
 
 ## UI
 
 ### `UI.showMessage(message: string): void`
 
-Show a message.
+显示一条消息。
 
 ### `UI.showDialog(title: string, content: string, actions: {text: string, callback: () => void | Promise<void>, style: "text"|"filled"|"danger"}[]): void`
 
-Show a dialog. Any action will close the dialog.
+显示一个对话框。任一操作都会关闭对话框。
 
 ### `UI.launchUrl(url: string): void`
 
-Open a url in external browser.
+在外部浏览器中打开一个 URL。
 
 ### `UI.showLoading(onCancel: () => void | null | undefined): number`
 
-Show a loading dialog.
+显示加载对话框。
 
 ### `UI.cancelLoading(id: number): void`
 
-Cancel a loading dialog.
+取消加载对话框。
 
 ### `UI.showInputDialog(title: string, validator: (string) => string | null | undefined): string | null`
 
-Show an input dialog.
+显示输入对话框。
 
 ### `UI.showSelectDialog(title: string, options: string[], initialIndex?: number): number | null`
 
-Show a select dialog.
+显示选择对话框。
 
 ## Utils
 
 ### `createUuid(): string`
 
-create a time-based uuid.
+创建一个基于时间的 UUID。
 
 ### `randomInt(min: number, max: number): number`
 
-Generate a random integer between min and max.
+生成指定范围内的随机整数。
 
 ### `randomDouble(min: number, max: number): number`
 
-Generate a random double between min and max.
+生成指定范围内的随机浮点数。
 
 ### console
 
-Send log to application console. Same api as the browser console.
+向应用控制台发送日志，API 与浏览器中的 `console` 一致。
 
 ## Types
 

@@ -1,30 +1,29 @@
-# Comic Source
+# 漫画源
 
-## Introduction
+## 简介
 
-Venera is a comic reader that can read comics from various sources. 
+Venera 是一款支持从多种来源阅读漫画的阅读器。
 
-All comic sources are written in javascript. 
-Venera uses [flutter_qjs](https://github.com/wgh136/flutter_qjs) as js engine which is forked from [ekibun](https://github.com/ekibun/flutter_qjs).
+所有漫画源均使用 JavaScript 编写。
+Venera 使用 [flutter_qjs](https://github.com/wgh136/flutter_qjs) 作为 JS 引擎，该引擎 fork 自 [ekibun](https://github.com/ekibun/flutter_qjs)。
 
-This document will describe how to write a comic source for Venera.
+本文档将介绍如何为 Venera 编写漫画源。
 
-## Comic Source List
+## 漫画源列表
 
-Venera can display a list of comic sources in the app.
+Venera 可以在应用内显示漫画源列表。
 
-You can use the following repo url:
+你可以使用以下仓库 URL：
 ```
 https://cdn.jsdelivr.net/gh/venera-app/venera-configs@main/index.json
 ```
-The repo is maintained by the Venera team.
+该仓库由 Venera 团队维护。
 
-> The link is a mirror of the original repo. To contribute your comic source, please visit the [original repo](https://github.com/venera-app/venera-configs)
+> 该链接是原始仓库的镜像。如需贡献漫画源，请访问 [原始仓库](https://github.com/venera-app/venera-configs)
 
-You should provide a repository url to let the app load the comic source list.
-The url should point to a JSON file that contains the list of comic sources.
+你需要提供一个仓库 URL 让应用加载漫画源列表。URL 应指向一个包含漫画源列表的 JSON 文件。
 
-The JSON file should have the following format:
+JSON 文件格式如下：
 
 ```json
 [
@@ -38,52 +37,51 @@ The JSON file should have the following format:
 ]
 ```
 
-Only one of `url` and `filename` should be provided.
-The description field is optional.
+`url` 和 `filename` 只需提供其中一个。`description` 字段为可选项。
 
-## Create a Comic Source
+## 创建漫画源
 
-### Preparation
+### 准备工作
 
-- Install Venera. Using flutter to run the project is recommended since it's easier to debug.
-- An editor that supports javascript.
-- Download template and venera javascript api from [here](https://github.com/venera-app/venera-configs).
+- 安装 Venera。建议使用 Flutter 运行项目，便于调试。
+- 一款支持 JavaScript 的编辑器。
+- 从 [这里](https://github.com/venera-app/venera-configs) 下载模板和 Venera JavaScript API。
 
-### Start Writing
+### 开始编写
 
-The template contains detailed comments and examples. You can refer to it when writing your own comic source.
+模板中包含详细的注释和示例，编写漫画源时可以参考。
 
-Here is a brief introduction to the template:
+以下是模板的简要介绍：
 
-> Note: Javascript api document is [here](js_api.md).
+> 注意：JavaScript API 文档见 [这里](js_api.md)。
 
-#### Write basic information
+#### 编写基本信息
 
 ```javascript
 class NewComicSource extends ComicSource {
-    // Note: The fields which are marked as [Optional] should be removed if not used
+    // 注意：标记为 [Optional] 的字段如不使用应移除
 
-    // name of the source
+    // 源名称
     name = ""
 
-    // unique id of the source
+    // 源的唯一 ID
     key = ""
 
     version = "1.0.0"
 
     minAppVersion = "1.0.0"
 
-    // update url
+    // 更新地址
     url = ""
 // ...
 }
 ```
 
-In this part, you need to do the following:
-- Change the class name to your source name.
-- Fill in the name, key, version, minAppVersion, and url fields.
+在这一部分，你需要：
+- 将类名改为你的源名称。
+- 填写 `name`、`key`、`version`、`minAppVersion` 和 `url` 字段。
 
-#### init function
+#### init 函数
 
 ```javascript
     /**
@@ -94,11 +92,9 @@ In this part, you need to do the following:
     }
 ```
 
-The function will be called when the source is initialized. You can do some initialization work here.
+该函数在源初始化时调用，可在此做一些初始化工作。如不使用可移除。
 
-Remove this function if not used.
-
-#### Account
+#### 账号
 
 ```javascript
 // [Optional] account related
@@ -170,11 +166,9 @@ Remove this function if not used.
     }
 ```
 
-In this part, you can implement login, logout, and register functions.
+在这一部分，可以实现登录、登出和注册功能。如不使用可移除。
 
-Remove this part if not used.
-
-#### Explore page
+#### 发现页
 
 ```javascript
     // explore page list
@@ -210,16 +204,14 @@ Remove this part if not used.
     ]
 ```
 
-In this part, you can implement the explore page.
+在这一部分，可以实现发现页。一个漫画源可以有多个发现页。
 
-A comic source can have multiple explore pages.
+发现页有三种类型：
+- `multiPartPage`：发现页包含多个分区，每个分区包含多部漫画。
+- `multiPageComicList`：发现页包含多部漫画，逐页加载。
+- `mixed`：发现页包含多个分区，每个分区可以是漫画列表，也可以是带有标题和"查看更多"按钮的漫画块。
 
-There are three types of explore pages:
-- multiPartPage: An explore page contains multiple parts, each part contains multiple comics.
-- multiPageComicList: An explore page contains multiple comics, the comics are loaded page by page.
-- mixed: An explore page contains multiple parts, each part can be a list of comics or a block of comics which have a title and a view more button.
-
-#### Category Page
+#### 分类页
 
 ```javascript
     // categories
@@ -257,11 +249,9 @@ There are three types of explore pages:
     }
 ```
 
-Category page is a static page that contains multiple parts, each part contains multiple categories.
+分类页是一个静态页面，包含多个分区，每个分区包含多个分类。一个漫画源只能有一个分类页。
 
-A comic source can only have one category page.
-
-#### Category Comics Page
+#### 分类漫画页
 
 ```javascript
     /// category comic loading related
@@ -310,11 +300,9 @@ A comic source can only have one category page.
     }
 ```
 
-When user clicks on a category, the category comics page will be displayed.
+当用户点击一个分类时，将显示分类漫画页。此部分用于加载某个分类下的漫画。
 
-This part is used to load comics of a category.
-
-#### Search
+#### 搜索
 
 ```javascript
     /// search related
@@ -373,12 +361,9 @@ This part is used to load comics of a category.
     }
 ```
 
-This part is used to load search results.
+此部分用于加载搜索结果。`load` 和 `loadNext` 函数用于加载搜索结果。如果实现了 `load` 函数，`loadNext` 将被忽略。
 
-`load` and `loadNext` functions are used to load search results. 
-If `load` function is implemented, `loadNext` function will be ignored.
-
-#### Favorites
+#### 收藏
 
 ```javascript
     // favorite related
@@ -445,12 +430,9 @@ If `load` function is implemented, `loadNext` function will be ignored.
     }
 ```
 
-This part is used to manage network favorites of the source.
+此部分用于管理源的网络收藏。`load` 和 `loadNext` 函数用于加载搜索结果。如果实现了 `load` 函数，`loadNext` 将被忽略。
 
-`load` and `loadNext` functions are used to load search results.
-If `load` function is implemented, `loadNext` function will be ignored.
-
-#### Comic Details
+#### 漫画详情
 
 ```javascript
     /// single comic related
@@ -658,9 +640,9 @@ If `load` function is implemented, `loadNext` function will be ignored.
 
 ```
 
-This part is used to load comic details.
+此部分用于加载漫画详情。
 
-#### Settings
+#### 设置
 
 ```javascript
     /*
@@ -716,10 +698,9 @@ This part is used to load comic details.
     }
 ```
 
-This part is used to provide settings for the source.
+此部分用于为源提供设置项。
 
-
-#### Translations
+#### 翻译
 
 ```javascript
     // [Optional] translations for the strings in this config
@@ -734,6 +715,6 @@ This part is used to provide settings for the source.
     }
 ```
 
-This part is used to provide translations for the source.
+此部分用于为源提供多语言翻译。
 
-> Note: strings in the UI api will not be translated automatically. You need to translate them manually.
+> 注意：UI API 中的字符串不会自动翻译，需要手动翻译。

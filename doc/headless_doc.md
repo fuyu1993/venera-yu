@@ -1,29 +1,29 @@
-# Venera Headless Mode
+# Venera 无头模式
 
-Venera's headless mode allows you to run key features from the command line, making it easy to automate tasks and integrate with other tools. This document outlines the available commands and their usage.
+Venera 的无头模式允许你从命令行运行核心功能，方便自动化任务以及与其他工具集成。本文档介绍可用的命令及其用法。
 
-## How to Use
+## 使用方法
 
-To activate headless mode, use the `--headless` flag when running the Venera executable, followed by the desired command.
+运行 Venera 可执行文件时使用 `--headless` 标志，后跟所需命令即可激活无头模式。
 
 ```bash
-venera --headless <command> [subcommand] [options]
+venera --headless <命令> [子命令] [选项]
 ```
 
-## Global Options
+## 全局选项
 
-- **`--ignore-disheadless-log`**: Suppresses log output, providing a cleaner output for scripting.
+- **`--ignore-disheadless-log`**：抑制日志输出，为脚本提供更清晰的输出。
 
-## Commands
+## 命令
 
 ### `webdav`
 
-Manage WebDAV data synchronization.
+管理 WebDAV 数据同步。
 
-- **`webdav up`**: Uploads your local configuration to the WebDAV server.
-- **`webdav down`**: Downloads and applies the remote configuration from the WebDAV server.
+- **`webdav up`**：将本地配置上传到 WebDAV 服务器。
+- **`webdav down`**：从 WebDAV 服务器下载并应用远程配置。
 
-**Example:**
+**示例：**
 
 ```bash
 venera --headless webdav up
@@ -31,26 +31,26 @@ venera --headless webdav up
 
 ### `updatescript`
 
-Update comic source scripts.
+更新漫画源脚本。
 
-- **`updatescript all`**: Checks for and applies all available updates for your comic source scripts.
+- **`updatescript all`**：检查并应用所有可用的漫画源脚本更新。
 
-**Example:**
+**示例：**
 
 ```bash
 venera --headless updatescript all
 ```
 
-**Output Format:**
+**输出格式：**
 
-The `updatescript` command provides detailed progress and a final summary.
+`updatescript` 命令会提供详细的进度信息并输出最终摘要。
 
-**Progress Logs:**
+**进度日志：**
 
-- **`Progress`**: Indicates a successful update for a single script.
-- **`ProgressError`**: Indicates a failure during a script update.
+- **`Progress`**：表示单个脚本更新成功。
+- **`ProgressError`**：表示脚本更新失败。
 
-**Example `Progress` Log:**
+**`Progress` 日志示例：**
 
 ```json
 {
@@ -69,9 +69,9 @@ The `updatescript` command provides detailed progress and a final summary.
 }
 ```
 
-**Final Summary:**
+**最终摘要：**
 
-A summary is provided at the end, detailing the total number of scripts, how many were updated, and how many failed.
+结束时提供摘要，包含脚本总数、已更新数量和失败数量。
 
 ```json
 {
@@ -87,37 +87,37 @@ A summary is provided at the end, detailing the total number of scripts, how man
 
 ### `updatesubscribe`
 
-Update your subscribed comics and retrieve a list of updated comics.
+更新已订阅的漫画并获取已更新的漫画列表。
 
-- **`updatesubscribe`**: Checks all subscribed comics for updates.
-- **`updatesubscribe --update-comic-by-id-type <id> <type>`**: Updates a single comic specified by its `id` and `type`.
+- **`updatesubscribe`**：检查所有已订阅漫画的更新。
+- **`updatesubscribe --update-comic-by-id-type <id> <type>`**：更新由 `id` 和 `type` 指定的单个漫画。
 
-**Example:**
+**示例：**
 
 ```bash
-# Update all subscriptions
+# 更新所有订阅
 venera --headless updatesubscribe
 
-# Update a single comic
+# 更新单个漫画
 venera --headless updatesubscribe --update-comic-by-id-type "comic-id" "source-key"
 ```
 
-## Output Format
+## 输出格式
 
-All headless commands output JSON objects prefixed with `[CLI PRINT]`. This structured format allows for easy parsing in automated scripts. The JSON object always contains a `status` and a `message`. For commands that return data, a `data` field will also be present.
+所有无头命令都会输出以 `[CLI PRINT]` 为前缀的 JSON 对象。这种结构化格式便于在自动化脚本中解析。JSON 对象始终包含 `status` 和 `message`。对于返回数据的命令，还会有 `data` 字段。
 
-### `updatesubscribe` Output
+### `updatesubscribe` 输出
 
-The `updatesubscribe` command provides detailed progress and final results in JSON format.
+`updatesubscribe` 命令以 JSON 格式提供详细的进度信息和最终结果。
 
-**Progress Logs:**
+**进度日志：**
 
-During an update, you will receive `Progress` or `ProgressError` messages.
+更新期间会收到 `Progress` 或 `ProgressError` 消息。
 
-- **`Progress`**: Indicates a successful step in the update process.
-- **`ProgressError`**: Indicates an error occurred while updating a specific comic.
+- **`Progress`**：表示更新过程中的一个成功步骤。
+- **`ProgressError`**：表示更新某个漫画时发生错误。
 
-**Example `Progress` Log:**
+**`Progress` 日志示例：**
 
 ```json
 {
@@ -139,7 +139,7 @@ During an update, you will receive `Progress` or `ProgressError` messages.
 }
 ```
 
-**Example `ProgressError` Log:**
+**`ProgressError` 日志示例：**
 
 ```json
 {
@@ -158,9 +158,9 @@ During an update, you will receive `Progress` or `ProgressError` messages.
 }
 ```
 
-**Final Output:**
+**最终输出：**
 
-Once the update process is complete, a final JSON object is returned with a list of all comics that have been updated.
+更新过程完成后，会返回一个包含所有已更新漫画列表的最终 JSON 对象。
 
 ```json
 {
@@ -178,3 +178,4 @@ Once the update process is complete, a final JSON object is returned with a list
     }
   ]
 }
+```

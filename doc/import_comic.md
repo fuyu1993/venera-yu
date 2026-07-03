@@ -1,28 +1,25 @@
-# Import Comic
+# 导入漫画
 
-## Introduction
+## 简介
 
-Venera supports importing comics from local files.
-However, the comic files must be in a specific format.
+Venera 支持从本地文件导入漫画。但漫画文件必须符合特定的格式规范。
 
-## Restore Local Downloads
+## 恢复本地下载
 
-If you migrated the app and kept the local download folder but lost `local.db`,
-you can restore the local database by scanning the current local path.
+如果你迁移了应用并保留了本地下载文件夹，但丢失了 `local.db`，可以通过扫描当前本地路径来恢复本地数据库。
 
-- Open `Local` -> `Import` -> `Restore local downloads`.
-- The app scans the current local storage path and rebuilds entries.
-- It does not copy files or add favorites.
-- Duplicates (same title or directory) are skipped.
+- 打开 `本地` -> `导入` -> `恢复本地下载`。
+- 应用会扫描当前本地存储路径并重建条目。
+- 不会复制文件或添加收藏。
+- 重复的条目（相同标题或目录）会被跳过。
 
-Make sure the local storage path in Settings points to the folder that contains
-the downloaded comics before running this.
+运行此功能前，请确保设置中的本地存储路径指向包含已下载漫画的文件夹。
 
-## Comic Directory
+## 漫画目录
 
-A directory considered as a comic directory only if it follows one of the following two types of structure:
+只有符合以下两种目录结构之一，才会被视为一个漫画目录：
 
-**Without Chapter**
+**无章节**
 
 ```
 comic_directory
@@ -33,7 +30,7 @@ comic_directory
 ├── ...
 ```
 
-**With Chapter**
+**有章节**
 
 ```
 comic_directory
@@ -51,23 +48,21 @@ comic_directory
 ├── ...
 ```
 
-The file name can be anything, but the extension must be a valid image extension.
+文件名可以任意，但扩展名必须是有效的图片格式。
 
-The page order is determined by the file name. App will sort the files by name and display them in that order.
+页面顺序由文件名决定。应用会按文件名排序并依次显示。
 
-Cover image is optional. 
-If there is a file named `cover.[ext]` in the directory, it will be considered as the cover image.
-Otherwise, the first image will be considered as the cover image.
+封面图片是可选的。如果目录中存在名为 `cover.[ext]` 的文件，它将被作为封面图片。否则，第一张图片将被作为封面图片。
 
-The name of directory will be used as comic title. And the name of chapter directory will be used as chapter title.
+目录名将作为漫画标题，章节目录名将作为章节标题。
 
-## Archive
+## 压缩包
 
-Venera supports importing comics from archive files.
+Venera 支持从压缩包文件导入漫画。
 
-The archive file must follow [Comic Book Archive](https://en.wikipedia.org/wiki/Comic_book_archive_file) format.
+压缩包必须符合 [Comic Book Archive](https://en.wikipedia.org/wiki/Comic_book_archive_file) 格式。
 
-Currently, Venera supports the following archive formats:
+目前 Venera 支持以下压缩格式：
 - `.cbz`
 - `.cb7`
 - `.zip`
