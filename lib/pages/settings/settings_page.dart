@@ -43,6 +43,11 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   int currentPage = -1;
 
+  bool _isSearching = false;
+  final _searchController = TextEditingController();
+  final _searchFocus = FocusNode();
+  List<_SettingIndexItem> _searchResults = [];
+
   ColorScheme get colors => Theme.of(context).colorScheme;
 
   bool get enableTwoViews => context.width > 720;
@@ -71,10 +76,131 @@ class _SettingsPageState extends State<SettingsPage> {
     Icons.bug_report,
   ];
 
+  // Settings index for search: all searchable settings with their page index
+  List<_SettingIndexItem> get _settingIndex => const [
+    // 0 - Explore
+    _SettingIndexItem("Display mode of comic tile", 0),
+    _SettingIndexItem("Size of comic tile", 0),
+    _SettingIndexItem("Explore Pages", 0),
+    _SettingIndexItem("Category Pages", 0),
+    _SettingIndexItem("Network Favorite Pages", 0),
+    _SettingIndexItem("Search Sources", 0),
+    _SettingIndexItem("Show favorite status on comic tile", 0),
+    _SettingIndexItem("Show history on comic tile", 0),
+    _SettingIndexItem("Reverse default chapter order", 0),
+    _SettingIndexItem("Keyword blocking", 0),
+    _SettingIndexItem("Comment keyword blocking", 0),
+    _SettingIndexItem("Default Search Target", 0),
+    _SettingIndexItem("Auto Language Filters", 0),
+    _SettingIndexItem("Initial Page", 0),
+    _SettingIndexItem("Display mode of comic list", 0),
+    // 1 - Reading
+    _SettingIndexItem("Enable comic specific settings", 1),
+    _SettingIndexItem("Enable device specific settings", 1),
+    _SettingIndexItem("Tap to turn Pages", 1),
+    _SettingIndexItem("Reverse tap to turn Pages", 1),
+    _SettingIndexItem("Page animation", 1),
+    _SettingIndexItem("Reading mode", 1),
+    _SettingIndexItem("Auto page turning interval", 1),
+    _SettingIndexItem("Show single image on first page", 1),
+    _SettingIndexItem("Mouse scroll speed", 1),
+    _SettingIndexItem("Double tap to zoom", 1),
+    _SettingIndexItem("Long press to zoom", 1),
+    _SettingIndexItem("Long press zoom position", 1),
+    _SettingIndexItem("Limit image width", 1),
+    _SettingIndexItem("Turn page by volume keys", 1),
+    _SettingIndexItem("Display time & battery info in reader", 1),
+    _SettingIndexItem("Show system status bar", 1),
+    // 2 - Appearance
+    _SettingIndexItem("Theme Mode", 2),
+    _SettingIndexItem("Theme Color", 2),
+    // 3 - Local Favorites
+    _SettingIndexItem("Show local favorites before network favorites", 3),
+    _SettingIndexItem("Auto close favorite panel after operation", 3),
+    _SettingIndexItem("Add new favorite to", 3),
+    _SettingIndexItem("Move favorite after reading", 3),
+    _SettingIndexItem("Quick Favorite", 3),
+    _SettingIndexItem("Delete all unavailable local favorite items", 3),
+    _SettingIndexItem("Click favorite", 3),
+    // 4 - APP
+    _SettingIndexItem("Storage Path for local comics", 4),
+    _SettingIndexItem("Set New Storage Path", 4),
+    _SettingIndexItem("Cache Size", 4),
+    _SettingIndexItem("Clear Cache", 4),
+    _SettingIndexItem("Cache Limit", 4),
+    _SettingIndexItem("Export App Data", 4),
+    _SettingIndexItem("Import App Data", 4),
+    _SettingIndexItem("Data Sync", 4),
+    _SettingIndexItem("Language", 4),
+    // 5 - Network
+    _SettingIndexItem("Proxy", 5),
+    _SettingIndexItem("DNS Overrides", 5),
+    _SettingIndexItem("Download Threads", 5),
+    _SettingIndexItem("Enable DNS Overrides", 5),
+    // 6 - About
+    _SettingIndexItem("Check for updates", 6),
+    _SettingIndexItem("Check for updates on startup", 6),
+    _SettingIndexItem("Github", 6),
+    // 7 - Lab
+    _SettingIndexItem("Enable Experimental Features", 7),
+    _SettingIndexItem("Hide Comic Thumbnails", 7),
+    _SettingIndexItem("Developer Mode", 7),
+    // 8 - Debug
+    _SettingIndexItem("Reload Configs", 8),
+    _SettingIndexItem("Open Log", 8),
+    _SettingIndexItem("Ignore Certificate Errors", 8),
+  ];
+
   @override
   void initState() {
     currentPage = widget.initialPage;
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _searchFocus.dispose();
+    super.dispose();
+  }
+
+  bool _fuzzyMatch(String text, String pattern) {
+    text = text.toLowerCase();
+    pattern = pattern.toLowerCase();
+    int i = 0, j = 0;
+    while (i < text.length && j < pattern.length) {
+      if (text[i] == pattern[j]) {
+        j++;
+      }
+      i++;
+    }
+    return j == pattern.length;
+  }
+
+  void _onSearchChanged(String query) {
+    setState(() {
+      if (query.isEmpty) {
+        _searchResults = [];
+        return;
+      }
+      _searchResults = _settingIndex
+          .where((item) =>
+              _fuzzyMatch(item.title, query) ||
+              _fuzzyMatch(item.title.tl, query) ||
+              _fuzzyMatch(categories[item.pageIndex], query) ||
+              _fuzzyMatch(categories[item.pageIndex].tl, query))
+          .toList();
+    });
+  }
+
+  void _navigateToPage(int pageIndex) {
+    setState(() {
+      currentPage = pageIndex;
+      _isSearching = false;
+      _searchController.clear();
+      _searchResults = [];
+      _searchFocus.unfocus();
+    });
   }
 
   @override
@@ -154,33 +280,134 @@ class _SettingsPageState extends State<SettingsPage> {
           SizedBox(
             height: 56,
             child: Row(children: [
-              const SizedBox(
-                width: 8,
-              ),
+              const SizedBox(width: 8),
               Tooltip(
                 message: "Back",
                 child: IconButton(
                   icon: const Icon(Icons.arrow_back),
-                  onPressed: context.pop,
+                  onPressed: _isSearching
+                      ? () {
+                          setState(() {
+                            _isSearching = false;
+                            _searchController.clear();
+                            _searchResults = [];
+                            _searchFocus.unfocus();
+                          });
+                        }
+                      : context.pop,
                 ),
               ),
-              const SizedBox(
-                width: 24,
-              ),
-              Text(
-                "Settings".tl,
-                style: ts.s20,
-              )
+              if (!_isSearching) ...[
+                const SizedBox(width: 24),
+                Expanded(
+                  child: Text("Settings".tl, style: ts.s20),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.search),
+                  tooltip: "搜索设置".tl,
+                  onPressed: () {
+                    setState(() => _isSearching = true);
+                    _searchFocus.requestFocus();
+                  },
+                ),
+              ] else
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 12),
+                    child: TextField(
+                      controller: _searchController,
+                      focusNode: _searchFocus,
+                      autofocus: true,
+                      decoration: InputDecoration(
+                        hintText: "搜索设置...".tl,
+                        border: InputBorder.none,
+                        isDense: true,
+                        contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                      ),
+                      onChanged: _onSearchChanged,
+                    ),
+                  ),
+                ),
             ]),
           ),
-          const SizedBox(
-            height: 4,
-          ),
+          const SizedBox(height: 4),
           Expanded(
-            child: buildCategories(),
+            child: _isSearching ? buildSearchResults() : buildCategories(),
           )
         ],
       ),
+    );
+  }
+
+  Widget buildSearchResults() {
+    if (_searchController.text.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.search, size: 48, color: colors.onSurface.withValues(alpha: 0.3)),
+            const SizedBox(height: 12),
+            Text("输入关键词搜索设置项".tl,
+                style: ts.s14.copyWith(color: colors.onSurface.withValues(alpha: 0.5))),
+          ],
+        ),
+      );
+    }
+
+    if (_searchResults.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.search_off, size: 48,
+                color: colors.onSurface.withValues(alpha: 0.3)),
+            const SizedBox(height: 12),
+            Text("没有找到相关设置".tl,
+                style: ts.s14.copyWith(color: colors.onSurface.withValues(alpha: 0.5))),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: EdgeInsets.zero,
+      itemCount: _searchResults.length,
+      itemBuilder: (context, index) {
+        final item = _searchResults[index];
+        final categoryName = categories[item.pageIndex].tl;
+        return Padding(
+          padding: enableTwoViews
+              ? const EdgeInsets.fromLTRB(8, 0, 8, 0)
+              : EdgeInsets.zero,
+          child: InkWell(
+            onTap: () => _navigateToPage(item.pageIndex),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+              child: Row(
+                children: [
+                  Icon(icons[item.pageIndex], size: 20,
+                      color: colors.onSurface.withValues(alpha: 0.6)),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(item.title.tl, style: ts.s14),
+                        const SizedBox(height: 2),
+                        Text(categoryName, style: ts.s12.copyWith(
+                            color: colors.primary)),
+                      ],
+                    ),
+                  ),
+                  const Icon(Icons.chevron_right, size: 20),
+                ],
+              ),
+            ),
+          ).paddingVertical(4),
+        );
+      },
     );
   }
 
@@ -270,6 +497,13 @@ class _SettingsPageState extends State<SettingsPage> {
     };
   }
 
+}
+
+class _SettingIndexItem {
+  final String title;
+  final int pageIndex;
+
+  const _SettingIndexItem(this.title, this.pageIndex);
 }
 
 class _SettingsDetailPage extends StatelessWidget {
