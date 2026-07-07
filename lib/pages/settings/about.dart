@@ -65,13 +65,6 @@ class _AboutSettingsState extends State<AboutSettings> {
           title: "Check for updates on startup".tl,
           settingKey: "checkUpdateOnStart",
         ).toSliver(),
-        ListTile(
-          title: const Text("Github"),
-          trailing: const Icon(Icons.open_in_new),
-          onTap: () {
-            launchUrlString("https://github.com/venera-app/venera");
-          },
-        ).toSliver(),
 
       ],
     );
