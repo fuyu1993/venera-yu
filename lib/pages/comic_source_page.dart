@@ -798,6 +798,16 @@ class _SliverComicSource extends StatefulWidget {
 class _SliverComicSourceState extends State<_SliverComicSource> {
   ComicSource get source => widget.source;
 
+  static final Map<String, bool> _collapsedMap = {};
+
+  bool get collapsed => _collapsedMap[source.key] ?? false;
+
+  void _toggleCollapsed() {
+    setState(() {
+      _collapsedMap[source.key] = !collapsed;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     var newVersion = ComicSourceManager().availableUpdates[source.key];
@@ -808,90 +818,111 @@ class _SliverComicSourceState extends State<_SliverComicSource> {
       slivers: [
         SliverPadding(padding: const EdgeInsets.only(top: 16)),
         SliverToBoxAdapter(
-          child: ListTile(
-            title: Row(
-              children: [
-                Text(source.name, style: ts.s18),
-                const SizedBox(width: 6),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: context.colorScheme.surfaceContainer,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    source.version,
-                    style: const TextStyle(fontSize: 13),
-                  ),
-                ),
-                if (hasUpdate)
-                  Tooltip(
-                    message: newVersion,
-                    child: Container(
+          child: Column(
+            children: [
+              ListTile(
+                onTap: _toggleCollapsed,
+                title: Row(
+                  children: [
+                    Text(source.name, style: ts.s18),
+                    const SizedBox(width: 6),
+                    Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
+                        horizontal: 8,
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: context.colorScheme.primaryContainer,
+                        color: context.colorScheme.surfaceContainer,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
-                        "New Version".tl,
+                        source.version,
                         style: const TextStyle(fontSize: 13),
                       ),
                     ),
-                  ).paddingLeft(4),
-              ],
-            ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Tooltip(
-                  message: "Edit".tl,
-                  child: IconButton(
-                    onPressed: () => widget.edit(source),
-                    icon: const Icon(Icons.edit_note),
-                  ),
+                    if (hasUpdate)
+                      Tooltip(
+                        message: newVersion,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: context.colorScheme.primaryContainer,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            "New Version".tl,
+                            style: const TextStyle(fontSize: 13),
+                          ),
+                        ),
+                      ).paddingLeft(4),
+                  ],
                 ),
-                Tooltip(
-                  message: "Update".tl,
-                  child: IconButton(
-                    onPressed: () => widget.update(source),
-                    icon: const Icon(Icons.update),
-                  ),
-                ),
-                Tooltip(
-                  message: "Delete".tl,
-                  child: IconButton(
-                    onPressed: () => widget.delete(source),
-                    icon: const Icon(Icons.delete),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        SliverToBoxAdapter(
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 8),
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: context.colorScheme.outlineVariant,
-                  width: 0.6,
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AnimatedRotation(
+                      turns: collapsed ? 0 : 0.5,
+                      duration: const Duration(milliseconds: 200),
+                      child: Icon(
+                        Icons.expand_more,
+                        color: context.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    Tooltip(
+                      message: "Edit".tl,
+                      child: IconButton(
+                        onPressed: () => widget.edit(source),
+                        icon: const Icon(Icons.edit_note),
+                      ),
+                    ),
+                    Tooltip(
+                      message: "Update".tl,
+                      child: IconButton(
+                        onPressed: () => widget.update(source),
+                        icon: const Icon(Icons.update),
+                      ),
+                    ),
+                    Tooltip(
+                      message: "Delete".tl,
+                      child: IconButton(
+                        onPressed: () => widget.delete(source),
+                        icon: const Icon(Icons.delete),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 8),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: context.colorScheme.outlineVariant,
+                      width: 0.6,
+                    ),
+                  ),
+                ),
+              ),
+              AnimatedCrossFade(
+                firstChild: Column(
+                  children: [
+                    ...buildSourceSettings(),
+                    ..._buildAccount(),
+                  ],
+                ),
+                secondChild: const SizedBox.shrink(),
+                crossFadeState: collapsed
+                    ? CrossFadeState.showSecond
+                    : CrossFadeState.showFirst,
+                duration: const Duration(milliseconds: 200),
+                sizeCurve: Curves.easeInOut,
+              ),
+            ],
           ),
         ),
-        SliverToBoxAdapter(
-          child: Column(children: buildSourceSettings().toList()),
-        ),
-        SliverToBoxAdapter(child: Column(children: _buildAccount().toList())),
       ],
     );
   }
