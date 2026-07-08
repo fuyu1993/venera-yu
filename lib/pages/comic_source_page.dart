@@ -798,14 +798,41 @@ class _SliverComicSource extends StatefulWidget {
 class _SliverComicSourceState extends State<_SliverComicSource> {
   ComicSource get source => widget.source;
 
-  static final Map<String, bool> _collapsedMap = {};
+  late bool _collapsed;
 
-  bool get collapsed => _collapsedMap[source.key] ?? false;
+  /// Whether this source actually has content that can be collapsed.
+  bool get hasContent {
+    final raw = source.getSettingsDynamic() ?? source.settings;
+    final settingsHas = raw is Map && (raw as Map).isNotEmpty;
+    final accountHas = source.account != null;
+    return settingsHas || accountHas;
+  }
 
-  void _toggleCollapsed() {
+  void _toggleCollapsed() => _setCollapsed(!_collapsed);
+
+  @override
+  void initState() {
+    super.initState();
+    final list = appdata.settings['collapsedComicSources'];
+    final collapsedKeys = list is List ? List<String>.from(list) : <String>[];
+    _collapsed = collapsedKeys.contains(source.key);
+  }
+
+  void _setCollapsed(bool value) {
+    if (_collapsed == value) return;
     setState(() {
-      _collapsedMap[source.key] = !collapsed;
+      _collapsed = value;
     });
+    final list = appdata.settings['collapsedComicSources'];
+    final collapsedKeys =
+        (list is List ? List<String>.from(list) : <String>[]).toSet();
+    if (value) {
+      collapsedKeys.add(source.key);
+    } else {
+      collapsedKeys.remove(source.key);
+    }
+    appdata.settings['collapsedComicSources'] = collapsedKeys.toList();
+    appdata.saveData();
   }
 
   @override
@@ -814,87 +841,98 @@ class _SliverComicSourceState extends State<_SliverComicSource> {
     bool hasUpdate =
         newVersion != null && compareSemVer(newVersion, source.version);
 
+    final chevron = hasContent
+        ? Tooltip(
+            message: _collapsed
+                ? "Tap to expand".tl
+                : "Tap to collapse".tl,
+            child: AnimatedRotation(
+              turns: _collapsed ? 0 : 0.5,
+              duration: const Duration(milliseconds: 200),
+              child: Icon(
+                Icons.expand_more,
+                color: context.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          )
+        : null;
+
+    final header = ListTile(
+      onTap: _toggleCollapsed,
+      title: Row(
+        children: [
+          Text(source.name, style: ts.s18),
+          const SizedBox(width: 6),
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 8,
+              vertical: 2,
+            ),
+            decoration: BoxDecoration(
+              color: context.colorScheme.surfaceContainer,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              source.version,
+              style: const TextStyle(fontSize: 13),
+            ),
+          ),
+          if (hasUpdate)
+            Tooltip(
+              message: newVersion,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 6,
+                  vertical: 2,
+                ),
+                decoration: BoxDecoration(
+                  color: context.colorScheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  "New Version".tl,
+                  style: const TextStyle(fontSize: 13),
+                ),
+              ),
+            ).paddingLeft(4),
+        ],
+      ),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (chevron != null) chevron,
+          Tooltip(
+            message: "Edit".tl,
+            child: IconButton(
+              onPressed: () => widget.edit(source),
+              icon: const Icon(Icons.edit_note),
+            ),
+          ),
+          Tooltip(
+            message: "Update".tl,
+            child: IconButton(
+              onPressed: () => widget.update(source),
+              icon: const Icon(Icons.update),
+            ),
+          ),
+          Tooltip(
+            message: "Delete".tl,
+            child: IconButton(
+              onPressed: () => widget.delete(source),
+              icon: const Icon(Icons.delete),
+            ),
+          ),
+        ],
+      ),
+    );
+
     return SliverMainAxisGroup(
       slivers: [
         SliverPadding(padding: const EdgeInsets.only(top: 16)),
         SliverToBoxAdapter(
           child: Column(
             children: [
-              ListTile(
-                onTap: _toggleCollapsed,
-                title: Row(
-                  children: [
-                    Text(source.name, style: ts.s18),
-                    const SizedBox(width: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: context.colorScheme.surfaceContainer,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        source.version,
-                        style: const TextStyle(fontSize: 13),
-                      ),
-                    ),
-                    if (hasUpdate)
-                      Tooltip(
-                        message: newVersion,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: context.colorScheme.primaryContainer,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            "New Version".tl,
-                            style: const TextStyle(fontSize: 13),
-                          ),
-                        ),
-                      ).paddingLeft(4),
-                  ],
-                ),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    AnimatedRotation(
-                      turns: collapsed ? 0 : 0.5,
-                      duration: const Duration(milliseconds: 200),
-                      child: Icon(
-                        Icons.expand_more,
-                        color: context.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                    Tooltip(
-                      message: "Edit".tl,
-                      child: IconButton(
-                        onPressed: () => widget.edit(source),
-                        icon: const Icon(Icons.edit_note),
-                      ),
-                    ),
-                    Tooltip(
-                      message: "Update".tl,
-                      child: IconButton(
-                        onPressed: () => widget.update(source),
-                        icon: const Icon(Icons.update),
-                      ),
-                    ),
-                    Tooltip(
-                      message: "Delete".tl,
-                      child: IconButton(
-                        onPressed: () => widget.delete(source),
-                        icon: const Icon(Icons.delete),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              header,
               Container(
                 margin: const EdgeInsets.symmetric(horizontal: 8),
                 decoration: BoxDecoration(
@@ -906,20 +944,37 @@ class _SliverComicSourceState extends State<_SliverComicSource> {
                   ),
                 ),
               ),
-              AnimatedCrossFade(
-                firstChild: Column(
-                  children: [
-                    ...buildSourceSettings(),
-                    ..._buildAccount(),
-                  ],
+              if (hasContent)
+                AnimatedCrossFade(
+                  firstChild: Container(
+                    margin: const EdgeInsets.fromLTRB(8, 4, 8, 4),
+                    padding:
+                        const EdgeInsets.only(left: 12, right: 8, top: 4, bottom: 4),
+                    decoration: BoxDecoration(
+                      color: context.colorScheme.surfaceContainerHighest
+                          .withValues(alpha: 0.45),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border(
+                        left: BorderSide(
+                          color: context.colorScheme.primary.withValues(alpha: 0.5),
+                          width: 3,
+                        ),
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        ...buildSourceSettings(),
+                        ..._buildAccount(),
+                      ],
+                    ),
+                  ),
+                  secondChild: const SizedBox.shrink(),
+                  crossFadeState: _collapsed
+                      ? CrossFadeState.showSecond
+                      : CrossFadeState.showFirst,
+                  duration: const Duration(milliseconds: 200),
+                  sizeCurve: Curves.easeInOut,
                 ),
-                secondChild: const SizedBox.shrink(),
-                crossFadeState: collapsed
-                    ? CrossFadeState.showSecond
-                    : CrossFadeState.showFirst,
-                duration: const Duration(milliseconds: 200),
-                sizeCurve: Curves.easeInOut,
-              ),
             ],
           ),
         ),
