@@ -35,27 +35,97 @@ class _MainPageState extends State<MainPage> {
     _navigatorKey!.currentContext!.pop();
   }
 
+  // Get all available tabs
+  static const _allTabs = [
+    {'id': 'home', 'label': 'Home', 'icon': Icons.home_outlined, 'activeIcon': Icons.home},
+    {'id': 'favorites', 'label': 'Favorites', 'icon': Icons.local_activity_outlined, 'activeIcon': Icons.local_activity},
+    {'id': 'explore', 'label': 'Explore', 'icon': Icons.explore_outlined, 'activeIcon': Icons.explore},
+    {'id': 'categories', 'label': 'Categories', 'icon': Icons.category_outlined, 'activeIcon': Icons.category},
+  ];
+
+  // Get all pages
+  static const _allPages = {
+    'home': HomePage(),
+    'favorites': FavoritesPage(key: PageStorageKey('favorites')),
+    'explore': ExplorePage(key: PageStorageKey('explore')),
+    'categories': CategoriesPage(key: PageStorageKey('categories')),
+  };
+
+  List<Map<String, dynamic>> get _customTabs {
+    var tabs = appdata.settings['customTabs'] as List?;
+    if (tabs == null || tabs.isEmpty) {
+      return _allTabs.asMap().entries.map((e) => {
+        'id': e.value['id'],
+        'visible': true,
+        'order': e.key,
+      }).toList();
+    }
+    return tabs.cast<Map<String, dynamic>>();
+  }
+
+  List<Map<String, dynamic>> get _visibleTabs {
+    var tabs = _customTabs.where((t) => t['visible'] == true).toList();
+    _ensureMinTabs(tabs);
+    tabs.sort((a, b) => (a['order'] as int).compareTo(b['order'] as int));
+    return tabs;
+  }
+
+  /// Ensure at least 2 tabs are visible, mutating the config if needed.
+  void _ensureMinTabs(List<Map<String, dynamic>> tabs) {
+    if (tabs.length >= 2) return;
+    var visibleIds = tabs.map((t) => t['id']).toSet();
+    for (var entry in _allTabs) {
+      if (tabs.length >= 2) break;
+      if (!visibleIds.contains(entry['id'])) {
+        tabs.add({'id': entry['id'], 'visible': true, 'order': tabs.length});
+        visibleIds.add(entry['id']);
+      }
+    }
+  }
+
+  List<PaneItemEntry> get _paneItems {
+    return _visibleTabs.map((tab) {
+      var tabInfo = _allTabs.firstWhere((t) => t['id'] == tab['id']);
+      return PaneItemEntry(
+        label: (tabInfo['label'] as String).tl,
+        icon: tabInfo['icon'] as IconData,
+        activeIcon: tabInfo['activeIcon'] as IconData,
+      );
+    }).toList();
+  }
+
+  List<Widget> get _pages {
+    return _visibleTabs.map((tab) => _allPages[tab['id']]!).toList();
+  }
+
   @override
   void initState() {
     _observer = NaviObserver();
     _navigatorKey = GlobalKey();
     App.mainNavigatorKey = _navigatorKey;
-    index = int.tryParse(appdata.settings['initialPage'].toString()) ?? 0;
+    var initialPage = int.tryParse(appdata.settings['initialPage'].toString()) ?? 0;
+    // Ensure initialPage is within valid range
+    var visibleTabs = _visibleTabs;
+    if (initialPage >= visibleTabs.length) {
+      initialPage = 0;
+    }
+    index = initialPage;
+    // Listen to settings changes to rebuild when customTabs changes
+    appdata.settings.addListener(_onSettingsChanged);
     super.initState();
   }
 
-  final _pages = [
-    const HomePage(),
-    const FavoritesPage(
-      key: PageStorageKey('favorites'),
-    ),
-    const ExplorePage(
-      key: PageStorageKey('explore'),
-    ),
-    const CategoriesPage(
-      key: PageStorageKey('categories'),
-    ),
-  ];
+  @override
+  void dispose() {
+    appdata.settings.removeListener(_onSettingsChanged);
+    super.dispose();
+  }
+
+  void _onSettingsChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
 
   var index = 0;
 
@@ -65,28 +135,7 @@ class _MainPageState extends State<MainPage> {
       initialPage: index,
       observer: _observer,
       navigatorKey: _navigatorKey!,
-      paneItems: [
-        PaneItemEntry(
-          label: 'Home'.tl,
-          icon: Icons.home_outlined,
-          activeIcon: Icons.home,
-        ),
-        PaneItemEntry(
-          label: 'Favorites'.tl,
-          icon: Icons.local_activity_outlined,
-          activeIcon: Icons.local_activity,
-        ),
-        PaneItemEntry(
-          label: 'Explore'.tl,
-          icon: Icons.explore_outlined,
-          activeIcon: Icons.explore,
-        ),
-        PaneItemEntry(
-          label: 'Categories'.tl,
-          icon: Icons.category_outlined,
-          activeIcon: Icons.category,
-        ),
-      ],
+      paneItems: _paneItems,
       onPageChanged: (i) {
         setState(() {
           index = i;
@@ -110,7 +159,10 @@ class _MainPageState extends State<MainPage> {
         )
       ],
       pageBuilder: (index) {
-        return _pages[index];
+        final pages = _pages;
+        if (pages.isEmpty) return const SizedBox();
+        if (index >= pages.length) index = 0;
+        return pages[index];
       },
     );
   }

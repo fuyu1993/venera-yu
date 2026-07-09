@@ -136,6 +136,19 @@ class NaviPaneState extends State<NaviPane>
   }
 
   @override
+  @override
+  void didUpdateWidget(covariant NaviPane oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Ensure currentPage is valid
+    if (_currentPage >= widget.paneItems.length) {
+      _currentPage = 0;
+      widget.onPageChanged?.call(_currentPage);
+    }
+    // Always rebuild to reflect paneItems changes
+    setState(() {});
+  }
+
+  @override
   void dispose() {
     controller.dispose();
     widget.observer.removeListener(onNavigatorStateChange);
@@ -260,7 +273,8 @@ class NaviPaneState extends State<NaviPane>
   }
 
   Widget buildMainViewContent() {
-    return widget.pageBuilder(currentPage);
+    final index = currentPage < widget.paneItems.length ? currentPage : 0;
+    return widget.pageBuilder(index);
   }
 
   Widget buildTop() {
@@ -272,7 +286,7 @@ class NaviPaneState extends State<NaviPane>
         child: Row(
           children: [
             Text(
-              widget.paneItems[currentPage].label,
+              currentPage < widget.paneItems.length ? widget.paneItems[currentPage].label : '',
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const Spacer(),

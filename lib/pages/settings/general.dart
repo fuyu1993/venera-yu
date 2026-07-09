@@ -55,7 +55,138 @@ class _GeneralSettingsState extends State<GeneralSettings> {
             App.forceRebuild();
           },
         ).toSliver(),
+        SliverToBoxAdapter(
+          child: _CustomTabsSetting(),
+        ),
       ],
+    );
+  }
+}
+
+
+class _CustomTabsSetting extends StatefulWidget {
+  @override
+  State<_CustomTabsSetting> createState() => _CustomTabsSettingState();
+}
+
+class _CustomTabsSettingState extends State<_CustomTabsSetting> {
+  static const _allTabs = [
+    {'id': 'home', 'label': 'Home', 'icon': Icons.home_outlined},
+    {'id': 'favorites', 'label': 'Favorites', 'icon': Icons.local_activity_outlined},
+    {'id': 'explore', 'label': 'Explore', 'icon': Icons.explore_outlined},
+    {'id': 'categories', 'label': 'Categories', 'icon': Icons.category_outlined},
+  ];
+
+  List<Map<String, dynamic>> get _tabs {
+    var tabs = appdata.settings['customTabs'] as List?;
+    if (tabs == null || tabs.isEmpty) {
+      return _allTabs.asMap().entries.map((e) => {
+        'id': e.value['id'],
+        'visible': true,
+        'order': e.key,
+      }).toList();
+    }
+    return tabs.cast<Map<String, dynamic>>();
+  }
+
+  void _saveTabs(List<Map<String, dynamic>> tabs) {
+    appdata.settings['customTabs'] = tabs;
+    appdata.saveData();
+    setState(() {});
+  }
+
+  void _resetToDefault() {
+    var defaultTabs = _allTabs.asMap().entries.map((e) => {
+      'id': e.value['id'],
+      'visible': true,
+      'order': e.key,
+    }).toList();
+    _saveTabs(defaultTabs);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final tabs = _tabs;
+    
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                "Custom Tabs".tl,
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const Spacer(),
+              TextButton(
+                onPressed: _resetToDefault,
+                child: Text("Reset".tl),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            "Customize which tabs are shown and their order".tl,
+            style: TextStyle(fontSize: 12, color: colors.onSurfaceVariant),
+          ),
+          const SizedBox(height: 16),
+          ReorderableListView(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            onReorderItem: (oldIndex, newIndex) {
+              var newTabs = List<Map<String, dynamic>>.from(tabs);
+              var item = newTabs.removeAt(oldIndex);
+              newTabs.insert(newIndex, item);
+              // Update order
+              for (int i = 0; i < newTabs.length; i++) {
+                newTabs[i]['order'] = i;
+              }
+              _saveTabs(newTabs);
+            },
+            children: tabs.map((tab) {
+              var tabInfo = _allTabs.firstWhere((t) => t['id'] == tab['id']);
+              return Card(
+                key: ValueKey(tab['id']),
+                child: ListTile(
+                  leading: Icon(tabInfo['icon'] as IconData),
+                  title: Text((tabInfo['label'] as String).tl),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.drag_handle, color: colors.onSurfaceVariant),
+                      const SizedBox(width: 8),
+                      Switch(
+                        value: tab['visible'] == true,
+                        onChanged: (value) {
+                          // At least 2 tabs must be visible
+                          if (!value) {
+                            var visibleCount = tabs.where((t) => t['visible'] == true).length;
+                            if (visibleCount <= 2) {
+                              showInfoDialog(
+                                context: context,
+                                title: "Tip".tl,
+                                content: "At least 2 tabs must be visible".tl,
+                              );
+                              return;
+                            }
+                          }
+                          var newTabs = List<Map<String, dynamic>>.from(tabs);
+                          var index = newTabs.indexWhere((t) => t['id'] == tab['id']);
+                          newTabs[index]['visible'] = value;
+                          _saveTabs(newTabs);
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
     );
   }
 }

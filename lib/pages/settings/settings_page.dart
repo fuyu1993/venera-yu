@@ -153,6 +153,7 @@ class _SettingsPageState extends State<SettingsPage> {
     _SettingIndexItem("Language", 8),
     _SettingIndexItem("Appearance", 8),
     _SettingIndexItem("Theme", 8),
+    _SettingIndexItem("Custom Tabs", 8),
   ];
 
   @override

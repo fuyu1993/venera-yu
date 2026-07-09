@@ -221,6 +221,12 @@ class Settings with ChangeNotifier {
     'preloadImageCount': 4,
     'followUpdatesFolder': null,
     'initialPage': '0',
+    'customTabs': [
+      {'id': 'home', 'visible': true, 'order': 0},
+      {'id': 'favorites', 'visible': true, 'order': 1},
+      {'id': 'explore', 'visible': true, 'order': 2},
+      {'id': 'categories', 'visible': true, 'order': 3},
+    ],
     'comicListDisplayMode': 'paging', // paging, continuous
     'showPageNumberInReader': true,
     'showSingleImageOnFirstPage': false,
