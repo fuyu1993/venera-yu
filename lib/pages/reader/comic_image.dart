@@ -84,7 +84,28 @@ class _ComicImageState extends State<ComicImage> with WidgetsBindingObserver {
   Object? _lastException;
   ImageStreamCompleterHandle? _completerHandle;
 
+  /// Bounded LRU cache of decoded image sizes, keyed by [ImageProvider.hashCode].
+  /// Capped so it cannot grow unbounded across a long reading session.
   static final Map<int, Size> _cache = {};
+
+  static const int _maxCacheSize = 2000;
+
+  static void _putSize(int key, Size size) {
+    if (_cache.length >= _maxCacheSize) {
+      _cache.remove(_cache.keys.first);
+    }
+    _cache[key] = size;
+  }
+
+  static Size? _getSize(int key) {
+    final size = _cache[key];
+    if (size != null) {
+      // Refresh recency so the most recently used entries stay.
+      _cache.remove(key);
+      _cache[key] = size;
+    }
+    return size;
+  }
 
   static clear() => _cache.clear();
 
@@ -341,11 +362,16 @@ class _ComicImageState extends State<ComicImage> with WidgetsBindingObserver {
 
       if (_imageInfo != null) {
         // Record the height and the width of the image
-        _cache[widget.image.hashCode] = Size(_imageInfo!.image.width.toDouble(),
-            _imageInfo!.image.height.toDouble());
+        _putSize(
+          widget.image.hashCode,
+          Size(
+            _imageInfo!.image.width.toDouble(),
+            _imageInfo!.image.height.toDouble(),
+          ),
+        );
       }
 
-      Size? cacheSize = _cache[widget.image.hashCode];
+      Size? cacheSize = _getSize(widget.image.hashCode);
       if (cacheSize != null) {
         if (width == double.infinity) {
           width = constrains.maxWidth;

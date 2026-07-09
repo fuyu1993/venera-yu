@@ -21,6 +21,10 @@ import 'package:venera/utils/tags_translation.dart';
 import 'package:venera/utils/translations.dart';
 import 'foundation/appdata.dart';
 
+/// Windows-only periodic timer that reports the app is alive to the monitor
+/// thread. Kept as a reference so it can be cancelled on app termination.
+Timer? _heartBeatTimer;
+
 extension _FutureInit<T> on Future<T> {
   /// Prevent unhandled exception
   ///
@@ -69,11 +73,18 @@ Future<void> init() async {
   if (App.isWindows) {
     // Report to the monitor thread that the app is running
     // https://github.com/venera-app/venera/issues/343
-    Timer.periodic(const Duration(seconds: 1), (_) {
+    _heartBeatTimer ??= Timer.periodic(const Duration(seconds: 1), (_) {
       const methodChannel = MethodChannel('venera/method_channel');
       methodChannel.invokeMethod("heartBeat");
     });
   }
+}
+
+/// Cancels the Windows heart-beat timer. Call it when the app is about to
+/// terminate so the periodic timer does not outlive the engine.
+void cancelHeartBeat() {
+  _heartBeatTimer?.cancel();
+  _heartBeatTimer = null;
 }
 
 void _checkOldConfigs() {

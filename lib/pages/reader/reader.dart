@@ -1,6 +1,7 @@
 library;
 
 import 'dart:async';
+import 'dart:collection';
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
@@ -250,9 +251,13 @@ class _ReaderState extends State<Reader>
 
   void setImageCacheSize() async {
     var availableRAM = await MemoryInfo.getFreePhysicalMemorySize();
-    if (availableRAM == null) return;
     int maxImageCacheSize;
-    if (availableRAM < 1 << 30) {
+    if (availableRAM == null) {
+      // The platform plugin returned nothing (some systems don't expose free
+      // memory). Fall back to a sane default per form factor instead of leaving
+      // the cache unbounded.
+      maxImageCacheSize = App.isDesktop ? 300 << 20 : 150 << 20;
+    } else if (availableRAM < 1 << 30) {
       maxImageCacheSize = 100 << 20;
     } else if (availableRAM < 2 << 30) {
       maxImageCacheSize = 200 << 20;

@@ -115,6 +115,9 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       );
     }
     super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.detached) {
+      cancelHeartBeat();
+    }
   }
 
   void forceRebuild() {

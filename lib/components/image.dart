@@ -66,8 +66,6 @@ class AnimatedImage extends StatefulWidget {
 
   final Function? onError;
 
-  static void clear() => _AnimatedImageState.clear();
-
   @override
   State<AnimatedImage> createState() => _AnimatedImageState();
 }
@@ -84,10 +82,6 @@ class _AnimatedImageState extends State<AnimatedImage>
   late DisposableBuildContext<State<AnimatedImage>> _scrollAwareContext;
   Object? _lastException;
   ImageStreamCompleterHandle? _completerHandle;
-
-  static final Map<int, Size> _cache = {};
-
-  static clear() => _cache.clear();
 
   @override
   void initState() {
