@@ -44,22 +44,25 @@ class _AboutSettingsState extends State<AboutSettings> {
             const SizedBox(height: 8),
           ],
         ).toSliver(),
-        ListTile(
-          title: Text("Check for updates".tl),
-          trailing: Button.filled(
-            isLoading: isCheckingUpdate,
-            child: Text("Check".tl),
-            onPressed: () {
-              setState(() {
-                isCheckingUpdate = true;
-              });
-              checkUpdateUi().then((value) {
+        _divided(
+          context,
+          ListTile(
+            title: Text("Check for updates".tl),
+            trailing: Button.filled(
+              isLoading: isCheckingUpdate,
+              child: Text("Check".tl),
+              onPressed: () {
                 setState(() {
-                  isCheckingUpdate = false;
+                  isCheckingUpdate = true;
                 });
-              });
-            },
-          ).fixHeight(32),
+                checkUpdateUi().then((value) {
+                  setState(() {
+                    isCheckingUpdate = false;
+                  });
+                });
+              },
+            ).fixHeight(32),
+          ),
         ).toSliver(),
         _SwitchSetting(
           title: "Check for updates on startup".tl,

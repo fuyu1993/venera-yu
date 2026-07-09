@@ -102,18 +102,21 @@ class _ReaderSettingsState extends State<ReaderSettings> {
         if (comicId != null && sourceKey != null)
           SliverMainAxisGroup(
             slivers: [
-              SwitchListTile(
-                title: Text("Enable comic specific settings".tl),
-                value: isEnabledSpecificSettings,
-                onChanged: (b) {
-                  setState(() {
-                    appdata.settings.setEnabledComicSpecificSettings(
-                      comicId,
-                      sourceKey,
-                      b,
-                    );
-                  });
-                },
+              _divided(
+                context,
+                SwitchListTile(
+                  title: Text("Enable comic specific settings".tl),
+                  value: isEnabledSpecificSettings,
+                  onChanged: (b) {
+                    setState(() {
+                      appdata.settings.setEnabledComicSpecificSettings(
+                        comicId,
+                        sourceKey,
+                        b,
+                      );
+                    });
+                  },
+                ),
               ).toSliver(),
               if (isEnabledSpecificSettings)
                 Center(
@@ -127,22 +130,24 @@ class _ReaderSettingsState extends State<ReaderSettings> {
                       "Clear specific reader settings for this comic".tl,
                     ),
                   ),
-                ).toSliver(),
-              Divider().toSliver(),
+                  ).toSliver(),
             ],
           ),
         if (comicId == null)
           SliverMainAxisGroup(
             slivers: [
-              SwitchListTile(
-                title: Text("Enable device specific settings".tl),
-                value: useDeviceSpecificSettings,
-                onChanged: (b) {
-                  setState(() {
-                    appdata.settings.setEnabledDeviceSpecificSettings(b);
-                  });
-                  appdata.saveData();
-                },
+              _divided(
+                context,
+                SwitchListTile(
+                  title: Text("Enable device specific settings".tl),
+                  value: useDeviceSpecificSettings,
+                  onChanged: (b) {
+                    setState(() {
+                      appdata.settings.setEnabledDeviceSpecificSettings(b);
+                    });
+                    appdata.saveData();
+                  },
+                ),
               ).toSliver(),
               if (useDeviceSpecificSettings)
                 Center(
@@ -158,7 +163,6 @@ class _ReaderSettingsState extends State<ReaderSettings> {
                     ),
                   ),
                 ).toSliver(),
-              Divider().toSliver(),
             ],
           ),
         _SwitchSetting(

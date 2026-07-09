@@ -1,5 +1,22 @@
 part of 'settings_page.dart';
 
+/// Wraps a settings row with a thin bottom divider so that independent
+/// setting elements are visually separated in the list.
+Widget _divided(BuildContext context, Widget child) {
+  return Column(
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      child,
+      Divider(
+        height: 1,
+        thickness: 1,
+        color: context.colorScheme.outlineVariant,
+      ),
+    ],
+  );
+}
+
 class _SwitchSetting extends StatefulWidget {
   const _SwitchSetting({
     required this.title,
@@ -44,30 +61,33 @@ class _SwitchSettingState extends State<_SwitchSetting> {
 
     assert(value is bool);
 
-    return ListTile(
-      title: Text(widget.title),
-      subtitle: widget.subtitle == null ? null : Text(widget.subtitle!),
-      trailing: Switch(
-        value: value,
-        onChanged: (value) {
-          setState(() {
-            if (widget.comicId != null) {
-              appdata.settings.setReaderSetting(
-                widget.comicId!,
-                widget.comicSource!,
-                widget.settingKey,
-                value,
-              );
-            } else if (widget.useDeviceSettings) {
-              appdata.settings.setDeviceReaderSetting(widget.settingKey, value);
-            } else {
-              appdata.settings[widget.settingKey] = value;
-            }
-          });
-          appdata.saveData().then((_) {
-            widget.onChanged?.call();
-          });
-        },
+    return _divided(
+      context,
+      ListTile(
+        title: Text(widget.title),
+        subtitle: widget.subtitle == null ? null : Text(widget.subtitle!),
+        trailing: Switch(
+          value: value,
+          onChanged: (value) {
+            setState(() {
+              if (widget.comicId != null) {
+                appdata.settings.setReaderSetting(
+                  widget.comicId!,
+                  widget.comicSource!,
+                  widget.settingKey,
+                  value,
+                );
+              } else if (widget.useDeviceSettings) {
+                appdata.settings.setDeviceReaderSetting(widget.settingKey, value);
+              } else {
+                appdata.settings[widget.settingKey] = value;
+              }
+            });
+            appdata.saveData().then((_) {
+              widget.onChanged?.call();
+            });
+          },
+        ),
       ),
     );
   }
@@ -104,12 +124,14 @@ class SelectSetting extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          if (constraints.maxWidth < 450) {
-            return _DoubleLineSelectSettings(
+    return _divided(
+      context,
+      SizedBox(
+        width: double.infinity,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            if (constraints.maxWidth < 450) {
+              return _DoubleLineSelectSettings(
               title: title,
               settingKey: settingKey,
               optionTranslation: optionTranslation,
@@ -133,7 +155,7 @@ class SelectSetting extends StatelessWidget {
           }
         },
       ),
-    );
+    ));
   }
 }
 
@@ -183,13 +205,14 @@ class _DoubleLineSelectSettingsState extends State<_DoubleLineSelectSettings> {
         ? appdata.settings.getDeviceReaderSetting(widget.settingKey)
         : appdata.settings[widget.settingKey];
 
-    return ListTile(
-      title: Row(
-        children: [
-          Text(widget.title),
-          const SizedBox(width: 4),
-          if (widget.help != null)
-            Button.icon(
+    return _divided(context,
+      ListTile(
+        title: Row(
+          children: [
+            Text(widget.title),
+            const SizedBox(width: 4),
+            if (widget.help != null)
+              Button.icon(
               size: 18,
               icon: const Icon(Icons.help_outline),
               onPressed: () {
@@ -264,7 +287,7 @@ class _DoubleLineSelectSettingsState extends State<_DoubleLineSelectSettings> {
           }
         });
       },
-    );
+    ));
   }
 }
 
@@ -314,13 +337,14 @@ class _EndSelectorSelectSettingState extends State<_EndSelectorSelectSetting> {
         : widget.useDeviceSettings
         ? appdata.settings.getDeviceReaderSetting(widget.settingKey)
         : appdata.settings[widget.settingKey];
-    return ListTile(
-      title: Row(
-        children: [
-          Text(widget.title),
-          const SizedBox(width: 4),
-          if (widget.help != null)
-            Button.icon(
+    return _divided(context,
+      ListTile(
+        title: Row(
+          children: [
+            Text(widget.title),
+            const SizedBox(width: 4),
+            if (widget.help != null)
+              Button.icon(
               size: 18,
               icon: const Icon(Icons.help_outline),
               onPressed: () {
@@ -369,7 +393,7 @@ class _EndSelectorSelectSettingState extends State<_EndSelectorSelectSetting> {
           widget.onChanged?.call();
         },
       ),
-    );
+    ));
   }
 }
 
@@ -422,56 +446,59 @@ class _SliderSettingState extends State<_SliderSetting> {
                 ? appdata.settings.getDeviceReaderSetting(widget.settingsIndex)
                 : appdata.settings[widget.settingsIndex])
             .toDouble();
-    return ListTile(
-      title: Text(widget.title, softWrap: true, maxLines: 2),
-      trailing: Text(value.toString(), style: ts.s12),
-      subtitle: Slider(
-        value: value,
-        onChanged: (value) {
-          if (value.toInt() == value) {
-            setState(() {
-              if (widget.comicId != null) {
-                appdata.settings.setReaderSetting(
-                  widget.comicId!,
-                  widget.comicSource!,
-                  widget.settingsIndex,
-                  value.toInt(),
-                );
-              } else if (widget.useDeviceSettings) {
-                appdata.settings.setDeviceReaderSetting(
-                  widget.settingsIndex,
-                  value.toInt(),
-                );
-              } else {
-                appdata.settings[widget.settingsIndex] = value.toInt();
-              }
-              appdata.saveData();
-            });
-          } else {
-            setState(() {
-              if (widget.comicId != null) {
-                appdata.settings.setReaderSetting(
-                  widget.comicId!,
-                  widget.comicSource!,
-                  widget.settingsIndex,
-                  value,
-                );
-              } else if (widget.useDeviceSettings) {
-                appdata.settings.setDeviceReaderSetting(
-                  widget.settingsIndex,
-                  value,
-                );
-              } else {
-                appdata.settings[widget.settingsIndex] = value;
-              }
-              appdata.saveData();
-            });
-          }
-          widget.onChanged?.call();
-        },
-        divisions: ((widget.max - widget.min) / widget.interval).toInt(),
-        min: widget.min,
-        max: widget.max,
+    return _divided(
+      context,
+      ListTile(
+        title: Text(widget.title, softWrap: true, maxLines: 2),
+        trailing: Text(value.toString(), style: ts.s12),
+        subtitle: Slider(
+          value: value,
+          onChanged: (value) {
+            if (value.toInt() == value) {
+              setState(() {
+                if (widget.comicId != null) {
+                  appdata.settings.setReaderSetting(
+                    widget.comicId!,
+                    widget.comicSource!,
+                    widget.settingsIndex,
+                    value.toInt(),
+                  );
+                } else if (widget.useDeviceSettings) {
+                  appdata.settings.setDeviceReaderSetting(
+                    widget.settingsIndex,
+                    value.toInt(),
+                  );
+                } else {
+                  appdata.settings[widget.settingsIndex] = value.toInt();
+                }
+                appdata.saveData();
+              });
+            } else {
+              setState(() {
+                if (widget.comicId != null) {
+                  appdata.settings.setReaderSetting(
+                    widget.comicId!,
+                    widget.comicSource!,
+                    widget.settingsIndex,
+                    value,
+                  );
+                } else if (widget.useDeviceSettings) {
+                  appdata.settings.setDeviceReaderSetting(
+                    widget.settingsIndex,
+                    value,
+                  );
+                } else {
+                  appdata.settings[widget.settingsIndex] = value;
+                }
+                appdata.saveData();
+              });
+            }
+            widget.onChanged?.call();
+          },
+          divisions: ((widget.max - widget.min) / widget.interval).toInt(),
+          min: widget.min,
+          max: widget.max,
+        ),
       ),
     );
   }
@@ -486,12 +513,15 @@ class _PopupWindowSetting extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      title: Text(title),
-      trailing: const Icon(Icons.arrow_right),
-      onTap: () {
-        showPopUpWidget(App.rootContext, builder());
-      },
+    return _divided(
+      context,
+      ListTile(
+        title: Text(title),
+        trailing: const Icon(Icons.arrow_right),
+        onTap: () {
+          showPopUpWidget(App.rootContext, builder());
+        },
+      ),
     );
   }
 }
@@ -712,14 +742,17 @@ class _CallbackSetting extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      title: Text(title),
-      subtitle: subtitle == null ? null : Text(subtitle!),
-      trailing: Button.normal(
-        onPressed: callback,
-        child: Text(actionTitle),
-      ).fixHeight(28),
-      onTap: callback,
+    return _divided(
+      context,
+      ListTile(
+        title: Text(title),
+        subtitle: subtitle == null ? null : Text(subtitle!),
+        trailing: Button.normal(
+          onPressed: callback,
+          child: Text(actionTitle),
+        ).fixHeight(28),
+        onTap: callback,
+      ),
     );
   }
 }

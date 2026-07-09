@@ -17,15 +17,18 @@ class _AppSettingsState extends State<AppSettings> {
           title: "Data".tl,
           icon: Icons.storage,
         ),
-        ListTile(
-          title: Text("Storage Path for local comics".tl),
-          subtitle: Text(LocalManager().path, softWrap: false),
-          trailing: IconButton(
-            icon: const Icon(Icons.copy),
-            onPressed: () {
-              Clipboard.setData(ClipboardData(text: LocalManager().path));
-              context.showMessage(message: "Path copied to clipboard".tl);
-            },
+        _divided(
+          context,
+          ListTile(
+            title: Text("Storage Path for local comics".tl),
+            subtitle: Text(LocalManager().path, softWrap: false),
+            trailing: IconButton(
+              icon: const Icon(Icons.copy),
+              onPressed: () {
+                Clipboard.setData(ClipboardData(text: LocalManager().path));
+                context.showMessage(message: "Path copied to clipboard".tl);
+              },
+            ),
           ),
         ).toSliver(),
         _CallbackSetting(
@@ -57,9 +60,12 @@ class _AppSettingsState extends State<AppSettings> {
             }
           },
         ).toSliver(),
-        ListTile(
-          title: Text("Cache Size".tl),
-          subtitle: Text(bytesToReadableString(CacheManager().currentSize)),
+        _divided(
+          context,
+          ListTile(
+            title: Text("Cache Size".tl),
+            subtitle: Text(bytesToReadableString(CacheManager().currentSize)),
+          ),
         ).toSliver(),
         _CallbackSetting(
           title: "Clear Cache".tl,
