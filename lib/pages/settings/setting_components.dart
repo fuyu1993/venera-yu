@@ -11,7 +11,7 @@ Widget _divided(BuildContext context, Widget child) {
       Divider(
         height: 1,
         thickness: 1,
-        color: context.colorScheme.outlineVariant,
+        color: context.colorScheme.outlineVariant.withValues(alpha: 0.5),
       ),
     ],
   );
@@ -104,6 +104,7 @@ class SelectSetting extends StatelessWidget {
     this.comicId,
     this.comicSource,
     this.useDeviceSettings = false,
+    this.divided = true,
   });
 
   final String title;
@@ -122,16 +123,16 @@ class SelectSetting extends StatelessWidget {
 
   final bool useDeviceSettings;
 
+  final bool divided;
+
   @override
   Widget build(BuildContext context) {
-    return _divided(
-      context,
-      SizedBox(
-        width: double.infinity,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            if (constraints.maxWidth < 450) {
-              return _DoubleLineSelectSettings(
+    final child = SizedBox(
+      width: double.infinity,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          if (constraints.maxWidth < 450) {
+            return _DoubleLineSelectSettings(
               title: title,
               settingKey: settingKey,
               optionTranslation: optionTranslation,
@@ -155,7 +156,8 @@ class SelectSetting extends StatelessWidget {
           }
         },
       ),
-    ));
+    );
+    return divided ? _divided(context, child) : child;
   }
 }
 
@@ -205,8 +207,7 @@ class _DoubleLineSelectSettingsState extends State<_DoubleLineSelectSettings> {
         ? appdata.settings.getDeviceReaderSetting(widget.settingKey)
         : appdata.settings[widget.settingKey];
 
-    return _divided(context,
-      ListTile(
+    return ListTile(
         title: Row(
           children: [
             Text(widget.title),
@@ -287,7 +288,7 @@ class _DoubleLineSelectSettingsState extends State<_DoubleLineSelectSettings> {
           }
         });
       },
-    ));
+    );
   }
 }
 
@@ -337,8 +338,7 @@ class _EndSelectorSelectSettingState extends State<_EndSelectorSelectSetting> {
         : widget.useDeviceSettings
         ? appdata.settings.getDeviceReaderSetting(widget.settingKey)
         : appdata.settings[widget.settingKey];
-    return _divided(context,
-      ListTile(
+    return ListTile(
         title: Row(
           children: [
             Text(widget.title),
@@ -393,7 +393,7 @@ class _EndSelectorSelectSettingState extends State<_EndSelectorSelectSetting> {
           widget.onChanged?.call();
         },
       ),
-    ));
+    );
   }
 }
 

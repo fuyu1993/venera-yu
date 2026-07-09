@@ -26,7 +26,6 @@ import 'package:yaml/yaml.dart';
 part 'reader.dart';
 part 'explore_settings.dart';
 part 'setting_components.dart';
-part 'appearance.dart';
 part 'local_favorites.dart';
 part 'app.dart';
 part 'about.dart';
@@ -34,6 +33,7 @@ part 'network.dart';
 part 'debug.dart';
 part 'lab.dart';
 part 'developer.dart';
+part 'general.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({this.initialPage = -1, super.key});
@@ -59,25 +59,25 @@ class _SettingsPageState extends State<SettingsPage> {
   final categories = <String>[
     "Explore",
     "Reading",
-    "Appearance",
     "Local Favorites",
     "APP",
     "Network",
     "About",
     "Lab",
-    "Debug"
+    "Debug",
+    "General"
   ];
 
   final icons = <IconData>[
     Icons.explore,
     Icons.book,
-    Icons.color_lens,
     Icons.collections_bookmark_rounded,
     Icons.apps,
     Icons.public,
     Icons.info,
     Icons.science_outlined,
     Icons.bug_report,
+    Icons.tune,
   ];
 
   // Settings index for search: all searchable settings with their page index
@@ -115,44 +115,44 @@ class _SettingsPageState extends State<SettingsPage> {
     _SettingIndexItem("Turn page by volume keys", 1),
     _SettingIndexItem("Display time & battery info in reader", 1),
     _SettingIndexItem("Show system status bar", 1),
-    // 2 - Appearance
-    _SettingIndexItem("Theme Mode", 2),
-    _SettingIndexItem("Theme Color", 2),
-    // 3 - Local Favorites
-    _SettingIndexItem("Show local favorites before network favorites", 3),
-    _SettingIndexItem("Auto close favorite panel after operation", 3),
-    _SettingIndexItem("Add new favorite to", 3),
-    _SettingIndexItem("Move favorite after reading", 3),
-    _SettingIndexItem("Quick Favorite", 3),
-    _SettingIndexItem("Delete all unavailable local favorite items", 3),
-    _SettingIndexItem("Click favorite", 3),
-    // 4 - APP
-    _SettingIndexItem("Storage Path for local comics", 4),
-    _SettingIndexItem("Set New Storage Path", 4),
-    _SettingIndexItem("Cache Size", 4),
-    _SettingIndexItem("Clear Cache", 4),
-    _SettingIndexItem("Cache Limit", 4),
-    _SettingIndexItem("Export App Data", 4),
-    _SettingIndexItem("Import App Data", 4),
-    _SettingIndexItem("Data Sync", 4),
-    _SettingIndexItem("Language", 4),
-    // 5 - Network
-    _SettingIndexItem("Proxy", 5),
-    _SettingIndexItem("DNS Overrides", 5),
-    _SettingIndexItem("Download Threads", 5),
-    _SettingIndexItem("Enable DNS Overrides", 5),
-    // 6 - About
-    _SettingIndexItem("Check for updates", 6),
-    _SettingIndexItem("Check for updates on startup", 6),
-    _SettingIndexItem("Github", 6),
-    // 7 - Lab
-    _SettingIndexItem("Enable Experimental Features", 7),
-    _SettingIndexItem("Hide Comic Thumbnails", 7),
-    _SettingIndexItem("Developer Mode", 7),
-    // 8 - Debug
-    _SettingIndexItem("Reload Configs", 8),
-    _SettingIndexItem("Open Log", 8),
-    _SettingIndexItem("Ignore Certificate Errors", 8),
+    // 2 - Local Favorites
+    _SettingIndexItem("Show local favorites before network favorites", 2),
+    _SettingIndexItem("Auto close favorite panel after operation", 2),
+    _SettingIndexItem("Add new favorite to", 2),
+    _SettingIndexItem("Move favorite after reading", 2),
+    _SettingIndexItem("Quick Favorite", 2),
+    _SettingIndexItem("Delete all unavailable local favorite items", 2),
+    _SettingIndexItem("Click favorite", 2),
+    // 3 - APP
+    _SettingIndexItem("Storage Path for local comics", 3),
+    _SettingIndexItem("Set New Storage Path", 3),
+    _SettingIndexItem("Cache Size", 3),
+    _SettingIndexItem("Clear Cache", 3),
+    _SettingIndexItem("Cache Limit", 3),
+    _SettingIndexItem("Export App Data", 3),
+    _SettingIndexItem("Import App Data", 3),
+    _SettingIndexItem("Data Sync", 3),
+    // 4 - Network
+    _SettingIndexItem("Proxy", 4),
+    _SettingIndexItem("DNS Overrides", 4),
+    _SettingIndexItem("Download Threads", 4),
+    _SettingIndexItem("Enable DNS Overrides", 4),
+    // 5 - About
+    _SettingIndexItem("Check for updates", 5),
+    _SettingIndexItem("Check for updates on startup", 5),
+    _SettingIndexItem("Github", 5),
+    // 6 - Lab
+    _SettingIndexItem("Enable Experimental Features", 6),
+    _SettingIndexItem("Hide Comic Thumbnails", 6),
+    _SettingIndexItem("Developer Mode", 6),
+    // 7 - Debug
+    _SettingIndexItem("Reload Configs", 7),
+    _SettingIndexItem("Open Log", 7),
+    _SettingIndexItem("Ignore Certificate Errors", 7),
+    // 8 - General
+    _SettingIndexItem("Language", 8),
+    _SettingIndexItem("Theme Mode", 8),
+    _SettingIndexItem("Theme Color", 8),
   ];
 
   @override
@@ -490,13 +490,13 @@ class _SettingsPageState extends State<SettingsPage> {
     return switch (pageIndex) {
       0 => const ExploreSettings(),
       1 => const ReaderSettings(),
-      2 => const AppearanceSettings(),
-      3 => const LocalFavoritesSettings(),
-      4 => const AppSettings(),
-      5 => const NetworkSettings(),
-      6 => const AboutSettings(),
-      7 => const LabSettings(),
-      8 => const DebugPage(),
+      2 => const LocalFavoritesSettings(),
+      3 => const AppSettings(),
+      4 => const NetworkSettings(),
+      5 => const AboutSettings(),
+      6 => const LabSettings(),
+      7 => const DebugPage(),
+      8 => const GeneralSettings(),
       _ => throw UnimplementedError()
     };
   }
@@ -526,13 +526,13 @@ class _SettingsDetailPage extends StatelessWidget {
     return switch (pageIndex) {
       0 => const ExploreSettings(),
       1 => const ReaderSettings(),
-      2 => const AppearanceSettings(),
-      3 => const LocalFavoritesSettings(),
-      4 => const AppSettings(),
-      5 => const NetworkSettings(),
-      6 => const AboutSettings(),
-      7 => const LabSettings(),
-      8 => const DebugPage(),
+      2 => const LocalFavoritesSettings(),
+      3 => const AppSettings(),
+      4 => const NetworkSettings(),
+      5 => const AboutSettings(),
+      6 => const LabSettings(),
+      7 => const DebugPage(),
+      8 => const GeneralSettings(),
       _ => throw UnimplementedError()
     };
   }

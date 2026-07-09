@@ -1,21 +1,39 @@
 part of 'settings_page.dart';
 
-class AppearanceSettings extends StatefulWidget {
-  const AppearanceSettings({super.key});
+class GeneralSettings extends StatefulWidget {
+  const GeneralSettings({super.key});
 
   @override
-  State<AppearanceSettings> createState() => _AppearanceSettingsState();
+  State<GeneralSettings> createState() => _GeneralSettingsState();
 }
 
-class _AppearanceSettingsState extends State<AppearanceSettings> {
+class _GeneralSettingsState extends State<GeneralSettings> {
   @override
   Widget build(BuildContext context) {
     return SmoothCustomScrollView(
       slivers: [
-        SliverAppbar(title: Text("Appearance".tl)),
+        SliverAppbar(title: Text("General".tl)),
+        SelectSetting(
+          title: "Language".tl,
+          settingKey: "language",
+          optionTranslation: const {
+            "system": "System",
+            "zh-CN": "简体中文",
+            "zh-TW": "繁體中文",
+            "en-US": "English",
+          },
+          onChanged: () {
+            App.forceRebuild();
+          },
+        ).toSliver(),
+        _SettingPartTitle(
+          title: "Appearance".tl,
+          icon: Icons.color_lens,
+        ),
         SelectSetting(
           title: "Theme Mode".tl,
           settingKey: "theme_mode",
+          divided: false,
           optionTranslation: {
             "system": "System".tl,
             "light": "Light".tl,
