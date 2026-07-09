@@ -231,9 +231,7 @@ class Settings with ChangeNotifier {
     'deviceSpecificSettings': <String, Map<String, dynamic>>{},
     'deviceId': '',
     'ignoreBadCertificate': false,
-    'lab_enableExperimental': false,
     'lab_hideThumbnails': false,
-    'lab_developerMode': false,
     'readerScrollSpeed': 1.0, // 0.5 - 3.0
     'localFavoritesFirst': true,
     'autoCloseFavoritePanel': false,
