@@ -16,7 +16,7 @@ class _LabSettingsState extends State<LabSettings> {
         SliverAppbar(title: Text("实验室".tl)),
         _SettingPartTitle(
           title: "实验性功能".tl,
-          icon: TIcons.building,
+          icon: LucideIcons.building,
         ),
         _SwitchSetting(
           title: "隐藏漫画缩略图".tl,

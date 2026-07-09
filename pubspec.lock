@@ -412,6 +412,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_lucide:
+    dependency: "direct main"
+    description:
+      name: flutter_lucide
+      sha256: d2866c9ba75b2300e73a888489f0d7ef1d225e1c352d7e7f5c7fdff7d04e294c
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.11.0"
   flutter_memory_info:
     dependency: "direct main"
     description:
@@ -953,14 +961,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.4.0"
-  tdesign_icons:
-    dependency: "direct main"
-    description:
-      name: tdesign_icons
-      sha256: "55eb78f4cb77d26bdbf7251e3263ac88cc77271d2f4a46603eb59b0dcc81c894"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.0.4"
   term_glyph:
     dependency: transitive
     description:

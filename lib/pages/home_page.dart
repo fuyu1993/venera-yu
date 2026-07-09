@@ -61,7 +61,7 @@ class _SearchBar extends StatelessWidget {
             child: Row(
               children: [
                 const SizedBox(width: 16),
-                const Icon(TIcons.search),
+                const Icon(LucideIcons.search),
                 const SizedBox(width: 8),
                 Text('Search'.tl, style: ts.s16),
                 const Spacer(),
@@ -133,7 +133,7 @@ class _SyncDataWidgetState extends State<_SyncDataWidget>
             borderRadius: BorderRadius.circular(8),
           ),
           child: ListTile(
-            leading: const Icon(TIcons.refresh),
+            leading: const Icon(LucideIcons.refresh_ccw),
             title: Text('Syncing Data'.tl),
             trailing: const CircularProgressIndicator(strokeWidth: 2)
                 .fixWidth(18)
@@ -152,7 +152,7 @@ class _SyncDataWidgetState extends State<_SyncDataWidget>
             borderRadius: BorderRadius.circular(8),
           ),
           child: ListTile(
-            leading: const Icon(TIcons.refresh),
+            leading: const Icon(LucideIcons.refresh_ccw),
             title: Text('Sync Data'.tl),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
@@ -179,7 +179,7 @@ class _SyncDataWidgetState extends State<_SyncDataWidget>
                       child: Row(
                         children: [
                           Icon(
-                            TIcons.error_circle,
+                            LucideIcons.circle_alert,
                             color: Colors.red,
                             size: 18,
                           ),
@@ -190,13 +190,13 @@ class _SyncDataWidgetState extends State<_SyncDataWidget>
                     ),
                   ).paddingRight(4),
                 IconButton(
-                  icon: const Icon(TIcons.cloud_upload),
+                  icon: const Icon(LucideIcons.cloud_upload),
                   onPressed: () async {
                     DataSync().uploadData();
                   },
                 ),
                 IconButton(
-                  icon: const Icon(TIcons.cloud_download),
+                  icon: const Icon(LucideIcons.cloud_download),
                   onPressed: () async {
                     DataSync().downloadData();
                   },
@@ -286,7 +286,7 @@ class _LocalState extends State<_Local> {
                       child: Text(count.toString(), style: ts.s12),
                     ),
                     const Spacer(),
-                    const Icon(TIcons.arrow_right),
+                    const Icon(LucideIcons.arrow_right),
                   ],
                 ),
               ).paddingHorizontal(16),
@@ -323,7 +323,7 @@ class _LocalState extends State<_Local> {
                       child: Row(
                         children: [
                           if (LocalManager().downloadingTasks.first.isPaused)
-                            const Icon(TIcons.pause_circle_stroke, size: 18)
+                            const Icon(LucideIcons.circle_pause, size: 18)
                           else
                             const _AnimatedDownloadingIcon(),
                           const SizedBox(width: 8),
@@ -480,7 +480,7 @@ class _ImportComicsWidgetState extends State<_ImportComicsWidget> {
           child: Row(
             children: [
               Icon(
-                TIcons.help_circle,
+                LucideIcons.circle_question_mark,
                 size: 18,
                 color: context.colorScheme.primary,
               ),
@@ -578,7 +578,7 @@ class __AnimatedDownloadingIconState extends State<_AnimatedDownloadingIcon>
           child: Transform.translate(
             offset: Offset(0, 18 * _controller.value),
             child: Icon(
-              TIcons.arrow_down,
+              LucideIcons.arrow_down,
               size: 16,
               color: Theme.of(context).colorScheme.primary,
             ),
@@ -673,7 +673,7 @@ class _ImageFavoritesState extends State<ImageFavorites> {
                         ),
                       ),
                     const Spacer(),
-                    const Icon(TIcons.arrow_right),
+                    const Icon(LucideIcons.arrow_right),
                   ],
                 ),
               ).paddingHorizontal(16),

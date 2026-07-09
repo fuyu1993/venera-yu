@@ -121,7 +121,7 @@ class _ComicThumbnailsState extends State<_ComicThumbnails> {
                           clipBehavior: Clip.antiAlias,
                           child: appdata.settings['lab_hideThumbnails'] == true
                               ? Icon(
-                                  TIcons.image_error,
+                                  LucideIcons.image_off,
                                   size: 32,
                                   color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
                                 )

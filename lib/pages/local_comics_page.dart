@@ -114,7 +114,7 @@ class _LocalComicsPageState extends State<LocalComicsPage> {
   Widget buildMultiSelectMenu() {
     return MenuButton(entries: [
       MenuEntry(
-        icon: TIcons.delete,
+        icon: LucideIcons.trash,
         text: "Delete".tl,
         onClick: () {
           deleteComics(selectedComics.keys.toList()).then((value) {
@@ -128,7 +128,7 @@ class _LocalComicsPageState extends State<LocalComicsPage> {
         },
       ),
       MenuEntry(
-        icon: TIcons.star,
+        icon: LucideIcons.star,
         text: "Add to favorites".tl,
         onClick: () {
           addFavorite(selectedComics.keys.toList());
@@ -136,7 +136,7 @@ class _LocalComicsPageState extends State<LocalComicsPage> {
       ),
       if (selectedComics.length == 1)
         MenuEntry(
-          icon: TIcons.folder_open,
+          icon: LucideIcons.folder_open,
           text: "Open Folder".tl,
           onClick: () {
             openComicFolder(selectedComics.keys.first);
@@ -144,7 +144,7 @@ class _LocalComicsPageState extends State<LocalComicsPage> {
         ),
       if (selectedComics.length == 1)
         MenuEntry(
-          icon: TIcons.view_agenda,
+          icon: LucideIcons.list,
           text: "View Detail".tl,
           onClick: () {
             context.to(() => ComicPage(
@@ -183,15 +183,15 @@ class _LocalComicsPageState extends State<LocalComicsPage> {
   Widget build(BuildContext context) {
     List<Widget> selectActions = [
       IconButton(
-          icon: const Icon(TIcons.component_checkbox),
+          icon: const Icon(LucideIcons.square_check),
           tooltip: "Select All".tl,
           onPressed: selectAll),
       IconButton(
-          icon: const Icon(TIcons.clear),
+          icon: const Icon(LucideIcons.x),
           tooltip: "Deselect".tl,
           onPressed: deSelect),
       IconButton(
-          icon: const Icon(TIcons.flip_to_front),
+          icon: const Icon(LucideIcons.flip_horizontal_2),
           tooltip: "Invert Selection".tl,
           onPressed: invertSelection),
       buildMultiSelectMenu(),
@@ -201,7 +201,7 @@ class _LocalComicsPageState extends State<LocalComicsPage> {
       Tooltip(
         message: "Search".tl,
         child: IconButton(
-          icon: const Icon(TIcons.search),
+          icon: const Icon(LucideIcons.search),
           onPressed: () {
             setState(() {
               searchMode = true;
@@ -212,14 +212,14 @@ class _LocalComicsPageState extends State<LocalComicsPage> {
       Tooltip(
         message: "Sort".tl,
         child: IconButton(
-          icon: const Icon(TIcons.filter_sort),
+          icon: const Icon(LucideIcons.funnel),
           onPressed: sort,
         ),
       ),
       Tooltip(
         message: "Downloading".tl,
         child: IconButton(
-          icon: const Icon(TIcons.download),
+          icon: const Icon(LucideIcons.download),
           onPressed: () {
             showPopUpWidget(context, const DownloadingPage());
           },
@@ -246,8 +246,8 @@ class _LocalComicsPageState extends State<LocalComicsPage> {
                     }
                   },
                   icon: multiSelectMode
-                      ? const Icon(TIcons.close)
-                      : const Icon(TIcons.chevron_left),
+                      ? const Icon(LucideIcons.x)
+                      : const Icon(LucideIcons.chevron_left),
                 ),
               ),
               title: multiSelectMode
@@ -261,8 +261,8 @@ class _LocalComicsPageState extends State<LocalComicsPage> {
                 message: multiSelectMode ? "Cancel".tl : "Cancel".tl,
                 child: IconButton(
                   icon: multiSelectMode
-                      ? const Icon(TIcons.close)
-                      : const Icon(TIcons.close),
+                      ? const Icon(LucideIcons.x)
+                      : const Icon(LucideIcons.x),
                   onPressed: () {
                     if (multiSelectMode) {
                       setState(() {
@@ -325,14 +325,14 @@ class _LocalComicsPageState extends State<LocalComicsPage> {
             menuBuilder: (c) {
               return [
                 MenuEntry(
-                  icon: TIcons.folder_open,
+                  icon: LucideIcons.folder_open,
                   text: "Open Folder".tl,
                   onClick: () {
                     openComicFolder(c as LocalComic);
                   },
                 ),
                 MenuEntry(
-                  icon: TIcons.delete,
+                  icon: LucideIcons.trash,
                   text: "Delete".tl,
                   onClick: () {
                     deleteComics([c as LocalComic]).then((value) {
@@ -438,21 +438,21 @@ class _LocalComicsPageState extends State<LocalComicsPage> {
   List<MenuEntry> exportActions(List<LocalComic> comics) {
     return [
       MenuEntry(
-        icon: TIcons.export,
+        icon: LucideIcons.file_up,
         text: "Export as cbz".tl,
         onClick: () {
           exportComics(comics, CBZ.export, ".cbz");
         },
       ),
       MenuEntry(
-        icon: TIcons.file_pdf,
+        icon: LucideIcons.file_text,
         text: "Export as pdf".tl,
         onClick: () async {
           exportComics(comics, createPdfFromComicIsolate, ".pdf");
         },
       ),
       MenuEntry(
-        icon: TIcons.address_book,
+        icon: LucideIcons.contact,
         text: "Export as epub".tl,
         onClick: () async {
           exportComics(comics, createEpubWithLocalComic, ".epub");

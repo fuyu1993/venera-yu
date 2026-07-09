@@ -45,7 +45,7 @@ class _ChaptersViewState extends State<_ChaptersView> {
                 message: "Click to change the order".tl,
                 child: TextButton.icon(
                   icon: Icon(
-                    !desc ? TIcons.arrow_up : TIcons.arrow_down,
+                    !desc ? LucideIcons.arrow_up : LucideIcons.arrow_down,
                     size: 18,
                   ),
                   label: Text(!desc ? "Ascending".tl : "Descending".tl),
@@ -231,7 +231,7 @@ class _ChapterListTile extends StatelessWidget {
             const Spacer(),
             if (isDownloaded)
               Icon(
-                TIcons.download,
+                LucideIcons.download,
                 color: context.colorScheme.secondary,
               ),
           ],

@@ -130,7 +130,7 @@ class _ImageFavoritesPageState extends State<ImageFavoritesPage> {
   Widget buildMultiSelectMenu() {
     return MenuButton(entries: [
       MenuEntry(
-        icon: TIcons.delete,
+        icon: LucideIcons.trash,
         text: "Delete".tl,
         onClick: () {
           ImageFavoriteManager()
@@ -179,11 +179,11 @@ class _ImageFavoritesPageState extends State<ImageFavoritesPage> {
   Widget build(BuildContext context) {
     List<Widget> selectActions = [
       IconButton(
-          icon: const Icon(TIcons.component_checkbox),
+          icon: const Icon(LucideIcons.square_check),
           tooltip: "Select All".tl,
           onPressed: selectAll),
       IconButton(
-          icon: const Icon(TIcons.clear),
+          icon: const Icon(LucideIcons.x),
           tooltip: "Deselect".tl,
           onPressed: deSelect),
       buildMultiSelectMenu(),
@@ -199,7 +199,7 @@ class _ImageFavoritesPageState extends State<ImageFavoritesPage> {
               Tooltip(
                 message: "Search".tl,
                 child: IconButton(
-                  icon: const Icon(TIcons.search),
+                  icon: const Icon(LucideIcons.search),
                   onPressed: () {
                     setState(() {
                       searchMode = true;
@@ -212,7 +212,7 @@ class _ImageFavoritesPageState extends State<ImageFavoritesPage> {
                 child: IconButton(
                   isSelected: timeFilterSelect != TimeRange.all ||
                       numFilterSelect != numFilterList[0],
-                  icon: const Icon(TIcons.filter_sort),
+                  icon: const Icon(LucideIcons.funnel),
                   onPressed: sort,
                 ),
               ),
@@ -221,7 +221,7 @@ class _ImageFavoritesPageState extends State<ImageFavoritesPage> {
                     ? "Exit Multi-Select".tl
                     : "Multi-Select".tl,
                 child: IconButton(
-                  icon: const Icon(TIcons.assignment_checked),
+                  icon: const Icon(LucideIcons.clipboard_check),
                   onPressed: () {
                     setState(() {
                       multiSelectMode = !multiSelectMode;
@@ -236,7 +236,7 @@ class _ImageFavoritesPageState extends State<ImageFavoritesPage> {
             leading: Tooltip(
               message: "Cancel".tl,
               child: IconButton(
-                icon: const Icon(TIcons.close),
+                icon: const Icon(LucideIcons.x),
                 onPressed: () {
                   setState(() {
                     multiSelectMode = false;
@@ -253,7 +253,7 @@ class _ImageFavoritesPageState extends State<ImageFavoritesPage> {
             leading: Tooltip(
               message: "Cancel".tl,
               child: IconButton(
-                icon: const Icon(TIcons.close),
+                icon: const Icon(LucideIcons.x),
                 onPressed: () {
                   controller.clear();
                   setState(() {

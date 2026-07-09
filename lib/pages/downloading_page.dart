@@ -108,7 +108,7 @@ class _DownloadingPageState extends State<DownloadingPage> {
             OutlinedButton(
               child: Row(
                 children: [
-                  const Icon(TIcons.play_circle, size: 18),
+                  const Icon(LucideIcons.circle_play, size: 18),
                   const SizedBox(width: 4),
                   Text("Start".tl),
                 ],
@@ -121,7 +121,7 @@ class _DownloadingPageState extends State<DownloadingPage> {
             OutlinedButton(
               child: Row(
                 children: [
-                  const Icon(TIcons.pause, size: 18),
+                  const Icon(LucideIcons.pause, size: 18),
                   const SizedBox(width: 4),
                   Text("Pause".tl),
                 ],
@@ -215,14 +215,14 @@ class _DownloadTaskTileState extends State<_DownloadTaskTile> {
                     MenuButton(
                       entries: [
                         MenuEntry(
-                          icon: TIcons.close,
+                          icon: LucideIcons.x,
                           text: "Cancel".tl,
                           onClick: () {
                             widget.task.cancel();
                           },
                         ),
                         MenuEntry(
-                          icon: TIcons.align_top,
+                          icon: LucideIcons.align_start_vertical,
                           text: "Move To First".tl,
                           onClick: () {
                             LocalManager().moveToFirst(widget.task);

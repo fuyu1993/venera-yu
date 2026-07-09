@@ -127,7 +127,7 @@ class _ManageBlockingWordViewState extends State<_ManageBlockingWordView> {
       title: "Keyword blocking".tl,
       tailing: [
         TextButton.icon(
-          icon: const Icon(TIcons.add),
+          icon: const Icon(LucideIcons.plus),
           label: Text("Add".tl),
           onPressed: add,
         ),
@@ -138,7 +138,7 @@ class _ManageBlockingWordViewState extends State<_ManageBlockingWordView> {
           return ListTile(
             title: Text(appdata.settings["blockedWords"][index]),
             trailing: IconButton(
-              icon: const Icon(TIcons.close),
+              icon: const Icon(LucideIcons.x),
               onPressed: () {
                 appdata.settings["blockedWords"].removeAt(index);
                 appdata.saveData();
@@ -272,7 +272,7 @@ class _ManageBlockingCommentWordViewState extends State<_ManageBlockingCommentWo
       title: "Comment keyword blocking".tl,
       tailing: [
         TextButton.icon(
-          icon: const Icon(TIcons.add),
+          icon: const Icon(LucideIcons.plus),
           label: Text("Add".tl),
           onPressed: add,
         ),
@@ -283,7 +283,7 @@ class _ManageBlockingCommentWordViewState extends State<_ManageBlockingCommentWo
           return ListTile(
             title: Text(appdata.settings["blockedCommentWords"][index]),
             trailing: IconButton(
-              icon: const Icon(TIcons.close),
+              icon: const Icon(LucideIcons.x),
               onPressed: () {
                 appdata.settings["blockedCommentWords"].removeAt(index);
                 appdata.saveData();

@@ -47,7 +47,7 @@ class _DeveloperSettingsState extends State<DeveloperSettings> {
     return SmoothCustomScrollView(
       slivers: [
         SliverAppbar(title: Text("开发者选项".tl)),
-        _SettingPartTitle(title: "内存".tl, icon: TIcons.hard_disk_storage),
+        _SettingPartTitle(title: "内存".tl, icon: LucideIcons.hard_drive),
         _infoCard([
           _row("已用物理内存",
               memUsed == null ? "—" : bytesToReadableString(memUsed)),
@@ -56,20 +56,20 @@ class _DeveloperSettingsState extends State<DeveloperSettings> {
           _row("可用物理内存",
               _memFree == null ? "—" : bytesToReadableString(_memFree!)),
         ]),
-        _SettingPartTitle(title: "图片缓存 (Flutter ImageCache)".tl, icon: TIcons.image),
+        _SettingPartTitle(title: "图片缓存 (Flutter ImageCache)".tl, icon: LucideIcons.image),
         _infoCard([
           _row("解码占用", bytesToReadableString(imageCache.currentSizeBytes)),
           _row("缓存条目", "${imageCache.currentSize}"),
           _row("活跃图片", "${imageCache.liveImageCount}"),
           _row("上限字节", bytesToReadableString(imageCache.maximumSizeBytes)),
         ]),
-        _SettingPartTitle(title: "磁盘图片缓存".tl, icon: TIcons.hard_disk_storage),
+        _SettingPartTitle(title: "磁盘图片缓存".tl, icon: LucideIcons.hard_drive),
         _infoCard([
           _row("CacheManager 占用",
               bytesToReadableString(CacheManager().currentSize)),
           _row("路径", CacheManager.cachePath),
         ]),
-        _SettingPartTitle(title: "网络请求日志".tl, icon: TIcons.https),
+        _SettingPartTitle(title: "网络请求日志".tl, icon: LucideIcons.shield),
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

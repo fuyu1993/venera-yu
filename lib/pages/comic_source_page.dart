@@ -217,7 +217,7 @@ class _BodyState extends State<_Body> {
           children: [
             ListTile(
               title: Text("Add comic source".tl),
-              leading: const Icon(TIcons.dashboard),
+              leading: const Icon(LucideIcons.layout_dashboard),
             ),
             TextField(
               decoration: InputDecoration(
@@ -226,7 +226,7 @@ class _BodyState extends State<_Body> {
                 contentPadding: const EdgeInsets.symmetric(horizontal: 12),
                 suffix: IconButton(
                   onPressed: () => handleAddSource(url),
-                  icon: const Icon(TIcons.check),
+                  icon: const Icon(LucideIcons.check),
                 ),
               ),
               onChanged: (value) {
@@ -239,7 +239,7 @@ class _BodyState extends State<_Body> {
               runSpacing: 8,
               children: [
                 FilledButton.tonalIcon(
-                  icon: Icon(TIcons.article),
+                  icon: Icon(LucideIcons.file_text),
                   label: Text("Comic Source list".tl),
                   onPressed: () {
                     showPopUpWidget(
@@ -249,12 +249,12 @@ class _BodyState extends State<_Body> {
                   },
                 ),
                 FilledButton.tonalIcon(
-                  icon: Icon(TIcons.file_add),
+                  icon: Icon(LucideIcons.file_plus),
                   label: Text("Use a config file".tl),
                   onPressed: _selectFile,
                 ),
                 FilledButton.tonalIcon(
-                  icon: Icon(TIcons.help_circle),
+                  icon: Icon(LucideIcons.circle_question_mark),
                   label: Text("Help".tl),
                   onPressed: help,
                 ),
@@ -416,7 +416,7 @@ class _ComicSourceListState extends State<_ComicSourceList> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 ListTile(
-                  leading: Icon(TIcons.code),
+                  leading: Icon(LucideIcons.code),
                   title: Text("Repo URL".tl),
                 ),
                 TextField(
@@ -473,7 +473,7 @@ class _ComicSourceListState extends State<_ComicSourceList> {
 
         var key = json![index]["key"];
         var action = currentKey.contains(key)
-            ? const Icon(TIcons.check, size: 20).paddingRight(8)
+            ? const Icon(LucideIcons.check, size: 20).paddingRight(8)
             : Button.filled(
                 child: Text("Add".tl),
                 onPressed: () async {
@@ -719,7 +719,7 @@ class _CheckUpdatesButtonState extends State<_CheckUpdatesButton> {
               height: 18,
               child: CircularProgressIndicator(strokeWidth: 2),
             )
-          : Icon(TIcons.refresh),
+          : Icon(LucideIcons.refresh_ccw),
       label: Text("Check updates".tl),
       onPressed: check,
     );
@@ -850,7 +850,7 @@ class _SliverComicSourceState extends State<_SliverComicSource> {
               turns: _collapsed ? 0 : 0.5,
               duration: const Duration(milliseconds: 200),
               child: Icon(
-                TIcons.chevron_down,
+                LucideIcons.chevron_down,
                 color: context.colorScheme.onSurfaceVariant,
               ),
             ),
@@ -905,21 +905,21 @@ class _SliverComicSourceState extends State<_SliverComicSource> {
             message: "Edit".tl,
             child: IconButton(
               onPressed: () => widget.edit(source),
-              icon: const Icon(TIcons.edit),
+              icon: const Icon(LucideIcons.square_pen),
             ),
           ),
           Tooltip(
             message: "Update".tl,
             child: IconButton(
               onPressed: () => widget.update(source),
-              icon: const Icon(TIcons.refresh),
+              icon: const Icon(LucideIcons.refresh_ccw),
             ),
           ),
           Tooltip(
             message: "Delete".tl,
             child: IconButton(
               onPressed: () => widget.delete(source),
-              icon: const Icon(TIcons.delete),
+              icon: const Icon(LucideIcons.trash),
             ),
           ),
         ],
@@ -1053,7 +1053,7 @@ class _SliverComicSourceState extends State<_SliverComicSource> {
               overflow: TextOverflow.ellipsis,
             ),
             trailing: IconButton(
-              icon: const Icon(TIcons.edit),
+              icon: const Icon(LucideIcons.square_pen),
               onPressed: () {
                 showInputDialog(
                   context: context,
@@ -1089,7 +1089,7 @@ class _SliverComicSourceState extends State<_SliverComicSource> {
     if (!logged) {
       yield ListTile(
         title: Text("Log in".tl),
-        trailing: const Icon(TIcons.arrow_right),
+        trailing: const Icon(LucideIcons.arrow_right),
         onTap: () async {
           await context.to(
             () => _LoginPage(config: source.account!, source: source),
@@ -1140,7 +1140,7 @@ class _SliverComicSourceState extends State<_SliverComicSource> {
                   dimension: 24,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Icon(TIcons.refresh),
+              : const Icon(LucideIcons.refresh_ccw),
         );
       }
       yield ListTile(
@@ -1152,7 +1152,7 @@ class _SliverComicSourceState extends State<_SliverComicSource> {
           ComicSourceManager().notifyStateChange();
           setState(() {});
         },
-        trailing: const Icon(TIcons.logout),
+        trailing: const Icon(LucideIcons.log_out),
       );
     }
   }
@@ -1233,7 +1233,7 @@ class _LoginPageState extends State<_LoginPage> {
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(TIcons.error_circle),
+                      const Icon(LucideIcons.circle_alert),
                       const SizedBox(width: 8),
                       Text("Login with password is disabled".tl),
                     ],
@@ -1264,7 +1264,7 @@ class _LoginPageState extends State<_LoginPage> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(TIcons.link),
+                        const Icon(LucideIcons.link),
                         const SizedBox(width: 8),
                         Text("Create Account".tl),
                       ],
@@ -1283,7 +1283,7 @@ class _LoginPageState extends State<_LoginPage> {
       if (username.isEmpty || password.isEmpty) {
         showToast(
           message: "Cannot be empty".tl,
-          icon: const Icon(TIcons.error_circle),
+          icon: const Icon(LucideIcons.circle_alert),
           context: context,
         );
         return;

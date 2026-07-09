@@ -15,7 +15,7 @@ class _AppSettingsState extends State<AppSettings> {
         SliverAppbar(title: Text("App".tl)),
         _SettingPartTitle(
           title: "Data".tl,
-          icon: TIcons.hard_disk_storage,
+          icon: LucideIcons.hard_drive,
         ),
         _divided(
           context,
@@ -23,7 +23,7 @@ class _AppSettingsState extends State<AppSettings> {
             title: Text("Storage Path for local comics".tl),
             subtitle: Text(LocalManager().path, softWrap: false),
             trailing: IconButton(
-              icon: const Icon(TIcons.copy),
+              icon: const Icon(LucideIcons.copy),
               onPressed: () {
                 Clipboard.setData(ClipboardData(text: LocalManager().path));
                 context.showMessage(message: "Path copied to clipboard".tl);
@@ -148,7 +148,7 @@ class _AppSettingsState extends State<AppSettings> {
         ).toSliver(),
         _SettingPartTitle(
           title: "User".tl,
-          icon: TIcons.user,
+          icon: LucideIcons.user,
         ),
         if (!App.isLinux)
           _SwitchSetting(
@@ -224,7 +224,7 @@ class _LogsPageState extends State<LogsPage> {
                       ),
                     ]);
               }),
-              icon: const Icon(TIcons.filter)
+              icon: const Icon(LucideIcons.funnel)
           ),
           IconButton(
               onPressed: () => setState(() {
@@ -253,7 +253,7 @@ class _LogsPageState extends State<LogsPage> {
                       ),
                     ]);
                   }),
-              icon: const Icon(TIcons.ellipsis))
+              icon: const Icon(LucideIcons.ellipsis))
         ],
       ),
       body: ListView.builder(
@@ -423,7 +423,7 @@ class _WebdavSettingState extends State<_WebdavSetting> {
                 hintStyle: TextStyle(color: Theme.of(context).hintColor),
                 border: OutlineInputBorder(),
                 suffixIcon: IconButton(
-                  icon: Icon(TIcons.help_circle),
+                  icon: Icon(LucideIcons.circle_question_mark),
                   onPressed: () {
                     showDialog(
                       context: context,
@@ -447,7 +447,7 @@ class _WebdavSettingState extends State<_WebdavSetting> {
                                 Align(
                                   alignment: Alignment.centerRight,
                                   child: IconButton(
-                                    icon: const Icon(TIcons.file_export),
+                                    icon: const Icon(LucideIcons.file_up),
                                     onPressed: () {
                                       launchUrlString("https://github.com/venera-app/venera/blob/b08f11f6ac49bd07d34b4fcde233ed07e86efbc9/lib/foundation/appdata.dart#L138");
                                     },
@@ -467,7 +467,7 @@ class _WebdavSettingState extends State<_WebdavSetting> {
             ),
             const SizedBox(height: 12),
             ListTile(
-              leading: Icon(TIcons.refresh),
+              leading: Icon(LucideIcons.refresh_ccw),
               title: Text("Auto Sync Data".tl),
               contentPadding: EdgeInsets.zero,
               trailing: Switch(
@@ -509,7 +509,7 @@ class _WebdavSettingState extends State<_WebdavSetting> {
                       ),
                       child: Row(
                         children: [
-                          const Icon(TIcons.info_circle, size: 20),
+                          const Icon(LucideIcons.info, size: 20),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(

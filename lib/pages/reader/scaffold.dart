@@ -224,14 +224,14 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
                 Tooltip(
                   message: "Chapter Comments".tl,
                   child: IconButton(
-                    icon: const Icon(TIcons.chat_bubble),
+                    icon: const Icon(LucideIcons.message_square),
                     onPressed: openChapterComments,
                   ),
                 ),
               Tooltip(
                 message: "Settings".tl,
                 child: IconButton(
-                  icon: const Icon(TIcons.setting),
+                  icon: const Icon(LucideIcons.settings),
                   onPressed: openSetting,
                 ),
               ),
@@ -400,7 +400,7 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
       Tooltip(
         message: "Collect the image".tl,
         child: IconButton(
-          icon: Icon(isLiked() ? TIcons.star_filled : TIcons.star),
+          icon: Icon(isLiked() ? LucideIcons.star : LucideIcons.star),
           onPressed: addImageFavorite,
         ),
       ),
@@ -408,7 +408,7 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
         Tooltip(
           message: "${"Full Screen".tl}(F12)",
           child: IconButton(
-            icon: const Icon(TIcons.fullscreen),
+            icon: const Icon(LucideIcons.fullscreen),
             onPressed: () {
               context.reader.fullscreen();
             },
@@ -420,11 +420,11 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
           child: IconButton(
             icon: () {
               if (rotation == null) {
-                return const Icon(TIcons.rotate);
+                return const Icon(LucideIcons.rotate_cw);
               } else if (rotation == false) {
-                return const Icon(TIcons.portrait);
+                return const Icon(LucideIcons.smartphone);
               } else {
-                return const Icon(TIcons.rotate);
+                return const Icon(LucideIcons.rotate_cw);
               }
             }.call(),
             onPressed: () {
@@ -457,8 +457,8 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
         message: "Auto Page Turning".tl,
         child: IconButton(
           icon: context.reader.autoPageTurningTimer != null
-              ? const Icon(TIcons.alarm)
-              : const Icon(TIcons.alarm),
+              ? const Icon(LucideIcons.alarm_clock)
+              : const Icon(LucideIcons.alarm_clock),
           onPressed: () {
             context.reader.autoPageTurning(
               context.reader.cid,
@@ -472,20 +472,20 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
         Tooltip(
           message: "Chapters".tl,
           child: IconButton(
-            icon: const Icon(TIcons.book),
+            icon: const Icon(LucideIcons.book),
             onPressed: openChapterDrawer,
           ),
         ),
       Tooltip(
         message: "Save Image".tl,
         child: IconButton(
-          icon: const Icon(TIcons.download),
+          icon: const Icon(LucideIcons.download),
           onPressed: saveCurrentImage,
         ),
       ),
       Tooltip(
         message: "Share".tl,
-        child: IconButton(icon: const Icon(TIcons.share), onPressed: share),
+        child: IconButton(icon: const Icon(LucideIcons.share), onPressed: share),
       ),
     ];
 
@@ -505,7 +505,7 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
                     : context.reader.chapter < context.reader.maxChapter
                     ? context.reader.toNextChapter()
                     : context.reader.toPage(context.reader.maxPage),
-                icon: const Icon(TIcons.page_first),
+                icon: const Icon(LucideIcons.chevron_first),
               ),
               Expanded(child: buildSlider()),
               IconButton.filledTonal(
@@ -516,7 +516,7 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
                     : context.reader.chapter > 1
                     ? context.reader.toPrevChapter()
                     : context.reader.toPage(1),
-                icon: const Icon(TIcons.page_last),
+                icon: const Icon(LucideIcons.chevron_last),
               ),
               const SizedBox(width: 8),
             ],
@@ -796,8 +796,8 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
           ),
           child: Icon(
             lastValue == 1
-                ? TIcons.chevron_right
-                : TIcons.chevron_left,
+                ? LucideIcons.chevron_right
+                : LucideIcons.chevron_left,
             size: 24,
             color: Theme.of(context).colorScheme.onPrimaryContainer,
           ),
@@ -840,9 +840,9 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
 
   IconData _getArrowIcon(bool reversed, int value) {
     if (reversed) {
-      return value == 1 ? TIcons.chevron_left : TIcons.chevron_right;
+      return value == 1 ? LucideIcons.chevron_left : LucideIcons.chevron_right;
     } else {
-      return value == 1 ? TIcons.chevron_right : TIcons.chevron_left;
+      return value == 1 ? LucideIcons.chevron_right : LucideIcons.chevron_left;
     }
   }
 
@@ -1003,25 +1003,25 @@ class _BatteryWidgetState extends State<_BatteryWidget> {
     Color batteryColor = context.colorScheme.onSurface;
 
     if (state == BatteryState.charging) {
-      batteryIcon = TIcons.battery_charging;
+      batteryIcon = LucideIcons.battery_charging;
     } else if (batteryLevel >= 96) {
-      batteryIcon = TIcons.battery_charging;
+      batteryIcon = LucideIcons.battery_charging;
     } else if (batteryLevel >= 84) {
-      batteryIcon = TIcons.battery;
+      batteryIcon = LucideIcons.battery;
     } else if (batteryLevel >= 72) {
-      batteryIcon = TIcons.battery;
+      batteryIcon = LucideIcons.battery;
     } else if (batteryLevel >= 60) {
-      batteryIcon = TIcons.battery;
+      batteryIcon = LucideIcons.battery;
     } else if (batteryLevel >= 48) {
-      batteryIcon = TIcons.battery;
+      batteryIcon = LucideIcons.battery;
     } else if (batteryLevel >= 36) {
-      batteryIcon = TIcons.battery;
+      batteryIcon = LucideIcons.battery;
     } else if (batteryLevel >= 24) {
-      batteryIcon = TIcons.battery_low;
+      batteryIcon = LucideIcons.battery_low;
     } else if (batteryLevel >= 12) {
-      batteryIcon = TIcons.battery_low;
+      batteryIcon = LucideIcons.battery_low;
     } else {
-      batteryIcon = TIcons.battery_low;
+      batteryIcon = LucideIcons.battery_low;
       batteryColor = Colors.red;
     }
 
@@ -1163,7 +1163,7 @@ class _SelectImageOverlayContentState
             child: Row(
               children: [
                 const SizedBox(width: 8),
-                const Icon(TIcons.info_circle),
+                const Icon(LucideIcons.info),
                 const SizedBox(width: 16),
                 Text(
                   "Click to select an image".tl,

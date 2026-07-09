@@ -118,7 +118,7 @@ class _CategoriesPageState extends State<CategoriesPage>
               return Tab(text: title, key: Key(e));
             }).toList(),
             actionButton: TabActionButton(
-              icon: const Icon(TIcons.add),
+              icon: const Icon(LucideIcons.plus),
               text: "Add".tl,
               onPressed: addPage,
             ),
@@ -227,7 +227,7 @@ class _CategoryPage extends StatelessWidget {
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
           ),
           const Spacer(),
-          IconButton(onPressed: onRefresh, icon: const Icon(TIcons.refresh)),
+          IconButton(onPressed: onRefresh, icon: const Icon(LucideIcons.refresh_ccw)),
         ],
       ),
     );

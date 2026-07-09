@@ -84,8 +84,8 @@ class _NormalComicChaptersState extends State<_NormalComicChapters> {
                   message: "Order".tl,
                   child: IconButton(
                     icon: Icon(reverse
-                        ? TIcons.align_top
-                        : TIcons.align_bottom),
+                        ? LucideIcons.align_start_vertical
+                        : LucideIcons.align_end_vertical),
                     onPressed: () {
                       setState(() {
                         reverse = !reverse;
@@ -144,7 +144,7 @@ class _NormalComicChaptersState extends State<_NormalComicChapters> {
                 child: Align(
                   alignment: Alignment.center,
                   child: TextButton.icon(
-                    icon: const Icon(TIcons.arrow_down),
+                    icon: const Icon(LucideIcons.arrow_down),
                     onPressed: () {
                       setState(() {
                         showAll = true;
@@ -258,8 +258,8 @@ class _GroupedComicChaptersState extends State<_GroupedComicChapters>
                   message: "Order".tl,
                   child: IconButton(
                     icon: Icon(reverse
-                        ? TIcons.align_top
-                        : TIcons.align_bottom),
+                        ? LucideIcons.align_start_vertical
+                        : LucideIcons.align_end_vertical),
                     onPressed: () {
                       setState(() {
                         reverse = !reverse;
@@ -340,7 +340,7 @@ class _GroupedComicChaptersState extends State<_GroupedComicChapters>
                 child: Align(
                   alignment: Alignment.center,
                   child: TextButton.icon(
-                    icon: const Icon(TIcons.arrow_down),
+                    icon: const Icon(LucideIcons.arrow_down),
                     onPressed: () {
                       setState(() {
                         showAll = true;

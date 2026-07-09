@@ -121,7 +121,7 @@ class _LeftBarState extends State<_LeftBar> implements FolderList {
       child: Row(
         children: [
           Icon(
-            TIcons.activity,
+            LucideIcons.activity,
             color: context.colorScheme.secondary,
           ),
           const SizedBox(width: 12),
@@ -130,7 +130,7 @@ class _LeftBarState extends State<_LeftBar> implements FolderList {
           MenuButton(
             entries: [
               MenuEntry(
-                icon: TIcons.add,
+                icon: LucideIcons.plus,
                 text: 'Create Folder'.tl,
                 onClick: () {
                   newFolder().then((value) {
@@ -141,7 +141,7 @@ class _LeftBarState extends State<_LeftBar> implements FolderList {
                 },
               ),
               MenuEntry(
-                icon: TIcons.order_adjustment_column,
+                icon: LucideIcons.arrow_down_up,
                 text: 'Sort'.tl,
                 onClick: () {
                   sortFolders().then((value) {
@@ -173,14 +173,14 @@ class _LeftBarState extends State<_LeftBar> implements FolderList {
       child: Row(
         children: [
           Icon(
-            TIcons.cloud,
+            LucideIcons.cloud,
             color: context.colorScheme.secondary,
           ),
           const SizedBox(width: 12),
           Text("Network".tl),
           const Spacer(),
           IconButton(
-            icon: const Icon(TIcons.setting),
+            icon: const Icon(LucideIcons.settings),
             onPressed: () {
               showPopUpWidget(
                 App.rootContext,

@@ -211,7 +211,7 @@ class _SliverSearchResultState extends State<_SliverSearchResult>
                 children: [
                   Row(
                     children: [
-                      const Icon(TIcons.error_circle),
+                      const Icon(LucideIcons.circle_alert),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(

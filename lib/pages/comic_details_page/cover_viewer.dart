@@ -85,7 +85,7 @@ class _CoverViewerState extends State<_CoverViewer> {
             children: [
               const SizedBox(width: 8),
               IconButton(
-                icon: const Icon(TIcons.close),
+                icon: const Icon(LucideIcons.x),
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
@@ -99,7 +99,7 @@ class _CoverViewerState extends State<_CoverViewer> {
                 ),
               ),
               IconButton(
-                icon: const Icon(TIcons.save),
+                icon: const Icon(LucideIcons.save),
                 onPressed: _saveCover,
               ),
               const SizedBox(width: 8),

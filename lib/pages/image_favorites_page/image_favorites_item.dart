@@ -72,21 +72,21 @@ class _ImageFavoritesItemState extends State<_ImageFavoritesItem> {
       location,
       [
         MenuEntry(
-          icon: TIcons.view_agenda,
+          icon: LucideIcons.list,
           text: 'Details'.tl,
           onClick: () {
             goComicInfo(widget.imageFavoritesComic);
           },
         ),
         MenuEntry(
-          icon: TIcons.copy,
+          icon: LucideIcons.copy,
           text: 'Copy Title'.tl,
           onClick: () {
             copyTitle();
           },
         ),
         MenuEntry(
-          icon: TIcons.component_checkbox,
+          icon: LucideIcons.square_check,
           text: 'Select All'.tl,
           onClick: () {
             for (var ele in widget.imageFavoritesComic.images) {
@@ -95,7 +95,7 @@ class _ImageFavoritesItemState extends State<_ImageFavoritesItem> {
           },
         ),
         MenuEntry(
-          icon: TIcons.article,
+          icon: LucideIcons.file_text,
           text: 'Photo View'.tl,
           onClick: () {
             goPhotoView(widget.imageFavoritesComic.images.first);

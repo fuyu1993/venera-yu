@@ -280,28 +280,28 @@ class _ReaderGestureDetectorState extends AutomaticGlobalState<_ReaderGestureDet
       location,
       [
         MenuEntry(
-          icon: TIcons.setting,
+          icon: LucideIcons.settings,
           text: "Settings".tl,
           onClick: () {
             context.readerScaffold.openSetting();
           },
         ),
         MenuEntry(
-          icon: TIcons.menu,
+          icon: LucideIcons.menu,
           text: "Chapters".tl,
           onClick: () {
             context.readerScaffold.openChapterDrawer();
           },
         ),
         MenuEntry(
-          icon: TIcons.fullscreen,
+          icon: LucideIcons.fullscreen,
           text: "Fullscreen".tl,
           onClick: () {
             context.reader.fullscreen();
           },
         ),
         MenuEntry(
-          icon: TIcons.logout,
+          icon: LucideIcons.log_out,
           text: "Exit".tl,
           onClick: () {
             context.pop();
@@ -309,13 +309,13 @@ class _ReaderGestureDetectorState extends AutomaticGlobalState<_ReaderGestureDet
         ),
         if (App.isDesktop && !reader.isLoading)
           MenuEntry(
-            icon: TIcons.copy,
+            icon: LucideIcons.copy,
             text: "Copy Image".tl,
             onClick: () => copyImage(location),
           ),
         if (!reader.isLoading)
           MenuEntry(
-            icon: TIcons.download,
+            icon: LucideIcons.download,
             text: "Save Image".tl,
             onClick: () => saveImage(location),
           ),

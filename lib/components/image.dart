@@ -305,7 +305,7 @@ class _AnimatedImageState extends State<AnimatedImage>
       }
     } else if (_lastException != null) {
       result = const Center(
-        child: Icon(TIcons.error),
+        child: Icon(LucideIcons.circle_alert),
       );
 
       if (!widget.excludeFromSemantics) {

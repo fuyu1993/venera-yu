@@ -71,12 +71,12 @@ class _CustomTabsSetting extends StatefulWidget {
 
 class _CustomTabsSettingState extends State<_CustomTabsSetting> {
   static const _allTabs = [
-    {'id': 'home', 'label': 'Home', 'icon': TIcons.home},
-    {'id': 'favorites', 'label': 'Favorites', 'icon': TIcons.activity},
-    {'id': 'explore', 'label': 'Explore', 'icon': TIcons.explore},
-    {'id': 'categories', 'label': 'Categories', 'icon': TIcons.view_list},
-    {'id': 'history', 'label': 'History', 'icon': TIcons.history},
-    {'id': 'comic_sources', 'label': 'Comic Source', 'icon': TIcons.code},
+    {'id': 'home', 'label': 'Home', 'icon': LucideIcons.house},
+    {'id': 'favorites', 'label': 'Favorites', 'icon': LucideIcons.user_star},
+    {'id': 'explore', 'label': 'Explore', 'icon': LucideIcons.compass},
+    {'id': 'categories', 'label': 'Categories', 'icon': LucideIcons.list},
+    {'id': 'history', 'label': 'History', 'icon': LucideIcons.history},
+    {'id': 'comic_sources', 'label': 'Comic Source', 'icon': LucideIcons.code},
   ];
 
   List<Map<String, dynamic>> get _tabs {
@@ -168,7 +168,7 @@ class _CustomTabsSettingState extends State<_CustomTabsSetting> {
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(TIcons.drag_move, color: colors.onSurfaceVariant),
+                      Icon(LucideIcons.grip_vertical, color: colors.onSurfaceVariant),
                       const SizedBox(width: 8),
                       Switch(
                         value: tab['visible'] == true,

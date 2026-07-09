@@ -80,7 +80,7 @@ class _FollowUpdatesWidgetState
                       child: Text('Follow Updates'.tl, style: ts.s18),
                     ),
                     const Spacer(),
-                    const Icon(TIcons.arrow_right),
+                    const Icon(LucideIcons.arrow_right),
                   ],
                 ),
               ).paddingHorizontal(16),
@@ -192,7 +192,7 @@ class _FollowUpdatesPageState extends AutomaticGlobalState<FollowUpdatesPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ListTile(
-              leading: Icon(TIcons.info_circle),
+              leading: Icon(LucideIcons.info),
               title: Text("Not Configured".tl),
             ),
             Text(
@@ -226,7 +226,7 @@ class _FollowUpdatesPageState extends AutomaticGlobalState<FollowUpdatesPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ListTile(
-              leading: Icon(TIcons.star),
+              leading: Icon(LucideIcons.star),
               title: Text(folder!),
             ),
             Text(
@@ -276,7 +276,7 @@ class _FollowUpdatesPageState extends AutomaticGlobalState<FollowUpdatesPage> {
             ),
             child: Row(
               children: [
-                Icon(TIcons.refresh),
+                Icon(LucideIcons.refresh_ccw),
                 const SizedBox(width: 8),
                 Text(
                   "Updates".tl,
@@ -285,7 +285,7 @@ class _FollowUpdatesPageState extends AutomaticGlobalState<FollowUpdatesPage> {
                 const Spacer(),
                 if (updatedComics.isNotEmpty)
                   IconButton(
-                    icon: Icon(TIcons.clear),
+                    icon: Icon(LucideIcons.x),
                     onPressed: () {
                       showConfirmDialog(
                         context: App.rootContext,
@@ -365,7 +365,7 @@ class _FollowUpdatesPageState extends AutomaticGlobalState<FollowUpdatesPage> {
             ),
             child: Row(
               children: [
-                Icon(TIcons.view_list),
+                Icon(LucideIcons.list),
                 const SizedBox(width: 8),
                 Text(
                   "All Comics".tl,

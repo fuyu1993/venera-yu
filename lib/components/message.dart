@@ -298,7 +298,7 @@ class ContentDialog extends StatelessWidget {
           title != null
               ? Appbar(
             leading: IconButton(
-              icon: const Icon(TIcons.close),
+              icon: const Icon(LucideIcons.x),
               onPressed: dismissible ? context.pop : null,
             ),
             title: Text(title!),

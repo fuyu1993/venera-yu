@@ -288,7 +288,7 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
               message: "Folders".tl,
               child: context.width <= _kTwoPanelChangeWidth
                   ? IconButton(
-                      icon: const Icon(TIcons.menu),
+                      icon: const Icon(LucideIcons.menu),
                       color: context.colorScheme.primary,
                       onPressed: favPage.showFolderSelector,
                     )
@@ -340,7 +340,7 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
                     },
                     child: Builder(builder: (context) {
                       return IconButton(
-                        icon: const Icon(TIcons.refresh),
+                        icon: const Icon(LucideIcons.refresh_ccw),
                         onPressed: () {
                           Flyout.of(context).show();
                         },
@@ -351,7 +351,7 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
               Tooltip(
                 message: "Filter".tl,
                 child: IconButton(
-                  icon: const Icon(TIcons.filter_sort),
+                  icon: const Icon(LucideIcons.funnel),
                   color: readFilterSelect != readFilterList[0]
                       ? context.colorScheme.primaryContainer
                       : null,
@@ -376,7 +376,7 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
               Tooltip(
                 message: "Search".tl,
                 child: IconButton(
-                  icon: const Icon(TIcons.search),
+                  icon: const Icon(LucideIcons.search),
                   onPressed: () {
                     setState(() {
                       keyword = "";
@@ -390,7 +390,7 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
                 MenuButton(
                   entries: [
                     MenuEntry(
-                      icon: TIcons.edit,
+                      icon: LucideIcons.square_pen,
                       text: "Rename".tl,
                       onClick: () {
                         showInputDialog(
@@ -414,7 +414,7 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
                       },
                     ),
                     MenuEntry(
-                      icon: TIcons.order_adjustment_column,
+                      icon: LucideIcons.arrow_down_up,
                       text: "Reorder".tl,
                       onClick: () {
                         context.to(
@@ -436,7 +436,7 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
                       },
                     ),
                     MenuEntry(
-                      icon: TIcons.cloud_upload,
+                      icon: LucideIcons.cloud_upload,
                       text: "Export".tl,
                       onClick: () {
                         var json = LocalFavoritesManager().folderToJson(
@@ -449,7 +449,7 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
                       },
                     ),
                     MenuEntry(
-                      icon: TIcons.refresh,
+                      icon: LucideIcons.refresh_ccw,
                       text: "Update Comics Info".tl,
                       onClick: () {
                         updateComicsInfo(widget.folder).then((newComics) {
@@ -462,7 +462,7 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
                       },
                     ),
                     MenuEntry(
-                      icon: TIcons.delete,
+                      icon: LucideIcons.trash,
                       text: "Delete Folder".tl,
                       color: context.colorScheme.error,
                       onClick: () {
@@ -493,7 +493,7 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
             leading: Tooltip(
               message: "Cancel".tl,
               child: IconButton(
-                icon: const Icon(TIcons.close),
+                icon: const Icon(LucideIcons.x),
                 onPressed: () {
                   setState(() {
                     multiSelectMode = false;
@@ -508,29 +508,29 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
               MenuButton(entries: [
                 if (!isAllFolder)
                   MenuEntry(
-                      icon: TIcons.move,
+                      icon: LucideIcons.arrow_up_from_line,
                       text: "Move to folder".tl,
                       onClick: () => favoriteOption('move')),
                 if (!isAllFolder)
                   MenuEntry(
-                      icon: TIcons.copy,
+                      icon: LucideIcons.copy,
                       text: "Copy to folder".tl,
                       onClick: () => favoriteOption('add')),
                 MenuEntry(
-                    icon: TIcons.component_checkbox,
+                    icon: LucideIcons.square_check,
                     text: "Select All".tl,
                     onClick: selectAll),
                 MenuEntry(
-                    icon: TIcons.clear,
+                    icon: LucideIcons.x,
                     text: "Deselect".tl,
                     onClick: _cancel),
                 MenuEntry(
-                    icon: TIcons.flip_to_front,
+                    icon: LucideIcons.flip_horizontal_2,
                     text: "Invert Selection".tl,
                     onClick: invertSelection),
                 if (!isAllFolder)
                   MenuEntry(
-                      icon: TIcons.delete,
+                      icon: LucideIcons.trash,
                       text: "Delete Comic".tl,
                       color: context.colorScheme.error,
                       onClick: () {
@@ -546,13 +546,13 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
                         );
                       }),
                 MenuEntry(
-                  icon: TIcons.download,
+                  icon: LucideIcons.download,
                   text: "Download".tl,
                   onClick: downloadSelected,
                 ),
                 if (selectedComics.length == 1)
                   MenuEntry(
-                    icon: TIcons.copy,
+                    icon: LucideIcons.copy,
                     text: "Copy Title".tl,
                     onClick: () {
                       Clipboard.setData(
@@ -567,7 +567,7 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
                   ),
                 if (selectedComics.length == 1)
                   MenuEntry(
-                    icon: TIcons.view_agenda,
+                    icon: LucideIcons.list,
                     text: "Read".tl,
                     onClick: () {
                       final c = selectedComics.keys.first as FavoriteItem;
@@ -580,7 +580,7 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
                   ),
                 if (selectedComics.length == 1)
                   MenuEntry(
-                    icon: TIcons.chevron_right,
+                    icon: LucideIcons.chevron_right,
                     text: "Jump to Detail".tl,
                     onClick: () {
                       final c = selectedComics.keys.first as FavoriteItem;
@@ -602,7 +602,7 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
             leading: Tooltip(
               message: "Cancel".tl,
               child: IconButton(
-                icon: const Icon(TIcons.close),
+                icon: const Icon(LucideIcons.x),
                 onPressed: () {
                   setState(() {
                     setState(() {
@@ -642,7 +642,7 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
               return [
                 if (!isAllFolder)
                   MenuEntry(
-                    icon: TIcons.delete,
+                    icon: LucideIcons.trash,
                     text: "Delete".tl,
                     onClick: () {
                       LocalFavoritesManager().deleteComicWithId(
@@ -653,7 +653,7 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
                     },
                   ),
                 MenuEntry(
-                  icon: TIcons.check,
+                  icon: LucideIcons.check,
                   text: "Select".tl,
                   onClick: () {
                     setState(() {
@@ -671,7 +671,7 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
                   },
                 ),
                 MenuEntry(
-                  icon: TIcons.download,
+                  icon: LucideIcons.download,
                   text: "Download".tl,
                   onClick: () {
                     downloadComic(c as FavoriteItem);
@@ -682,7 +682,7 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
                 ),
                 if (appdata.settings["onClickFavorite"] == "viewDetail")
                   MenuEntry(
-                    icon: TIcons.book_open,
+                    icon: LucideIcons.book_open,
                     text: "Read".tl,
                     onClick: () {
                       App.mainNavigatorKey?.currentContext?.to(
@@ -829,7 +829,7 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      const Icon(TIcons.add, size: 20),
+                                      const Icon(LucideIcons.plus, size: 20),
                                       const SizedBox(width: 4),
                                       Text("New Folder".tl),
                                     ],
@@ -1017,7 +1017,7 @@ class _ReorderComicsPageState extends State<_ReorderComicsPage> {
           Tooltip(
             message: "Information".tl,
             child: IconButton(
-              icon: const Icon(TIcons.info_circle),
+              icon: const Icon(LucideIcons.info),
               onPressed: () {
                 showInfoDialog(
                   context: context,
@@ -1030,7 +1030,7 @@ class _ReorderComicsPageState extends State<_ReorderComicsPage> {
           Tooltip(
             message: "Reverse".tl,
             child: IconButton(
-              icon: const Icon(TIcons.swap),
+              icon: const Icon(LucideIcons.arrow_left_right),
               onPressed: () {
                 setState(() {
                   comics = comics.reversed.toList();

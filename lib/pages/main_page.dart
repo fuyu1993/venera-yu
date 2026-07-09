@@ -39,12 +39,12 @@ class _MainPageState extends State<MainPage> {
 
   // Get all available tabs
   static const _allTabs = [
-    {'id': 'home', 'label': 'Home', 'icon': TIcons.home, 'activeIcon': TIcons.home},
-    {'id': 'favorites', 'label': 'Favorites', 'icon': TIcons.activity, 'activeIcon': TIcons.activity},
-    {'id': 'explore', 'label': 'Explore', 'icon': TIcons.explore, 'activeIcon': TIcons.explore},
-    {'id': 'categories', 'label': 'Categories', 'icon': TIcons.view_list, 'activeIcon': TIcons.view_list},
-    {'id': 'history', 'label': 'History', 'icon': TIcons.history, 'activeIcon': TIcons.history},
-    {'id': 'comic_sources', 'label': 'Comic Source', 'icon': TIcons.code, 'activeIcon': TIcons.code},
+    {'id': 'home', 'label': 'Home', 'icon': LucideIcons.house, 'activeIcon': LucideIcons.house},
+    {'id': 'favorites', 'label': 'Favorites', 'icon': LucideIcons.user_star, 'activeIcon': LucideIcons.user_star},
+    {'id': 'explore', 'label': 'Explore', 'icon': LucideIcons.compass, 'activeIcon': LucideIcons.compass},
+    {'id': 'categories', 'label': 'Categories', 'icon': LucideIcons.list, 'activeIcon': LucideIcons.list},
+    {'id': 'history', 'label': 'History', 'icon': LucideIcons.history, 'activeIcon': LucideIcons.history},
+    {'id': 'comic_sources', 'label': 'Comic Source', 'icon': LucideIcons.code, 'activeIcon': LucideIcons.code},
   ];
 
   // Get all pages
@@ -160,14 +160,14 @@ class _MainPageState extends State<MainPage> {
       paneActions: [
         if(index != 0)
           PaneActionEntry(
-            icon: TIcons.search,
+            icon: LucideIcons.search,
             label: "Search".tl,
             onTap: () {
               to(() => const SearchPage(), preventDuplicate: true);
             },
           ),
         PaneActionEntry(
-          icon: TIcons.setting,
+          icon: LucideIcons.settings,
           label: "Settings".tl,
           onTap: () {
             to(() => const SettingsPage(), preventDuplicate: true);

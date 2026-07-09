@@ -297,7 +297,7 @@ class __DNSOverridesState extends State<_DNSOverrides> {
                       .add((TextEditingController(), TextEditingController()));
                 });
               },
-              icon: const Icon(TIcons.add),
+              icon: const Icon(LucideIcons.plus),
               label: Text("Add".tl),
             ),
           ],
@@ -354,7 +354,7 @@ class __DNSOverridesState extends State<_DNSOverrides> {
             color: context.colorScheme.outlineVariant,
           ),
           IconButton(
-            icon: const Icon(TIcons.delete),
+            icon: const Icon(LucideIcons.trash),
             onPressed: () {
               setState(() {
                 overrides.removeAt(index);

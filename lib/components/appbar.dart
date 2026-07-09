@@ -90,7 +90,7 @@ class _AppbarState extends State<Appbar> {
               Tooltip(
                 message: "Back".tl,
                 child: IconButton(
-                  icon: const Icon(TIcons.chevron_left),
+                  icon: const Icon(LucideIcons.chevron_left),
                   onPressed: () => Navigator.maybePop(context),
                 ),
               ),
@@ -203,7 +203,7 @@ class _MySliverAppBarDelegate extends SliverPersistentHeaderDelegate {
                 ? Tooltip(
                     message: "Back".tl,
                     child: IconButton(
-                      icon: const Icon(TIcons.chevron_left),
+                      icon: const Icon(LucideIcons.chevron_left),
                       onPressed: () => Navigator.maybePop(context),
                     ),
                   )
@@ -802,7 +802,7 @@ class _SliverSearchBarDelegate extends SliverPersistentHeaderDelegate {
                   ? const SizedBox()
                   : IconButton(
                       iconSize: 20,
-                      icon: const Icon(TIcons.clear),
+                      icon: const Icon(LucideIcons.x),
                       onPressed: () {
                         editingController.clear();
                         onChanged?.call("");
@@ -906,7 +906,7 @@ class _SearchBarState extends State<AppSearchBar> with _SearchBarMixin {
                   ? const SizedBox()
                   : IconButton(
                       iconSize: 20,
-                      icon: const Icon(TIcons.clear),
+                      icon: const Icon(LucideIcons.x),
                       onPressed: () {
                         _editingController.clear();
                       },
