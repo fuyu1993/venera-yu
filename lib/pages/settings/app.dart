@@ -13,15 +13,11 @@ class _AppSettingsState extends State<AppSettings> {
     return SmoothCustomScrollView(
       slivers: [
         SliverAppbar(title: Text("App".tl)),
-        _SettingPartTitle(
-          title: "Data".tl,
-          icon: LucideIcons.hard_drive,
-        ),
         _divided(
           context,
           ListTile(
             title: Text("Storage Path for local comics".tl),
-            subtitle: Text(LocalManager().path, softWrap: false),
+            subtitle: Text(LocalManager().path, softWrap: false, style: const TextStyle(fontSize: 12)),
             trailing: IconButton(
               icon: const Icon(LucideIcons.copy),
               onPressed: () {
@@ -60,15 +56,10 @@ class _AppSettingsState extends State<AppSettings> {
             }
           },
         ).toSliver(),
-        _divided(
-          context,
-          ListTile(
-            title: Text("Cache Size".tl),
-            subtitle: Text(bytesToReadableString(CacheManager().currentSize)),
-          ),
-        ).toSliver(),
         _CallbackSetting(
           title: "Clear Cache".tl,
+          subtitle: bytesToReadableString(CacheManager().currentSize),
+          subtitleStyle: const TextStyle(fontSize: 12),
           actionTitle: "Clear".tl,
           callback: () async {
             var loadingDialog = showLoadingDialog(
@@ -85,6 +76,7 @@ class _AppSettingsState extends State<AppSettings> {
         _CallbackSetting(
           title: "Cache Limit".tl,
           subtitle: "${appdata.settings['cacheSize']} MB",
+          subtitleStyle: const TextStyle(fontSize: 12),
           callback: () {
             showInputDialog(
               context: context,
@@ -146,33 +138,6 @@ class _AppSettingsState extends State<AppSettings> {
           },
           actionTitle: 'Set'.tl,
         ).toSliver(),
-        _SettingPartTitle(
-          title: "User".tl,
-          icon: LucideIcons.user,
-        ),
-        if (!App.isLinux)
-          _SwitchSetting(
-            title: "Authorization Required".tl,
-            settingKey: "authorizationRequired",
-            onChanged: () async {
-              var current = appdata.settings['authorizationRequired'];
-              if (current) {
-                final auth = LocalAuthentication();
-                final bool canAuthenticateWithBiometrics =
-                    await auth.canCheckBiometrics;
-                final bool canAuthenticate = canAuthenticateWithBiometrics ||
-                    await auth.isDeviceSupported();
-                if (!canAuthenticate) {
-                  context.showMessage(message: "Biometrics not supported".tl);
-                  setState(() {
-                    appdata.settings['authorizationRequired'] = false;
-                  });
-                  appdata.saveData();
-                  return;
-                }
-              }
-            },
-          ).toSliver(),
       ],
     );
   }

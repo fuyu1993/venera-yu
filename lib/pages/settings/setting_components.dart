@@ -730,11 +730,14 @@ class _CallbackSetting extends StatelessWidget {
     required this.callback,
     required this.actionTitle,
     this.subtitle,
+    this.subtitleStyle,
   });
 
   final String title;
 
   final String? subtitle;
+
+  final TextStyle? subtitleStyle;
 
   final VoidCallback callback;
 
@@ -746,7 +749,7 @@ class _CallbackSetting extends StatelessWidget {
       context,
       ListTile(
         title: Text(title),
-        subtitle: subtitle == null ? null : Text(subtitle!),
+        subtitle: subtitle == null ? null : Text(subtitle!, style: subtitleStyle),
         trailing: Button.normal(
           onPressed: callback,
           child: Text(actionTitle),

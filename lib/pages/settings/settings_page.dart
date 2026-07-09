@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_reorderable_grid_view/widgets/reorderable_builder.dart';
 import 'package:flutter_memory_info/flutter_memory_info.dart';
-import 'package:local_auth/local_auth.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:venera/components/components.dart';
 import 'package:venera/foundation/app.dart';
@@ -57,6 +56,7 @@ class _SettingsPageState extends State<SettingsPage> {
   bool get enableTwoViews => context.width > 720;
 
   final categories = <String>[
+    "General",
     "Explore",
     "Reading",
     "Local Favorites",
@@ -64,11 +64,11 @@ class _SettingsPageState extends State<SettingsPage> {
     "Network",
     "About",
     "Lab",
-    "Debug",
-    "General"
+    "Debug"
   ];
 
   final icons = <IconData>[
+    LucideIcons.sliders_horizontal,
     LucideIcons.compass,
     LucideIcons.book_open,
     LucideIcons.bookmark,
@@ -77,83 +77,82 @@ class _SettingsPageState extends State<SettingsPage> {
     LucideIcons.info,
     LucideIcons.building,
     LucideIcons.bug,
-    LucideIcons.sliders_horizontal,
   ];
 
   // Settings index for search: all searchable settings with their page index
   List<_SettingIndexItem> get _settingIndex => const [
-    // 0 - Explore
-    _SettingIndexItem("Display mode of comic tile", 0),
-    _SettingIndexItem("Size of comic tile", 0),
-    _SettingIndexItem("Explore Pages", 0),
-    _SettingIndexItem("Category Pages", 0),
-    _SettingIndexItem("Network Favorite Pages", 0),
-    _SettingIndexItem("Search Sources", 0),
-    _SettingIndexItem("Show favorite status on comic tile", 0),
-    _SettingIndexItem("Show history on comic tile", 0),
-    _SettingIndexItem("Reverse default chapter order", 0),
-    _SettingIndexItem("Keyword blocking", 0),
-    _SettingIndexItem("Comment keyword blocking", 0),
-    _SettingIndexItem("Default Search Target", 0),
-    _SettingIndexItem("Auto Language Filters", 0),
-    _SettingIndexItem("Initial Page", 0),
-    _SettingIndexItem("Display mode of comic list", 0),
-    // 1 - Reading
-    _SettingIndexItem("Enable comic specific settings", 1),
-    _SettingIndexItem("Enable device specific settings", 1),
-    _SettingIndexItem("Tap to turn Pages", 1),
-    _SettingIndexItem("Reverse tap to turn Pages", 1),
-    _SettingIndexItem("Page animation", 1),
-    _SettingIndexItem("Reading mode", 1),
-    _SettingIndexItem("Auto page turning interval", 1),
-    _SettingIndexItem("Show single image on first page", 1),
-    _SettingIndexItem("Mouse scroll speed", 1),
-    _SettingIndexItem("Double tap to zoom", 1),
-    _SettingIndexItem("Long press to zoom", 1),
-    _SettingIndexItem("Long press zoom position", 1),
-    _SettingIndexItem("Limit image width", 1),
-    _SettingIndexItem("Turn page by volume keys", 1),
-    _SettingIndexItem("Display time & battery info in reader", 1),
-    _SettingIndexItem("Show system status bar", 1),
-    // 2 - Local Favorites
-    _SettingIndexItem("Show local favorites before network favorites", 2),
-    _SettingIndexItem("Auto close favorite panel after operation", 2),
-    _SettingIndexItem("Add new favorite to", 2),
-    _SettingIndexItem("Move favorite after reading", 2),
-    _SettingIndexItem("Quick Favorite", 2),
-    _SettingIndexItem("Delete all unavailable local favorite items", 2),
-    _SettingIndexItem("Click favorite", 2),
-    // 3 - APP
-    _SettingIndexItem("Storage Path for local comics", 3),
-    _SettingIndexItem("Set New Storage Path", 3),
-    _SettingIndexItem("Cache Size", 3),
-    _SettingIndexItem("Clear Cache", 3),
-    _SettingIndexItem("Cache Limit", 3),
-    _SettingIndexItem("Export App Data", 3),
-    _SettingIndexItem("Import App Data", 3),
-    _SettingIndexItem("Data Sync", 3),
-    // 4 - Network
-    _SettingIndexItem("Proxy", 4),
-    _SettingIndexItem("DNS Overrides", 4),
-    _SettingIndexItem("Download Threads", 4),
-    _SettingIndexItem("Enable DNS Overrides", 4),
-    // 5 - About
-    _SettingIndexItem("Check for updates", 5),
-    _SettingIndexItem("Check for updates on startup", 5),
-    _SettingIndexItem("Github", 5),
-    // 6 - Lab
-    _SettingIndexItem("Enable Experimental Features", 6),
-    _SettingIndexItem("Hide Comic Thumbnails", 6),
-    _SettingIndexItem("Developer Mode", 6),
-    // 7 - Debug
-    _SettingIndexItem("Reload Configs", 7),
-    _SettingIndexItem("Open Log", 7),
-    _SettingIndexItem("Ignore Certificate Errors", 7),
-    // 8 - General
-    _SettingIndexItem("Language", 8),
-    _SettingIndexItem("Appearance", 8),
-    _SettingIndexItem("Theme", 8),
-    _SettingIndexItem("Custom Tabs", 8),
+    // 0 - General
+    _SettingIndexItem("Language", 0),
+    _SettingIndexItem("Appearance", 0),
+    _SettingIndexItem("Theme", 0),
+    _SettingIndexItem("Custom Tabs", 0),
+    // 1 - Explore
+    _SettingIndexItem("Display mode of comic tile", 1),
+    _SettingIndexItem("Size of comic tile", 1),
+    _SettingIndexItem("Explore Pages", 1),
+    _SettingIndexItem("Category Pages", 1),
+    _SettingIndexItem("Network Favorite Pages", 1),
+    _SettingIndexItem("Search Sources", 1),
+    _SettingIndexItem("Show favorite status on comic tile", 1),
+    _SettingIndexItem("Show history on comic tile", 1),
+    _SettingIndexItem("Reverse default chapter order", 1),
+    _SettingIndexItem("Keyword blocking", 1),
+    _SettingIndexItem("Comment keyword blocking", 1),
+    _SettingIndexItem("Default Search Target", 1),
+    _SettingIndexItem("Auto Language Filters", 1),
+    _SettingIndexItem("Initial Page", 1),
+    _SettingIndexItem("Display mode of comic list", 1),
+    // 2 - Reading
+    _SettingIndexItem("Enable comic specific settings", 2),
+    _SettingIndexItem("Enable device specific settings", 2),
+    _SettingIndexItem("Tap to turn Pages", 2),
+    _SettingIndexItem("Reverse tap to turn Pages", 2),
+    _SettingIndexItem("Page animation", 2),
+    _SettingIndexItem("Reading mode", 2),
+    _SettingIndexItem("Auto page turning interval", 2),
+    _SettingIndexItem("Show single image on first page", 2),
+    _SettingIndexItem("Mouse scroll speed", 2),
+    _SettingIndexItem("Double tap to zoom", 2),
+    _SettingIndexItem("Long press to zoom", 2),
+    _SettingIndexItem("Long press zoom position", 2),
+    _SettingIndexItem("Limit image width", 2),
+    _SettingIndexItem("Turn page by volume keys", 2),
+    _SettingIndexItem("Display time & battery info in reader", 2),
+    _SettingIndexItem("Show system status bar", 2),
+    // 3 - Local Favorites
+    _SettingIndexItem("Show local favorites before network favorites", 3),
+    _SettingIndexItem("Auto close favorite panel after operation", 3),
+    _SettingIndexItem("Add new favorite to", 3),
+    _SettingIndexItem("Move favorite after reading", 3),
+    _SettingIndexItem("Quick Favorite", 3),
+    _SettingIndexItem("Delete all unavailable local favorite items", 3),
+    _SettingIndexItem("Click favorite", 3),
+    // 4 - APP
+    _SettingIndexItem("Storage Path for local comics", 4),
+    _SettingIndexItem("Set New Storage Path", 4),
+    _SettingIndexItem("Cache Size", 4),
+    _SettingIndexItem("Clear Cache", 4),
+    _SettingIndexItem("Cache Limit", 4),
+    _SettingIndexItem("Export App Data", 4),
+    _SettingIndexItem("Import App Data", 4),
+    _SettingIndexItem("Data Sync", 4),
+    // 5 - Network
+    _SettingIndexItem("Proxy", 5),
+    _SettingIndexItem("DNS Overrides", 5),
+    _SettingIndexItem("Download Threads", 5),
+    _SettingIndexItem("Enable DNS Overrides", 5),
+    // 6 - About
+    _SettingIndexItem("Check for updates", 6),
+    _SettingIndexItem("Check for updates on startup", 6),
+    _SettingIndexItem("Github", 6),
+    // 7 - Lab
+    _SettingIndexItem("Enable Experimental Features", 7),
+    _SettingIndexItem("Hide Comic Thumbnails", 7),
+    _SettingIndexItem("Developer Mode", 7),
+    // 8 - Debug
+    _SettingIndexItem("Reload Configs", 8),
+    _SettingIndexItem("Open Log", 8),
+    _SettingIndexItem("Ignore Certificate Errors", 8),
   ];
 
   @override
@@ -489,15 +488,15 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Widget _buildSettingsContent(int pageIndex) {
     return switch (pageIndex) {
-      0 => const ExploreSettings(),
-      1 => const ReaderSettings(),
-      2 => const LocalFavoritesSettings(),
-      3 => const AppSettings(),
-      4 => const NetworkSettings(),
-      5 => const AboutSettings(),
-      6 => const LabSettings(),
-      7 => const DebugPage(),
-      8 => const GeneralSettings(),
+      0 => const GeneralSettings(),
+      1 => const ExploreSettings(),
+      2 => const ReaderSettings(),
+      3 => const LocalFavoritesSettings(),
+      4 => const AppSettings(),
+      5 => const NetworkSettings(),
+      6 => const AboutSettings(),
+      7 => const LabSettings(),
+      8 => const DebugPage(),
       _ => throw UnimplementedError()
     };
   }
@@ -525,15 +524,15 @@ class _SettingsDetailPage extends StatelessWidget {
 
   Widget _buildPage() {
     return switch (pageIndex) {
-      0 => const ExploreSettings(),
-      1 => const ReaderSettings(),
-      2 => const LocalFavoritesSettings(),
-      3 => const AppSettings(),
-      4 => const NetworkSettings(),
-      5 => const AboutSettings(),
-      6 => const LabSettings(),
-      7 => const DebugPage(),
-      8 => const GeneralSettings(),
+      0 => const GeneralSettings(),
+      1 => const ExploreSettings(),
+      2 => const ReaderSettings(),
+      3 => const LocalFavoritesSettings(),
+      4 => const AppSettings(),
+      5 => const NetworkSettings(),
+      6 => const AboutSettings(),
+      7 => const LabSettings(),
+      8 => const DebugPage(),
       _ => throw UnimplementedError()
     };
   }

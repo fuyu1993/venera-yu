@@ -136,7 +136,7 @@ class _BodyState extends State<_Body> {
   Widget build(BuildContext context) {
     return SmoothCustomScrollView(
       slivers: [
-        SliverAppbar(title: Text('Comic Source'.tl), style: AppbarStyle.shadow),
+        SliverAppbar(title: const SizedBox.shrink(), style: AppbarStyle.shadow),
         buildCard(context),
         for (var source in ComicSource.all())
           _SliverComicSource(

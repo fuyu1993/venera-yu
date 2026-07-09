@@ -247,28 +247,24 @@ class _HistoryPageState extends State<HistoryPage> {
         body: SmoothCustomScrollView(
           slivers: [
             SliverAppbar(
-              leading: Tooltip(
-                message: multiSelectMode ? "Cancel".tl : "Back".tl,
-                child: IconButton(
-                  onPressed: () {
-                    if (multiSelectMode) {
-                      setState(() {
-                        multiSelectMode = false;
-                        selectedComics.clear();
-                      });
-                    } else {
-                      context.pop();
-                    }
-                  },
-                  icon: multiSelectMode
-                      ? const Icon(LucideIcons.x)
-                      : const Icon(LucideIcons.chevron_left),
-                ),
-              ),
               title: multiSelectMode
                   ? Text(selectedComics.length.toString())
-                  : Text('History'.tl),
-              actions: multiSelectMode ? selectActions : normalActions,
+                  : const SizedBox.shrink(),
+              actions: multiSelectMode
+                  ? [
+                      IconButton(
+                        icon: const Icon(LucideIcons.x),
+                        tooltip: "Cancel".tl,
+                        onPressed: () {
+                          setState(() {
+                            multiSelectMode = false;
+                            selectedComics.clear();
+                          });
+                        },
+                      ),
+                      ...selectActions,
+                    ]
+                  : normalActions,
             ),
             SliverGridComics(
               comics: comics,
