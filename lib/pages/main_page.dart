@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:venera/foundation/appdata.dart';
 import 'package:venera/pages/categories_page.dart';
+import 'package:venera/pages/comic_source_page.dart';
+import 'package:venera/pages/history_page.dart';
 import 'package:venera/pages/search_page.dart';
 import 'package:venera/pages/settings/settings_page.dart';
 import 'package:venera/utils/translations.dart';
@@ -41,6 +43,8 @@ class _MainPageState extends State<MainPage> {
     {'id': 'favorites', 'label': 'Favorites', 'icon': TIcons.activity, 'activeIcon': TIcons.activity},
     {'id': 'explore', 'label': 'Explore', 'icon': TIcons.explore, 'activeIcon': TIcons.explore},
     {'id': 'categories', 'label': 'Categories', 'icon': TIcons.view_list, 'activeIcon': TIcons.view_list},
+    {'id': 'history', 'label': 'History', 'icon': TIcons.history, 'activeIcon': TIcons.history},
+    {'id': 'comic_sources', 'label': 'Comic Source', 'icon': TIcons.code, 'activeIcon': TIcons.code},
   ];
 
   // Get all pages
@@ -49,18 +53,30 @@ class _MainPageState extends State<MainPage> {
     'favorites': FavoritesPage(key: PageStorageKey('favorites')),
     'explore': ExplorePage(key: PageStorageKey('explore')),
     'categories': CategoriesPage(key: PageStorageKey('categories')),
+    'history': HistoryPage(key: PageStorageKey('history')),
+    'comic_sources': ComicSourcePage(key: PageStorageKey('comic_sources')),
   };
 
   List<Map<String, dynamic>> get _customTabs {
-    var tabs = appdata.settings['customTabs'] as List?;
-    if (tabs == null || tabs.isEmpty) {
-      return _allTabs.asMap().entries.map((e) => {
+    var saved = appdata.settings['customTabs'] as List?;
+    List<Map<String, dynamic>> result;
+    if (saved == null || saved.isEmpty) {
+      result = _allTabs.asMap().entries.map((e) => {
         'id': e.value['id'],
         'visible': true,
         'order': e.key,
       }).toList();
+    } else {
+      result = saved.cast<Map<String, dynamic>>();
     }
-    return tabs.cast<Map<String, dynamic>>();
+    // Merge any new tabs not in saved config
+    var savedIds = result.map((t) => t['id']).toSet();
+    for (int i = 0; i < _allTabs.length; i++) {
+      if (!savedIds.contains(_allTabs[i]['id'])) {
+        result.add({'id': _allTabs[i]['id'], 'visible': true, 'order': result.length});
+      }
+    }
+    return result;
   }
 
   List<Map<String, dynamic>> get _visibleTabs {

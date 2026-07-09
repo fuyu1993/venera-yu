@@ -3,17 +3,14 @@ import 'package:sliver_tools/sliver_tools.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:venera/components/components.dart';
 import 'package:venera/foundation/app.dart';
-import 'package:venera/foundation/comic_source/comic_source.dart';
 import 'package:venera/foundation/consts.dart';
 import 'package:venera/foundation/favorites.dart';
 import 'package:venera/foundation/history.dart';
 import 'package:venera/foundation/local.dart';
 import 'package:venera/foundation/log.dart';
 import 'package:venera/pages/comic_details_page/comic_page.dart';
-import 'package:venera/pages/comic_source_page.dart';
 import 'package:venera/pages/downloading_page.dart';
 import 'package:venera/pages/follow_updates_page.dart';
-import 'package:venera/pages/history_page.dart';
 import 'package:venera/pages/image_favorites_page/image_favorites_page.dart';
 import 'package:venera/pages/search_page.dart';
 import 'package:venera/utils/data_sync.dart';
@@ -33,10 +30,8 @@ class HomePage extends StatelessWidget {
         SliverPadding(padding: EdgeInsets.only(top: context.padding.top)),
         const _SearchBar(),
         const _SyncDataWidget(),
-        const _History(),
         const _Local(),
         const FollowUpdatesWidget(),
-        const _ComicSourceWidget(),
         const ImageFavorites(),
         SliverPadding(padding: EdgeInsets.only(top: context.padding.bottom)),
       ],
@@ -215,116 +210,6 @@ class _SyncDataWidgetState extends State<_SyncDataWidget>
     return SliverAnimatedPaintExtent(
       duration: const Duration(milliseconds: 200),
       child: child,
-    );
-  }
-}
-
-class _History extends StatefulWidget {
-  const _History();
-
-  @override
-  State<_History> createState() => _HistoryState();
-}
-
-class _HistoryState extends State<_History> {
-  late List<History> history;
-  late int count;
-
-  void onHistoryChange() {
-    if (mounted) {
-      setState(() {
-        history = HistoryManager().getRecent();
-        count = HistoryManager().count();
-      });
-    }
-  }
-
-  @override
-  void initState() {
-    history = HistoryManager().getRecent();
-    count = HistoryManager().count();
-    HistoryManager().addListener(onHistoryChange);
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    HistoryManager().removeListener(onHistoryChange);
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SliverToBoxAdapter(
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: Theme.of(context).colorScheme.outlineVariant,
-            width: 0.6,
-          ),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(8),
-          onTap: () {
-            context.to(() => const HistoryPage());
-          },
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SizedBox(
-                height: 56,
-                child: Row(
-                  children: [
-                    Center(
-                      child: Text('History'.tl, style: ts.s18),
-                    ),
-                    Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 8),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.secondaryContainer,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(count.toString(), style: ts.s12),
-                    ),
-                    const Spacer(),
-                    const Icon(TIcons.arrow_right),
-                  ],
-                ),
-              ).paddingHorizontal(16),
-              if (history.isNotEmpty)
-                SizedBox(
-                  height: 136,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: history.length,
-                    itemBuilder: (context, index) {
-                      final heroID = history[index].id.hashCode;
-                      return SimpleComicTile(
-                        comic: history[index],
-                        heroID: heroID,
-                        onTap: () {
-                          context.to(
-                            () => ComicPage(
-                              id: history[index].id,
-                              sourceKey: history[index].type.sourceKey,
-                              cover: history[index].cover,
-                              title: history[index].title,
-                              heroID: heroID,
-                            ),
-                          );
-                        },
-                      ).paddingHorizontal(8).paddingVertical(2);
-                    },
-                  ),
-                ).paddingHorizontal(8).paddingBottom(16),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }
@@ -644,152 +529,6 @@ class _ImportComicsWidgetState extends State<_ImportComicsWidget> {
   }
 }
 
-class _ComicSourceWidget extends StatefulWidget {
-  const _ComicSourceWidget();
-
-  @override
-  State<_ComicSourceWidget> createState() => _ComicSourceWidgetState();
-}
-
-class _ComicSourceWidgetState extends State<_ComicSourceWidget> {
-  late List<String> comicSources;
-
-  void onComicSourceChange() {
-    setState(() {
-      comicSources = ComicSource.all().map((e) => e.name).toList();
-    });
-  }
-
-  @override
-  void initState() {
-    comicSources = ComicSource.all().map((e) => e.name).toList();
-    ComicSourceManager().addListener(onComicSourceChange);
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    ComicSourceManager().removeListener(onComicSourceChange);
-    super.dispose();
-  }
-
-  int get _availableUpdates {
-    int c = 0;
-    ComicSourceManager().availableUpdates.forEach((key, version) {
-      var source = ComicSource.find(key);
-      if (source != null) {
-        if (compareSemVer(version, source.version)) {
-          c++;
-        }
-      }
-    });
-    return c;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SliverToBoxAdapter(
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: Theme.of(context).colorScheme.outlineVariant,
-            width: 0.6,
-          ),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(8),
-          onTap: () {
-            context.to(() => const ComicSourcePage());
-          },
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SizedBox(
-                height: 56,
-                child: Row(
-                  children: [
-                    Center(
-                      child: Text('Comic Source'.tl, style: ts.s18),
-                    ),
-                    Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 8),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.secondaryContainer,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child:
-                          Text(comicSources.length.toString(), style: ts.s12),
-                    ),
-                    const Spacer(),
-                    const Icon(TIcons.arrow_right),
-                  ],
-                ),
-              ).paddingHorizontal(16),
-              if (comicSources.isNotEmpty)
-                SizedBox(
-                  width: double.infinity,
-                  child: Wrap(
-                    runSpacing: 8,
-                    spacing: 8,
-                    children: comicSources.map((e) {
-                      return Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color:
-                              Theme.of(context).colorScheme.secondaryContainer,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(e),
-                      );
-                    }).toList(),
-                  ).paddingHorizontal(16).paddingBottom(16),
-                ),
-              if (_availableUpdates > 0)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: context.colorScheme.outlineVariant,
-                      width: 0.6,
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        TIcons.refresh,
-                        color: context.colorScheme.primary,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        "@c updates".tlParams({
-                          'c': _availableUpdates,
-                        }),
-                        style: ts.withColor(context.colorScheme.primary),
-                      ),
-                    ],
-                  ),
-                )
-                    .toAlign(Alignment.centerLeft)
-                    .paddingHorizontal(16)
-                    .paddingBottom(8),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
 
 class _AnimatedDownloadingIcon extends StatefulWidget {
   const _AnimatedDownloadingIcon();

@@ -75,18 +75,30 @@ class _CustomTabsSettingState extends State<_CustomTabsSetting> {
     {'id': 'favorites', 'label': 'Favorites', 'icon': TIcons.activity},
     {'id': 'explore', 'label': 'Explore', 'icon': TIcons.explore},
     {'id': 'categories', 'label': 'Categories', 'icon': TIcons.view_list},
+    {'id': 'history', 'label': 'History', 'icon': TIcons.history},
+    {'id': 'comic_sources', 'label': 'Comic Source', 'icon': TIcons.code},
   ];
 
   List<Map<String, dynamic>> get _tabs {
-    var tabs = appdata.settings['customTabs'] as List?;
-    if (tabs == null || tabs.isEmpty) {
-      return _allTabs.asMap().entries.map((e) => {
+    var saved = appdata.settings['customTabs'] as List?;
+    List<Map<String, dynamic>> result;
+    if (saved == null || saved.isEmpty) {
+      result = _allTabs.asMap().entries.map((e) => {
         'id': e.value['id'],
         'visible': true,
         'order': e.key,
       }).toList();
+    } else {
+      result = saved.cast<Map<String, dynamic>>();
     }
-    return tabs.cast<Map<String, dynamic>>();
+    // Merge any new tabs not in saved config
+    var savedIds = result.map((t) => t['id']).toSet();
+    for (int i = 0; i < _allTabs.length; i++) {
+      if (!savedIds.contains(_allTabs[i]['id'])) {
+        result.add({'id': _allTabs[i]['id'], 'visible': true, 'order': result.length});
+      }
+    }
+    return result;
   }
 
   void _saveTabs(List<Map<String, dynamic>> tabs) {
