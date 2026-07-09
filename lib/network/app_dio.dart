@@ -7,6 +7,7 @@ import 'package:rhttp/rhttp.dart' as rhttp;
 import 'package:venera/foundation/appdata.dart';
 import 'package:venera/foundation/log.dart';
 import 'package:venera/network/cache.dart';
+import 'package:venera/network/dev_network_logger.dart';
 import 'package:venera/network/proxy.dart';
 
 import '../foundation/app.dart';
@@ -134,6 +135,7 @@ class AppDio with DioMixin {
       interceptors.add(NetworkCacheManager());
       interceptors.add(CloudflareInterceptor());
       interceptors.add(MyLogInterceptor());
+      interceptors.add(DeveloperNetworkLogger());
     }
   }
 
