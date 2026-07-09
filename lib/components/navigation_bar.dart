@@ -521,29 +521,40 @@ class _SingleBottomNaviWidgetState extends State<_SingleBottomNaviWidget>
   Widget buildContent() {
     final value = controller.value;
     final colorScheme = Theme.of(context).colorScheme;
+    final selectedColor = colorScheme.onSecondaryContainer;
     final icon = Icon(
       widget.enabled ? widget.entry.activeIcon : widget.entry.icon,
+      color: widget.enabled ? selectedColor : null,
+    );
+    final label = Text(
+      widget.entry.label,
+      style: TextStyle(
+        fontSize: 11,
+        color: widget.enabled ? selectedColor : null,
+      ),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
     );
     return Center(
       child: Container(
         width: 64,
-        height: 28,
+        height: 50,
         decoration: BoxDecoration(
           borderRadius: const BorderRadius.all(Radius.circular(32)),
-          color: isHovering ? colorScheme.surfaceContainer : Colors.transparent,
-        ),
-        child: Center(
-          child: Container(
-            width: 32 + value * 32,
-            height: 28,
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.all(Radius.circular(32)),
-              color: value != 0
+          color: isHovering
+              ? colorScheme.surfaceContainer
+              : (widget.enabled && value != 0
                   ? colorScheme.secondaryContainer
-                  : Colors.transparent,
-            ),
-            child: Center(child: icon),
-          ),
+                  : Colors.transparent),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            icon,
+            const SizedBox(height: 3),
+            label,
+          ],
         ),
       ),
     );
