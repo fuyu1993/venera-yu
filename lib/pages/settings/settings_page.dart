@@ -151,8 +151,8 @@ class _SettingsPageState extends State<SettingsPage> {
     _SettingIndexItem("Ignore Certificate Errors", 7),
     // 8 - General
     _SettingIndexItem("Language", 8),
-    _SettingIndexItem("Theme Mode", 8),
-    _SettingIndexItem("Theme Color", 8),
+    _SettingIndexItem("Appearance", 8),
+    _SettingIndexItem("Theme", 8),
   ];
 
   @override

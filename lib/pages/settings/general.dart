@@ -26,14 +26,9 @@ class _GeneralSettingsState extends State<GeneralSettings> {
             App.forceRebuild();
           },
         ).toSliver(),
-        _SettingPartTitle(
-          title: "Appearance".tl,
-          icon: Icons.color_lens,
-        ),
         SelectSetting(
-          title: "Theme Mode".tl,
+          title: "Appearance".tl,
           settingKey: "theme_mode",
-          divided: false,
           optionTranslation: {
             "system": "System".tl,
             "light": "Light".tl,
@@ -44,7 +39,7 @@ class _GeneralSettingsState extends State<GeneralSettings> {
           },
         ).toSliver(),
         SelectSetting(
-          title: "Theme Color".tl,
+          title: "Theme".tl,
           settingKey: "color",
           optionTranslation: {
             "system": "System".tl,
