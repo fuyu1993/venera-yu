@@ -134,7 +134,7 @@ class _PopUpWidgetScaffoldState extends State<PopUpWidgetScaffold> {
                 Tooltip(
                   message: "Back".tl,
                   child: IconButton(
-                    icon: const Icon(Icons.arrow_back_sharp),
+                    icon: const Icon(TIcons.chevron_left),
                     onPressed: () =>
                         context.canPop() ? context.pop() : App.pop(),
                   ),

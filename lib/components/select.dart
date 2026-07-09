@@ -69,7 +69,7 @@ class Select extends StatelessWidget {
               child: Text(current ?? ' ', style: ts.s14),
             ),
             const SizedBox(width: 8),
-            Icon(Icons.arrow_drop_down, color: context.colorScheme.primary),
+            Icon(TIcons.arrow_down, color: context.colorScheme.primary),
           ],
         ).padding(const EdgeInsets.symmetric(horizontal: 12, vertical: 4)),
       ),
@@ -198,7 +198,7 @@ class AnimatedCheckWidget extends AnimatedWidget {
           widthFactor: animation.value,
           child: ClipRRect(
             child: Icon(
-              Icons.check,
+              TIcons.check,
               size: iconSize,
               color: Theme.of(context).colorScheme.primary,
             ),

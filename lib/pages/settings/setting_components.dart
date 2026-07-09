@@ -215,7 +215,7 @@ class _DoubleLineSelectSettingsState extends State<_DoubleLineSelectSettings> {
             if (widget.help != null)
               Button.icon(
               size: 18,
-              icon: const Icon(Icons.help_outline),
+              icon: const Icon(TIcons.help_circle),
               onPressed: () {
                 showDialog(
                   context: context,
@@ -239,7 +239,7 @@ class _DoubleLineSelectSettingsState extends State<_DoubleLineSelectSettings> {
         ],
       ),
       subtitle: Text(widget.optionTranslation[value] ?? "None"),
-      trailing: const Icon(Icons.arrow_drop_down),
+      trailing: const Icon(TIcons.arrow_down),
       onTap: () {
         var renderBox = context.findRenderObject() as RenderBox;
         var offset = renderBox.localToGlobal(Offset.zero);
@@ -346,7 +346,7 @@ class _EndSelectorSelectSettingState extends State<_EndSelectorSelectSetting> {
             if (widget.help != null)
               Button.icon(
               size: 18,
-              icon: const Icon(Icons.help_outline),
+              icon: const Icon(TIcons.help_circle),
               onPressed: () {
                 showDialog(
                   context: context,
@@ -517,7 +517,7 @@ class _PopupWindowSetting extends StatelessWidget {
       context,
       ListTile(
         title: Text(title),
-        trailing: const Icon(Icons.arrow_right),
+        trailing: const Icon(TIcons.arrow_right),
         onTap: () {
           showPopUpWidget(App.rootContext, builder());
         },
@@ -612,7 +612,7 @@ class _MultiPagesFilterState extends State<_MultiPagesFilter> {
         if (keys.length < widget.pages.length)
           TextButton.icon(
             label: Text("Add".tl),
-            icon: const Icon(Icons.add),
+            icon: const Icon(TIcons.add),
             onPressed: showAddDialog,
           ),
       ],
@@ -629,7 +629,7 @@ class _MultiPagesFilterState extends State<_MultiPagesFilter> {
             keys.remove(key);
           });
         },
-        icon: const Icon(Icons.delete_outline),
+        icon: const Icon(TIcons.delete),
       ),
     );
 
@@ -638,7 +638,7 @@ class _MultiPagesFilterState extends State<_MultiPagesFilter> {
       key: Key(key),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
-        children: [removeButton, const Icon(Icons.drag_handle)],
+        children: [removeButton, const Icon(TIcons.drag_move)],
       ),
     );
   }

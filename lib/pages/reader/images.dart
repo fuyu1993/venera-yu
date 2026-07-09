@@ -1342,7 +1342,7 @@ class _SwipeChangeChapterProgressState
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            widget.isPrev ? Icons.arrow_downward : Icons.arrow_upward,
+            widget.isPrev ? TIcons.arrow_down : TIcons.arrow_up,
             color: context.colorScheme.onSurface,
             size: 16,
           ),

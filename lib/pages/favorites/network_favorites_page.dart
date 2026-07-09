@@ -101,7 +101,7 @@ class _NormalFavoritePageState extends State<_NormalFavoritePage> {
           message: "Folders".tl,
           child: context.width <= _kTwoPanelChangeWidth
               ? IconButton(
-                  icon: const Icon(Icons.menu),
+                  icon: const Icon(TIcons.menu),
                   color: context.colorScheme.primary,
                   onPressed: showFolders,
                 )
@@ -115,7 +115,7 @@ class _NormalFavoritePageState extends State<_NormalFavoritePage> {
           Tooltip(
             message: "Refresh".tl,
             child: IconButton(
-              icon: const Icon(Icons.refresh),
+              icon: const Icon(TIcons.refresh),
               onPressed: () {
                 // Force refresh bypassing cache
                 NetworkCacheManager().clear();
@@ -125,7 +125,7 @@ class _NormalFavoritePageState extends State<_NormalFavoritePage> {
           ),
           MenuButton(entries: [
             MenuEntry(
-              icon: Icons.sync,
+              icon: TIcons.refresh,
               text: "Convert to local".tl,
               onClick: () {
                 importNetworkFolder(widget.data.key, 9999999, null, null);
@@ -139,7 +139,7 @@ class _NormalFavoritePageState extends State<_NormalFavoritePage> {
           message: "Folders".tl,
           child: context.width <= _kTwoPanelChangeWidth
               ? IconButton(
-                  icon: const Icon(Icons.menu),
+                  icon: const Icon(TIcons.menu),
                   color: context.colorScheme.primary,
                   onPressed: context
                       .findAncestorStateOfType<_FavoritesPageState>()!
@@ -161,7 +161,7 @@ class _NormalFavoritePageState extends State<_NormalFavoritePage> {
       menuBuilder: (comic) {
         return [
           MenuEntry(
-            icon: Icons.delete_outline,
+            icon: TIcons.delete,
             text: "Remove".tl,
             onClick: () async {
               var res = await _deleteComic(
@@ -232,7 +232,7 @@ class _MultiFolderFavoritesPageState extends State<_MultiFolderFavoritesPage> {
         message: "Folders".tl,
         child: context.width <= _kTwoPanelChangeWidth
             ? IconButton(
-                icon: const Icon(Icons.menu),
+                icon: const Icon(TIcons.menu),
                 color: context.colorScheme.primary,
                 onPressed: showFolders,
               )
@@ -249,7 +249,7 @@ class _MultiFolderFavoritesPageState extends State<_MultiFolderFavoritesPage> {
         message: "Folders".tl,
         child: context.width <= _kTwoPanelChangeWidth
             ? IconButton(
-                icon: const Icon(Icons.menu),
+                icon: const Icon(TIcons.menu),
                 color: context.colorScheme.primary,
                 onPressed: showFolders,
               )
@@ -349,7 +349,7 @@ class _MultiFolderFavoritesPageState extends State<_MultiFolderFavoritesPage> {
                       children: [
                         Text("Create a folder".tl),
                         const Icon(
-                          Icons.add,
+                          TIcons.add,
                           size: 18,
                         ),
                       ],
@@ -402,7 +402,7 @@ class _FolderTile extends StatelessWidget {
           child: Row(
             children: [
               Icon(
-                Icons.folder,
+                TIcons.folder,
                 size: 28,
                 color: Theme.of(context).colorScheme.secondary,
               ),
@@ -421,11 +421,11 @@ class _FolderTile extends StatelessWidget {
               ),
               if (deleteFolder != null)
                 IconButton(
-                  icon: const Icon(Icons.delete_outline),
+                  icon: const Icon(TIcons.delete),
                   onPressed: () => onDeleteFolder(context),
                 )
               else
-                const Icon(Icons.arrow_right),
+                const Icon(TIcons.arrow_right),
             ],
           ),
         ),
@@ -556,7 +556,7 @@ class _FavoriteFolder extends StatelessWidget {
         actions: [
           MenuButton(entries: [
             MenuEntry(
-              icon: Icons.sync,
+              icon: TIcons.refresh,
               text: "Convert to local".tl,
               onClick: () {
                 importNetworkFolder(data.key, 9999999, title, folderID);
@@ -576,7 +576,7 @@ class _FavoriteFolder extends StatelessWidget {
       menuBuilder: (comic) {
         return [
           MenuEntry(
-            icon: Icons.delete_outline,
+            icon: TIcons.delete,
             text: "Remove".tl,
             onClick: () async {
               var res = await _deleteComic(

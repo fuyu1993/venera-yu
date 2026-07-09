@@ -69,15 +69,15 @@ class _SettingsPageState extends State<SettingsPage> {
   ];
 
   final icons = <IconData>[
-    Icons.explore,
-    Icons.book,
-    Icons.collections_bookmark_rounded,
-    Icons.apps,
-    Icons.public,
-    Icons.info,
-    Icons.science_outlined,
-    Icons.bug_report,
-    Icons.tune,
+    TIcons.explore,
+    TIcons.book_open,
+    TIcons.bookmark,
+    TIcons.app,
+    TIcons.internet,
+    TIcons.info_circle,
+    TIcons.building,
+    TIcons.bug_report,
+    TIcons.adjustment,
   ];
 
   // Settings index for search: all searchable settings with their page index
@@ -289,7 +289,7 @@ class _SettingsPageState extends State<SettingsPage> {
               Tooltip(
                 message: "Back",
                 child: IconButton(
-                  icon: const Icon(Icons.arrow_back),
+                  icon: const Icon(TIcons.chevron_left),
                   onPressed: _isSearching
                       ? () {
                           setState(() {
@@ -308,7 +308,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   child: Text("Settings".tl, style: ts.s20),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.search),
+                  icon: const Icon(TIcons.search),
                   tooltip: "搜索设置".tl,
                   onPressed: () {
                     setState(() => _isSearching = true);
@@ -350,7 +350,7 @@ class _SettingsPageState extends State<SettingsPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.search, size: 48, color: colors.onSurface.withValues(alpha: 0.3)),
+            Icon(TIcons.search, size: 48, color: colors.onSurface.withValues(alpha: 0.3)),
             const SizedBox(height: 12),
             Text("输入关键词搜索设置项".tl,
                 style: ts.s14.copyWith(color: colors.onSurface.withValues(alpha: 0.5))),
@@ -364,7 +364,7 @@ class _SettingsPageState extends State<SettingsPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.search_off, size: 48,
+            Icon(TIcons.close, size: 48,
                 color: colors.onSurface.withValues(alpha: 0.3)),
             const SizedBox(height: 12),
             Text("没有找到相关设置".tl,
@@ -406,7 +406,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       ],
                     ),
                   ),
-                  const Icon(Icons.chevron_right, size: 20),
+                  const Icon(TIcons.chevron_right, size: 20),
                 ],
               ),
             ),
@@ -443,7 +443,7 @@ class _SettingsPageState extends State<SettingsPage> {
             style: ts.s16,
           ),
           const Spacer(),
-          if (selected) const Icon(Icons.arrow_right)
+          if (selected) const Icon(TIcons.arrow_right)
         ]),
       );
 

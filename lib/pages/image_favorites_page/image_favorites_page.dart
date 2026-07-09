@@ -130,7 +130,7 @@ class _ImageFavoritesPageState extends State<ImageFavoritesPage> {
   Widget buildMultiSelectMenu() {
     return MenuButton(entries: [
       MenuEntry(
-        icon: Icons.delete_outline,
+        icon: TIcons.delete,
         text: "Delete".tl,
         onClick: () {
           ImageFavoriteManager()
@@ -179,11 +179,11 @@ class _ImageFavoritesPageState extends State<ImageFavoritesPage> {
   Widget build(BuildContext context) {
     List<Widget> selectActions = [
       IconButton(
-          icon: const Icon(Icons.select_all),
+          icon: const Icon(TIcons.component_checkbox),
           tooltip: "Select All".tl,
           onPressed: selectAll),
       IconButton(
-          icon: const Icon(Icons.deselect),
+          icon: const Icon(TIcons.clear),
           tooltip: "Deselect".tl,
           onPressed: deSelect),
       buildMultiSelectMenu(),
@@ -199,7 +199,7 @@ class _ImageFavoritesPageState extends State<ImageFavoritesPage> {
               Tooltip(
                 message: "Search".tl,
                 child: IconButton(
-                  icon: const Icon(Icons.search),
+                  icon: const Icon(TIcons.search),
                   onPressed: () {
                     setState(() {
                       searchMode = true;
@@ -212,7 +212,7 @@ class _ImageFavoritesPageState extends State<ImageFavoritesPage> {
                 child: IconButton(
                   isSelected: timeFilterSelect != TimeRange.all ||
                       numFilterSelect != numFilterList[0],
-                  icon: const Icon(Icons.sort_rounded),
+                  icon: const Icon(TIcons.filter_sort),
                   onPressed: sort,
                 ),
               ),
@@ -221,7 +221,7 @@ class _ImageFavoritesPageState extends State<ImageFavoritesPage> {
                     ? "Exit Multi-Select".tl
                     : "Multi-Select".tl,
                 child: IconButton(
-                  icon: const Icon(Icons.checklist),
+                  icon: const Icon(TIcons.assignment_checked),
                   onPressed: () {
                     setState(() {
                       multiSelectMode = !multiSelectMode;
@@ -236,7 +236,7 @@ class _ImageFavoritesPageState extends State<ImageFavoritesPage> {
             leading: Tooltip(
               message: "Cancel".tl,
               child: IconButton(
-                icon: const Icon(Icons.close),
+                icon: const Icon(TIcons.close),
                 onPressed: () {
                   setState(() {
                     multiSelectMode = false;
@@ -253,7 +253,7 @@ class _ImageFavoritesPageState extends State<ImageFavoritesPage> {
             leading: Tooltip(
               message: "Cancel".tl,
               child: IconButton(
-                icon: const Icon(Icons.close),
+                icon: const Icon(TIcons.close),
                 onPressed: () {
                   controller.clear();
                   setState(() {

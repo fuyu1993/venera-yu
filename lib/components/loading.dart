@@ -32,7 +32,7 @@ class NetworkError extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
-                  Icons.error_outline,
+                  TIcons.error_circle,
                   size: 28,
                   color: context.colorScheme.error,
                 ),

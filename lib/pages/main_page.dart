@@ -37,10 +37,10 @@ class _MainPageState extends State<MainPage> {
 
   // Get all available tabs
   static const _allTabs = [
-    {'id': 'home', 'label': 'Home', 'icon': Icons.home_outlined, 'activeIcon': Icons.home},
-    {'id': 'favorites', 'label': 'Favorites', 'icon': Icons.local_activity_outlined, 'activeIcon': Icons.local_activity},
-    {'id': 'explore', 'label': 'Explore', 'icon': Icons.explore_outlined, 'activeIcon': Icons.explore},
-    {'id': 'categories', 'label': 'Categories', 'icon': Icons.category_outlined, 'activeIcon': Icons.category},
+    {'id': 'home', 'label': 'Home', 'icon': TIcons.home, 'activeIcon': TIcons.home},
+    {'id': 'favorites', 'label': 'Favorites', 'icon': TIcons.activity, 'activeIcon': TIcons.activity},
+    {'id': 'explore', 'label': 'Explore', 'icon': TIcons.explore, 'activeIcon': TIcons.explore},
+    {'id': 'categories', 'label': 'Categories', 'icon': TIcons.view_list, 'activeIcon': TIcons.view_list},
   ];
 
   // Get all pages
@@ -144,14 +144,14 @@ class _MainPageState extends State<MainPage> {
       paneActions: [
         if(index != 0)
           PaneActionEntry(
-            icon: Icons.search,
+            icon: TIcons.search,
             label: "Search".tl,
             onTap: () {
               to(() => const SearchPage(), preventDuplicate: true);
             },
           ),
         PaneActionEntry(
-          icon: Icons.settings,
+          icon: TIcons.setting,
           label: "Settings".tl,
           onTap: () {
             to(() => const SettingsPage(), preventDuplicate: true);

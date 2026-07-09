@@ -272,7 +272,7 @@ class _ChapterCommentsPageState extends State<ChapterCommentsPage> {
                   }
                 },
                 icon: Icon(
-                  Icons.send,
+                  TIcons.send,
                   color: Theme.of(context).colorScheme.secondary,
                 ),
               ),
@@ -413,7 +413,7 @@ class _ChapterCommentTileState extends State<_ChapterCommentTile> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.insert_comment_outlined, size: 16),
+            const Icon(TIcons.chat_bubble_add, size: 16),
             const SizedBox(width: 8),
             Text(widget.comment.replyCount.toString()),
           ],
@@ -470,12 +470,12 @@ class _ChapterCommentTileState extends State<_ChapterCommentTile> {
               )
             else if (isLiked)
               Icon(
-                Icons.favorite,
+                TIcons.star_filled,
                 size: 16,
                 color: context.useTextColor(Colors.red),
               )
             else
-              const Icon(Icons.favorite_border, size: 16),
+              const Icon(TIcons.star, size: 16),
             const SizedBox(width: 8),
             Text(likes.toString()),
           ],
@@ -550,7 +550,7 @@ class _ChapterCommentTileState extends State<_ChapterCommentTile> {
         children: [
           Button.icon(
             isLoading: isVotingUp,
-            icon: const Icon(Icons.arrow_upward),
+            icon: const Icon(TIcons.arrow_up),
             size: 18,
             color: upColor,
             onPressed: () => vote(true),
@@ -560,7 +560,7 @@ class _ChapterCommentTileState extends State<_ChapterCommentTile> {
           const SizedBox(width: 4),
           Button.icon(
             isLoading: isVotingDown,
-            icon: const Icon(Icons.arrow_downward),
+            icon: const Icon(TIcons.arrow_down),
             size: 18,
             color: downColor,
             onPressed: () => vote(false),
@@ -704,14 +704,14 @@ class _EmbeddedChapterCommentsPageState
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.arrow_back),
+            icon: const Icon(TIcons.chevron_left),
             onPressed: () {
               Navigator.of(context).pop();
             },
             tooltip: "Exit".tl,
           ),
           const SizedBox(width: 4),
-          Icon(Icons.comment, size: 24),
+          Icon(TIcons.chat_bubble, size: 24),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -865,7 +865,7 @@ class _EmbeddedChapterCommentsPageState
                   }
                 },
                 icon: Icon(
-                  Icons.send,
+                  TIcons.send,
                   color: Theme.of(context).colorScheme.secondary,
                 ),
               ),

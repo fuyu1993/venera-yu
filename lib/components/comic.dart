@@ -92,7 +92,7 @@ class ComicTile extends StatelessWidget {
       location,
       [
         MenuEntry(
-          icon: Icons.chrome_reader_mode_outlined,
+          icon: TIcons.view_agenda,
           text: 'Details'.tl,
           onClick: () {
             App.mainNavigatorKey?.currentContext?.to(
@@ -106,7 +106,7 @@ class ComicTile extends StatelessWidget {
           },
         ),
         MenuEntry(
-          icon: Icons.copy,
+          icon: TIcons.copy,
           text: 'Copy Title'.tl,
           onClick: () {
             Clipboard.setData(ClipboardData(text: comic.title));
@@ -114,14 +114,14 @@ class ComicTile extends StatelessWidget {
           },
         ),
         MenuEntry(
-          icon: Icons.stars_outlined,
+          icon: TIcons.star,
           text: 'Add to favorites'.tl,
           onClick: () {
             addFavorite([comic]);
           },
         ),
         MenuEntry(
-          icon: Icons.block,
+          icon: TIcons.close_circle,
           text: 'Block'.tl,
           onClick: () => block(context),
         ),
@@ -175,7 +175,7 @@ class ComicTile extends StatelessWidget {
                     width: 24,
                     color: Colors.green,
                     child: const Icon(
-                      Icons.bookmark_rounded,
+                      TIcons.bookmark,
                       size: 16,
                       color: Colors.white,
                     ),
@@ -205,7 +205,7 @@ class ComicTile extends StatelessWidget {
         color: Theme.of(context).colorScheme.secondaryContainer,
         child: Center(
           child: Icon(
-            Icons.image_not_supported_outlined,
+            TIcons.image_error,
             size: 32,
             color: Theme.of(context).colorScheme.onSecondaryContainer.withValues(alpha: 0.5),
           ),
@@ -1326,7 +1326,7 @@ class ComicListState extends State<ComicList> {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.error_outline),
+                    const Icon(TIcons.error_circle),
                     const SizedBox(width: 8),
                     Expanded(child: Text(_error!, maxLines: 3)),
                   ],
@@ -1411,14 +1411,14 @@ class _Star extends StatelessWidget {
       child: Stack(
         children: [
           Icon(
-            Icons.star_outline,
+            TIcons.star,
             size: size,
             color: context.colorScheme.secondary,
           ),
           ClipRect(
             clipper: _StarClipper(value),
             child: Icon(
-              Icons.star,
+              TIcons.star,
               size: size,
               color: context.colorScheme.secondary,
             ),
@@ -1557,7 +1557,7 @@ class _RatingWidgetState extends State<RatingWidget> {
     List<Widget> children = [];
     for (int i = 0; i < full; i++) {
       children.add(Icon(
-        Icons.star,
+        TIcons.star,
         size: widget.size,
         color: context.colorScheme.secondary,
       ));
@@ -1573,7 +1573,7 @@ class _RatingWidgetState extends State<RatingWidget> {
       children.add(ClipRect(
         clipper: _SMClipper(rating: star() * widget.size),
         child: Icon(
-          Icons.star,
+          TIcons.star,
           size: widget.size,
           color: context.colorScheme.secondary,
         ),
@@ -1587,7 +1587,7 @@ class _RatingWidgetState extends State<RatingWidget> {
     List<Widget> children = [];
     for (int i = 0; i < widget.count; i++) {
       children.add(Icon(
-        Icons.star_border,
+        TIcons.star,
         size: widget.size,
         color: context.colorScheme.secondary,
       ));
@@ -1654,7 +1654,7 @@ class SimpleComicTile extends StatelessWidget {
 
     if (appdata.settings['lab_hideThumbnails'] == true) {
       child = Icon(
-        Icons.image_not_supported_outlined,
+        TIcons.image_error,
         size: 32,
         color: Theme.of(context).colorScheme.onSecondaryContainer.withValues(alpha: 0.5),
       );

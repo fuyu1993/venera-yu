@@ -101,7 +101,7 @@ class _ExplorePageState extends State<ExplorePage>
         child: FloatingActionButton(
           key: const Key("FAB"),
           onPressed: refresh,
-          child: const Icon(Icons.refresh),
+          child: const Icon(TIcons.refresh),
         ),
       );
 
@@ -149,7 +149,7 @@ class _ExplorePageState extends State<ExplorePage>
         tabs: pages.map((e) => buildTab(e)).toList(),
         controller: controller,
         actionButton: TabActionButton(
-          icon: const Icon(Icons.add),
+          icon: const Icon(TIcons.add),
           text: "Add".tl,
           onPressed: addPage,
         ),

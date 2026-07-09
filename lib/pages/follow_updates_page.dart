@@ -80,7 +80,7 @@ class _FollowUpdatesWidgetState
                       child: Text('Follow Updates'.tl, style: ts.s18),
                     ),
                     const Spacer(),
-                    const Icon(Icons.arrow_right),
+                    const Icon(TIcons.arrow_right),
                   ],
                 ),
               ).paddingHorizontal(16),
@@ -192,7 +192,7 @@ class _FollowUpdatesPageState extends AutomaticGlobalState<FollowUpdatesPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ListTile(
-              leading: Icon(Icons.info_outline),
+              leading: Icon(TIcons.info_circle),
               title: Text("Not Configured".tl),
             ),
             Text(
@@ -226,7 +226,7 @@ class _FollowUpdatesPageState extends AutomaticGlobalState<FollowUpdatesPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ListTile(
-              leading: Icon(Icons.stars_outlined),
+              leading: Icon(TIcons.star),
               title: Text(folder!),
             ),
             Text(
@@ -276,7 +276,7 @@ class _FollowUpdatesPageState extends AutomaticGlobalState<FollowUpdatesPage> {
             ),
             child: Row(
               children: [
-                Icon(Icons.update),
+                Icon(TIcons.refresh),
                 const SizedBox(width: 8),
                 Text(
                   "Updates".tl,
@@ -285,7 +285,7 @@ class _FollowUpdatesPageState extends AutomaticGlobalState<FollowUpdatesPage> {
                 const Spacer(),
                 if (updatedComics.isNotEmpty)
                   IconButton(
-                    icon: Icon(Icons.clear_all),
+                    icon: Icon(TIcons.clear),
                     onPressed: () {
                       showConfirmDialog(
                         context: App.rootContext,
@@ -365,7 +365,7 @@ class _FollowUpdatesPageState extends AutomaticGlobalState<FollowUpdatesPage> {
             ),
             child: Row(
               children: [
-                Icon(Icons.list),
+                Icon(TIcons.view_list),
                 const SizedBox(width: 8),
                 Text(
                   "All Comics".tl,

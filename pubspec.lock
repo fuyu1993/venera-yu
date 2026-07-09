@@ -953,6 +953,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.4.0"
+  tdesign_icons:
+    dependency: "direct main"
+    description:
+      name: tdesign_icons
+      sha256: "55eb78f4cb77d26bdbf7251e3263ac88cc77271d2f4a46603eb59b0dcc81c894"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.4"
   term_glyph:
     dependency: transitive
     description:

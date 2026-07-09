@@ -181,7 +181,7 @@ class _SearchResultPageState extends State<SearchResultPage> {
     return Tooltip(
       message: "Settings".tl,
       child: IconButton(
-        icon: const Icon(Icons.tune),
+        icon: const Icon(TIcons.adjustment),
         onPressed: () async {
           if (suggestionOverlay != null) {
             suggestionsController.remove();
@@ -350,12 +350,12 @@ class _SuggestionsState extends State<_Suggestions> {
     return Column(
       children: [
         ListTile(
-          leading: const Icon(Icons.hub_outlined),
+          leading: const Icon(TIcons.web),
           title: Text("Suggestions".tl),
           trailing: Tooltip(
             message: "Clear".tl,
             child: IconButton(
-              icon: const Icon(Icons.clear_all),
+              icon: const Icon(TIcons.clear),
               onPressed: () {
                 widget.controller.suggestions.clear();
                 widget.controller.remove();

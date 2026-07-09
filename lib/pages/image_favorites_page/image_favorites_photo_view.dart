@@ -189,7 +189,7 @@ class _ImageFavoritesPhotoViewState extends State<ImageFavoritesPhotoView> {
             children: [
               const SizedBox(width: 8),
               IconButton(
-                icon: Icon(Icons.close),
+                icon: Icon(TIcons.close),
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
@@ -202,7 +202,7 @@ class _ImageFavoritesPhotoViewState extends State<ImageFavoritesPhotoView> {
                 ),
               ),
               IconButton(
-                icon: Icon(Icons.more_vert),
+                icon: Icon(TIcons.ellipsis),
                 onPressed: showMenu,
               ),
               const SizedBox(width: 8),
@@ -219,7 +219,7 @@ class _ImageFavoritesPhotoViewState extends State<ImageFavoritesPhotoView> {
       Offset(context.width, context.padding.top),
       [
         MenuEntry(
-          icon: Icons.image_outlined,
+          icon: TIcons.image,
           text: "Save Image".tl,
           onClick: () async {
             var temp = images[currentPage];
@@ -231,7 +231,7 @@ class _ImageFavoritesPhotoViewState extends State<ImageFavoritesPhotoView> {
           },
         ),
         MenuEntry(
-          icon: Icons.menu_book_outlined,
+          icon: TIcons.book_open,
           text: "Read".tl,
           onClick: () async {
             var comic = widget.comic;

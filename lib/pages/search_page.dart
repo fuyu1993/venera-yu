@@ -265,10 +265,10 @@ class _SearchPageState extends State<SearchPage> {
           children: [
             ListTile(
               contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.search),
+              leading: const Icon(TIcons.search),
               title: Text("Search in".tl),
               trailing: IconButton(
-                icon: const Icon(Icons.settings),
+                icon: const Icon(TIcons.setting),
                 onPressed: manageSearchSources,
               ),
             ),
@@ -398,14 +398,14 @@ class _SearchPageState extends State<SearchPage> {
     Widget buildItem(Pair<String, TranslationType> value) {
       if (value.left == "**URL**") {
         return ListTile(
-          leading: const Icon(Icons.link),
+          leading: const Icon(TIcons.link),
           title: Text("Open link".tl),
           subtitle: Text(
             controller.text,
             maxLines: 1,
             overflow: TextOverflow.fade,
           ),
-          trailing: const Icon(Icons.arrow_right),
+          trailing: const Icon(TIcons.arrow_right),
           onTap: () {
             setState(() {
               suggestions.clear();
@@ -422,14 +422,14 @@ class _SearchPageState extends State<SearchPage> {
           return const SizedBox();
         }
         return ListTile(
-          leading: const Icon(Icons.link),
+          leading: const Icon(TIcons.link),
           title: Text("${"Open comic".tl}: ${comicSource.name}"),
           subtitle: Text(
             controller.text,
             maxLines: 1,
             overflow: TextOverflow.fade,
           ),
-          trailing: const Icon(Icons.arrow_right),
+          trailing: const Icon(TIcons.arrow_right),
           onTap: () {
             context.to(
               () => ComicPage(
@@ -477,12 +477,12 @@ class _SearchPageState extends State<SearchPage> {
       slivers: [
         SliverToBoxAdapter(
           child: ListTile(
-            leading: const Icon(Icons.hub_outlined),
+            leading: const Icon(TIcons.web),
             title: Text("Suggestions".tl),
             trailing: Tooltip(
               message: "Clear".tl,
               child: IconButton(
-                icon: const Icon(Icons.clear_all),
+                icon: const Icon(TIcons.clear),
                 onPressed: () {
                   suggestions.clear();
                   update();
@@ -600,7 +600,7 @@ class _SearchHistoryState extends State<_SearchHistory> {
           }
           if (index == 1) {
             return ListTile(
-              leading: const Icon(Icons.history),
+              leading: const Icon(TIcons.history),
               contentPadding: EdgeInsets.zero,
               title: Text("Search History".tl),
               trailing: Flyout(
@@ -624,7 +624,7 @@ class _SearchHistoryState extends State<_SearchHistory> {
                     return Tooltip(
                       message: "Clear".tl,
                       child: IconButton(
-                        icon: const Icon(Icons.clear_all),
+                        icon: const Icon(TIcons.clear),
                         onPressed: () {
                           context
                               .findAncestorStateOfType<FlyoutState>()!
@@ -651,7 +651,7 @@ class _SearchHistoryState extends State<_SearchHistory> {
         offset,
         [
           MenuEntry(
-            icon: Icons.copy,
+            icon: TIcons.copy,
             text: 'Copy'.tl,
             onClick: () {
               Clipboard.setData(
@@ -659,7 +659,7 @@ class _SearchHistoryState extends State<_SearchHistory> {
             },
           ),
           MenuEntry(
-            icon: Icons.delete,
+            icon: TIcons.delete,
             text: 'Delete'.tl,
             onClick: () {
               appdata.removeSearchHistory(appdata.searchHistory[index]);

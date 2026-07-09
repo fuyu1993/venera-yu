@@ -72,21 +72,21 @@ class _ImageFavoritesItemState extends State<_ImageFavoritesItem> {
       location,
       [
         MenuEntry(
-          icon: Icons.chrome_reader_mode_outlined,
+          icon: TIcons.view_agenda,
           text: 'Details'.tl,
           onClick: () {
             goComicInfo(widget.imageFavoritesComic);
           },
         ),
         MenuEntry(
-          icon: Icons.copy,
+          icon: TIcons.copy,
           text: 'Copy Title'.tl,
           onClick: () {
             copyTitle();
           },
         ),
         MenuEntry(
-          icon: Icons.select_all,
+          icon: TIcons.component_checkbox,
           text: 'Select All'.tl,
           onClick: () {
             for (var ele in widget.imageFavoritesComic.images) {
@@ -95,7 +95,7 @@ class _ImageFavoritesItemState extends State<_ImageFavoritesItem> {
           },
         ),
         MenuEntry(
-          icon: Icons.read_more,
+          icon: TIcons.article,
           text: 'Photo View'.tl,
           onClick: () {
             goPhotoView(widget.imageFavoritesComic.images.first);

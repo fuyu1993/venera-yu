@@ -66,7 +66,7 @@ class _SearchBar extends StatelessWidget {
             child: Row(
               children: [
                 const SizedBox(width: 16),
-                const Icon(Icons.search),
+                const Icon(TIcons.search),
                 const SizedBox(width: 8),
                 Text('Search'.tl, style: ts.s16),
                 const Spacer(),
@@ -138,7 +138,7 @@ class _SyncDataWidgetState extends State<_SyncDataWidget>
             borderRadius: BorderRadius.circular(8),
           ),
           child: ListTile(
-            leading: const Icon(Icons.sync),
+            leading: const Icon(TIcons.refresh),
             title: Text('Syncing Data'.tl),
             trailing: const CircularProgressIndicator(strokeWidth: 2)
                 .fixWidth(18)
@@ -157,7 +157,7 @@ class _SyncDataWidgetState extends State<_SyncDataWidget>
             borderRadius: BorderRadius.circular(8),
           ),
           child: ListTile(
-            leading: const Icon(Icons.sync),
+            leading: const Icon(TIcons.refresh),
             title: Text('Sync Data'.tl),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
@@ -184,7 +184,7 @@ class _SyncDataWidgetState extends State<_SyncDataWidget>
                       child: Row(
                         children: [
                           Icon(
-                            Icons.error_outline,
+                            TIcons.error_circle,
                             color: Colors.red,
                             size: 18,
                           ),
@@ -195,13 +195,13 @@ class _SyncDataWidgetState extends State<_SyncDataWidget>
                     ),
                   ).paddingRight(4),
                 IconButton(
-                  icon: const Icon(Icons.cloud_upload_outlined),
+                  icon: const Icon(TIcons.cloud_upload),
                   onPressed: () async {
                     DataSync().uploadData();
                   },
                 ),
                 IconButton(
-                  icon: const Icon(Icons.cloud_download_outlined),
+                  icon: const Icon(TIcons.cloud_download),
                   onPressed: () async {
                     DataSync().downloadData();
                   },
@@ -291,7 +291,7 @@ class _HistoryState extends State<_History> {
                       child: Text(count.toString(), style: ts.s12),
                     ),
                     const Spacer(),
-                    const Icon(Icons.arrow_right),
+                    const Icon(TIcons.arrow_right),
                   ],
                 ),
               ).paddingHorizontal(16),
@@ -401,7 +401,7 @@ class _LocalState extends State<_Local> {
                       child: Text(count.toString(), style: ts.s12),
                     ),
                     const Spacer(),
-                    const Icon(Icons.arrow_right),
+                    const Icon(TIcons.arrow_right),
                   ],
                 ),
               ).paddingHorizontal(16),
@@ -438,7 +438,7 @@ class _LocalState extends State<_Local> {
                       child: Row(
                         children: [
                           if (LocalManager().downloadingTasks.first.isPaused)
-                            const Icon(Icons.pause_circle_outline, size: 18)
+                            const Icon(TIcons.pause_circle_stroke, size: 18)
                           else
                             const _AnimatedDownloadingIcon(),
                           const SizedBox(width: 8),
@@ -595,7 +595,7 @@ class _ImportComicsWidgetState extends State<_ImportComicsWidget> {
           child: Row(
             children: [
               Icon(
-                Icons.help_outline,
+                TIcons.help_circle,
                 size: 18,
                 color: context.colorScheme.primary,
               ),
@@ -725,7 +725,7 @@ class _ComicSourceWidgetState extends State<_ComicSourceWidget> {
                           Text(comicSources.length.toString(), style: ts.s12),
                     ),
                     const Spacer(),
-                    const Icon(Icons.arrow_right),
+                    const Icon(TIcons.arrow_right),
                   ],
                 ),
               ).paddingHorizontal(16),
@@ -766,7 +766,7 @@ class _ComicSourceWidgetState extends State<_ComicSourceWidget> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        Icons.update,
+                        TIcons.refresh,
                         color: context.colorScheme.primary,
                         size: 20,
                       ),
@@ -839,7 +839,7 @@ class __AnimatedDownloadingIconState extends State<_AnimatedDownloadingIcon>
           child: Transform.translate(
             offset: Offset(0, 18 * _controller.value),
             child: Icon(
-              Icons.arrow_downward,
+              TIcons.arrow_down,
               size: 16,
               color: Theme.of(context).colorScheme.primary,
             ),
@@ -934,7 +934,7 @@ class _ImageFavoritesState extends State<ImageFavorites> {
                         ),
                       ),
                     const Spacer(),
-                    const Icon(Icons.arrow_right),
+                    const Icon(TIcons.arrow_right),
                   ],
                 ),
               ).paddingHorizontal(16),

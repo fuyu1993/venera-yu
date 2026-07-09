@@ -147,22 +147,22 @@ class _HistoryPageState extends State<HistoryPage> {
   Widget build(BuildContext context) {
     List<Widget> selectActions = [
       IconButton(
-          icon: const Icon(Icons.select_all),
+          icon: const Icon(TIcons.component_checkbox),
           tooltip: "Select All".tl,
           onPressed: selectAll
       ),
       IconButton(
-          icon: const Icon(Icons.deselect),
+          icon: const Icon(TIcons.clear),
           tooltip: "Deselect".tl,
           onPressed: deSelect
       ),
       IconButton(
-          icon: const Icon(Icons.flip),
+          icon: const Icon(TIcons.flip_to_front),
           tooltip: "Invert Selection".tl,
           onPressed: invertSelection
       ),
       IconButton(
-        icon: const Icon(Icons.delete),
+        icon: const Icon(TIcons.delete),
         tooltip: "Delete".tl,
         onPressed: selectedComics.isEmpty
             ? null
@@ -182,12 +182,12 @@ class _HistoryPageState extends State<HistoryPage> {
 
     List<Widget> normalActions = [
       IconButton(
-        icon: const Icon(Icons.refresh),
+        icon: const Icon(TIcons.refresh),
         tooltip: 'Refresh All Histories'.tl,
         onPressed: _refreshAllHistories,
       ),
       IconButton(
-        icon: const Icon(Icons.checklist),
+        icon: const Icon(TIcons.assignment_checked),
         tooltip: multiSelectMode ? "Exit Multi-Select".tl : "Multi-Select".tl,
         onPressed: () {
           setState(() {
@@ -224,7 +224,7 @@ class _HistoryPageState extends State<HistoryPage> {
             );
           },
           child: IconButton(
-            icon: const Icon(Icons.clear_all),
+            icon: const Icon(TIcons.clear),
             onPressed: () {
               controller.show();
             },
@@ -261,8 +261,8 @@ class _HistoryPageState extends State<HistoryPage> {
                     }
                   },
                   icon: multiSelectMode
-                      ? const Icon(Icons.close)
-                      : const Icon(Icons.arrow_back),
+                      ? const Icon(TIcons.close)
+                      : const Icon(TIcons.chevron_left),
                 ),
               ),
               title: multiSelectMode
@@ -294,14 +294,14 @@ class _HistoryPageState extends State<HistoryPage> {
               menuBuilder: (c) {
                 return [
                   MenuEntry(
-                    icon: Icons.refresh,
+                    icon: TIcons.refresh,
                     text: 'Refresh Info'.tl,
                     onClick: () {
                       _refreshHistory(c as History);
                     },
                   ),
                   MenuEntry(
-                    icon: Icons.remove,
+                    icon: TIcons.remove,
                     text: 'Remove'.tl,
                     color: context.colorScheme.error,
                     onClick: () {

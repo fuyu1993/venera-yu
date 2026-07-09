@@ -127,26 +127,26 @@ class _AppWebviewState extends State<AppWebview> {
       Tooltip(
         message: "More",
         child: IconButton(
-          icon: const Icon(Icons.more_horiz),
+          icon: const Icon(TIcons.ellipsis),
           onPressed: () {
             showMenuX(
               context,
               Offset(context.width, context.padding.top),
               [
                 MenuEntry(
-                  icon: Icons.open_in_browser,
+                  icon: TIcons.web,
                   text: "Open in browser".tl,
                   onClick: () async =>
                       launchUrlString((await controller?.getUrl())!.toString()),
                 ),
                 MenuEntry(
-                  icon: Icons.copy,
+                  icon: TIcons.copy,
                   text: "Copy link".tl,
                   onClick: () async => Clipboard.setData(ClipboardData(
                       text: (await controller?.getUrl())!.toString())),
                 ),
                 MenuEntry(
-                  icon: Icons.refresh,
+                  icon: TIcons.refresh,
                   text: "Reload".tl,
                   onClick: () => controller?.reload(),
                 ),

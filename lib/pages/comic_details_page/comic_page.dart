@@ -184,7 +184,7 @@ class _ComicPageState extends LoadingState<ComicPage, ComicDetails>
                   curve: Curves.ease,
                 );
               },
-              child: const Icon(Icons.arrow_upward),
+              child: const Icon(TIcons.arrow_up),
             )
           : null,
       body: SmoothCustomScrollView(
@@ -287,7 +287,7 @@ class _ComicPageState extends LoadingState<ComicPage, ComicDetails>
       actions: [
         IconButton(
           onPressed: showMoreActions,
-          icon: const Icon(Icons.more_horiz),
+          icon: const Icon(TIcons.ellipsis),
         ),
       ],
     );
@@ -321,7 +321,7 @@ class _ComicPageState extends LoadingState<ComicPage, ComicDetails>
                 clipBehavior: Clip.antiAlias,
                 child: appdata.settings['lab_hideThumbnails'] == true
                     ? Icon(
-                        Icons.image_not_supported_outlined,
+                        TIcons.image_error,
                         size: 40,
                         color: context.colorScheme.onPrimaryContainer.withValues(alpha: 0.5),
                       )
@@ -372,29 +372,29 @@ class _ComicPageState extends LoadingState<ComicPage, ComicDetails>
             children: [
               if (hasHistory && !isMobile)
                 _ActionButton(
-                  icon: const Icon(Icons.menu_book),
+                  icon: const Icon(TIcons.book_open),
                   text: 'Continue'.tl,
                   onPressed: continueRead,
                   iconColor: context.useTextColor(Colors.yellow),
                 ),
               if (!isMobile || hasHistory)
                 _ActionButton(
-                  icon: const Icon(Icons.play_circle_outline),
+                  icon: const Icon(TIcons.play_circle_stroke),
                   text: 'Start'.tl,
                   onPressed: read,
                   iconColor: context.useTextColor(Colors.orange),
                 ),
               if (!isMobile && !isDownloaded)
                 _ActionButton(
-                  icon: const Icon(Icons.download),
+                  icon: const Icon(TIcons.download),
                   text: 'Download'.tl,
                   onPressed: download,
                   iconColor: context.useTextColor(Colors.cyan),
                 ),
               if (data!.isLiked != null)
                 _ActionButton(
-                  icon: const Icon(Icons.favorite_border),
-                  activeIcon: const Icon(Icons.favorite),
+                  icon: const Icon(TIcons.star),
+                  activeIcon: const Icon(TIcons.star_filled),
                   isActive: isLiked,
                   text:
                       ((data!.likesCount != null)
@@ -406,8 +406,8 @@ class _ComicPageState extends LoadingState<ComicPage, ComicDetails>
                   iconColor: context.useTextColor(Colors.red),
                 ),
               _ActionButton(
-                icon: const Icon(Icons.bookmark_outline_outlined),
-                activeIcon: const Icon(Icons.bookmark),
+                icon: const Icon(TIcons.bookmark),
+                activeIcon: const Icon(TIcons.bookmark),
                 isActive: isFavorite || isAddToLocalFav,
                 text: 'Favorite'.tl,
                 onPressed: openFavPanel,
@@ -416,13 +416,13 @@ class _ComicPageState extends LoadingState<ComicPage, ComicDetails>
               ),
               if (comicSource.commentsLoader != null)
                 _ActionButton(
-                  icon: const Icon(Icons.comment),
+                  icon: const Icon(TIcons.chat_bubble),
                   text: (comic.commentCount ?? 'Comments'.tl).toString(),
                   onPressed: showComments,
                   iconColor: context.useTextColor(Colors.green),
                 ),
               _ActionButton(
-                icon: const Icon(Icons.share),
+                icon: const Icon(TIcons.share),
                 text: 'Share'.tl,
                 onPressed: share,
                 iconColor: context.useTextColor(Colors.blue),
@@ -460,7 +460,7 @@ class _ComicPageState extends LoadingState<ComicPage, ComicDetails>
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.history, color: context.useTextColor(Colors.teal)),
+                  Icon(TIcons.history, color: context.useTextColor(Colors.teal)),
                   const SizedBox(width: 8),
                   Builder(
                     builder: (context) {
@@ -580,12 +580,12 @@ class _ComicPageState extends LoadingState<ComicPage, ComicDetails>
             onSecondaryTapDown: (details) {
               showMenuX(context, details.globalPosition, [
                 MenuEntry(
-                  icon: Icons.remove_red_eye,
+                  icon: TIcons.view_image,
                   text: "View".tl,
                   onClick: onTap,
                 ),
                 MenuEntry(
-                  icon: Icons.copy,
+                  icon: TIcons.copy,
                   text: "Copy".tl,
                   onClick: () {
                     Clipboard.setData(ClipboardData(text: text));

@@ -552,7 +552,7 @@ class _LocalSectionState extends State<_LocalSection> {
           title: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.add, size: 20),
+              const Icon(TIcons.add, size: 20),
               const SizedBox(width: 4),
               Text("New Folder".tl),
             ],

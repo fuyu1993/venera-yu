@@ -71,10 +71,10 @@ class _CustomTabsSetting extends StatefulWidget {
 
 class _CustomTabsSettingState extends State<_CustomTabsSetting> {
   static const _allTabs = [
-    {'id': 'home', 'label': 'Home', 'icon': Icons.home_outlined},
-    {'id': 'favorites', 'label': 'Favorites', 'icon': Icons.local_activity_outlined},
-    {'id': 'explore', 'label': 'Explore', 'icon': Icons.explore_outlined},
-    {'id': 'categories', 'label': 'Categories', 'icon': Icons.category_outlined},
+    {'id': 'home', 'label': 'Home', 'icon': TIcons.home},
+    {'id': 'favorites', 'label': 'Favorites', 'icon': TIcons.activity},
+    {'id': 'explore', 'label': 'Explore', 'icon': TIcons.explore},
+    {'id': 'categories', 'label': 'Categories', 'icon': TIcons.view_list},
   ];
 
   List<Map<String, dynamic>> get _tabs {
@@ -156,7 +156,7 @@ class _CustomTabsSettingState extends State<_CustomTabsSetting> {
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.drag_handle, color: colors.onSurfaceVariant),
+                      Icon(TIcons.drag_move, color: colors.onSurfaceVariant),
                       const SizedBox(width: 8),
                       Switch(
                         value: tab['visible'] == true,

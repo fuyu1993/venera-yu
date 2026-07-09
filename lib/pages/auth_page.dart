@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:tdesign_icons/tdesign_icons.dart';
 import 'package:venera/utils/translations.dart';
 
 class AuthPage extends StatefulWidget {
@@ -39,7 +40,7 @@ class _AuthPageState extends State<AuthPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.security, size: 36),
+              const Icon(TIcons.file_safety, size: 36),
               const SizedBox(height: 16),
               Text("Authentication Required".tl),
               const SizedBox(height: 16),
