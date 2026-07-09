@@ -11,7 +11,7 @@ version: 2.0.0
 environment:
   # Dart SDK 和 Flutter SDK 版本约束
   sdk: '>=3.8.0 <4.0.0'
-  flutter: 3.41.4
+  flutter: ">=3.41.4"
 
 dependencies:
   # Flutter SDK 本身

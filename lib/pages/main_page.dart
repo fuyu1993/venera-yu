@@ -67,7 +67,7 @@ class _MainPageState extends State<MainPage> {
         'order': e.key,
       }).toList();
     } else {
-      result = saved.cast<Map<String, dynamic>>();
+      result = saved.map((e) => Map<String, dynamic>.from(e as Map)).toList();
     }
     // Merge any new tabs not in saved config
     var savedIds = result.map((t) => t['id']).toSet();
