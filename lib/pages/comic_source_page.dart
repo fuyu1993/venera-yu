@@ -134,9 +134,16 @@ class _BodyState extends State<_Body> {
 
   @override
   Widget build(BuildContext context) {
+    final canPop = Navigator.of(context).canPop();
     return SmoothCustomScrollView(
       slivers: [
-        SliverAppbar(title: const SizedBox.shrink(), style: AppbarStyle.shadow),
+        if (canPop)
+          SliverAppbar(
+            title: const SizedBox.shrink(),
+            style: AppbarStyle.shadow,
+          )
+        else
+          SliverPadding(padding: EdgeInsets.only(top: context.padding.top)),
         buildCard(context),
         for (var source in ComicSource.all())
           _SliverComicSource(
