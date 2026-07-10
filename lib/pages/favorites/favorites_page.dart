@@ -69,11 +69,19 @@ class _FavoritesPageState extends State<FavoritesPage> {
       folder = data['name'];
       isNetwork = data['isNetwork'] ?? false;
     }
-    if (folder != null
-        && !isNetwork
-        && !LocalFavoritesManager().existsFolder(folder!)) {
-      folder = null;
+    if (folder != null) {
+      if (isNetwork) {
+        if (getFavoriteDataOrNull(folder!) == null) {
+          folder = null;
+        }
+      } else if (folder != _localAllFolderLabel &&
+          !LocalFavoritesManager().existsFolder(folder!)) {
+        // A saved local folder that no longer exists.
+        folder = null;
+      }
     }
+    // Default to showing all favorite comics instead of an empty "Unselected" page.
+    folder ??= _localAllFolderLabel;
     super.initState();
   }
 

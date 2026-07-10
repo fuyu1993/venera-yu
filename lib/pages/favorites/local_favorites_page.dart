@@ -474,7 +474,7 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
                           }),
                           btnColor: context.colorScheme.error,
                           onConfirm: () {
-                            favPage.setFolder(false, null);
+                            favPage.setFolder(false, _localAllFolderLabel);
                             LocalFavoritesManager().deleteFolder(widget.folder);
                             favPage.folderList?.updateFolders();
                           },
