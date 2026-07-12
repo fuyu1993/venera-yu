@@ -484,8 +484,9 @@ class _GalleryModeState extends State<_GalleryMode>
 
   @override
   Future<void> animateToPage(int page) {
-    if ((page - controller.page!.round()).abs() > 1) {
-      controller.jumpToPage(page > controller.page! ? page - 1 : page + 1);
+    final currentPage = controller.page?.round() ?? reader.page;
+    if ((page - currentPage).abs() > 1) {
+      controller.jumpToPage(page > currentPage ? page - 1 : page + 1);
     }
     return controller.animateToPage(
       page,

@@ -661,22 +661,50 @@ abstract mixin class _ReaderLocation {
       if (page == this.page && page != 1 && page != totalPages) {
         return false;
       }
+      final controller = _imageViewController;
+      if (controller == null) {
+        // The reader view is not ready yet (e.g. the chapter images are still
+        // loading). Just record the target page so it is applied once the view
+        // is built. Touching the animation counter or a null controller here
+        // would otherwise leave the reader stuck in an "animating" state that
+        // absorbs all pointer input (page turning stops responding).
+        this.page = page;
+        update();
+        return true;
+      }
       final hasAnimation = enablePageAnimation(cid, type);
       if (hasAnimation) {
         _pendingPage = page;
         _animationCount++;
         update();
-        _imageViewController!.animateToPage(page).then((_) {
+        var finished = false;
+        void finish() {
+          if (finished) return;
+          finished = true;
           _animationCount--;
           if (_pendingPage == page) {
             _pendingPage = null;
           }
           update();
-        });
+        }
+        try {
+          controller
+              .animateToPage(page)
+              .then((_) => finish())
+              .catchError((_) => finish());
+        } catch (_) {
+          // Synchronous failure (e.g. detached controller) must not leave the
+          // counter stuck, otherwise the whole reader becomes unresponsive.
+          finish();
+        }
+        // Safety net: if the animation future never completes (for example the
+        // controller is disposed during a chapter switch), force the reader out
+        // of the "animating" state so input is not permanently blocked.
+        Future.delayed(const Duration(milliseconds: 500), finish);
       } else {
         this.page = page;
         update();
-        _imageViewController!.toPage(page);
+        controller.toPage(page);
       }
       return true;
     }
