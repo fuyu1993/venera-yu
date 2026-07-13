@@ -12,6 +12,8 @@ ImageProvider? _findImageProvider(Comic comic) {
       return null;
     }
     image = FileImage(localComic.coverFile);
+  } else if (comic.sourceKey == 'webdav') {
+    image = WebDavImageProvider(comic.cover, 'webdav', comic.id, '', 0);
   } else {
     image = CachedImageProvider(
       comic.cover,

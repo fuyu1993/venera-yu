@@ -390,7 +390,11 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
 
   Widget buildBottom() {
     // Use maxPage for display (excluding chapter comments page)
-    final displayPage = context.reader.page.clamp(1, context.reader.maxPage);
+    // maxPage can be 0 when images are not loaded yet, which would make
+    // clamp(1, 0) throw. Guard the upper bound to be at least 1.
+    final maxPage =
+        context.reader.maxPage < 1 ? 1 : context.reader.maxPage;
+    final displayPage = context.reader.page.clamp(1, maxPage);
     var text = "E${context.reader.chapter} : P$displayPage";
     if (context.reader.widget.chapters == null) {
       text = "P$displayPage";

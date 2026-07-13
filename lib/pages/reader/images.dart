@@ -38,6 +38,30 @@ class _ReaderImagesState extends State<_ReaderImages> {
   void load() async {
     if (inProgress) return;
     inProgress = true;
+    if (reader.type == ComicType.webdav) {
+      try {
+        var cp = reader.widget.chapters?.ids.elementAtOrNull(reader.chapter - 1) ??
+            reader.widget.cid;
+        var images = await RemoteWebDav.getImagesForChapter(cp);
+        setState(() {
+          reader.images = images;
+          reader.isLoading = false;
+          inProgress = false;
+          _handleJumpToLastPage();
+          Future.microtask(() {
+            reader.updateHistory();
+          });
+        });
+      } catch (e) {
+        setState(() {
+          error = e.toString();
+          reader.isLoading = false;
+          inProgress = false;
+        });
+      }
+      context.readerScaffold.update();
+      return;
+    }
     if (reader.type == ComicType.local ||
         (LocalManager().isDownloaded(
           reader.cid,
@@ -107,6 +131,13 @@ class _ReaderImagesState extends State<_ReaderImages> {
         child: SizedBox.expand(
           child: NetworkError(
             message: error!,
+            action: TextButton.icon(
+              icon: const Icon(LucideIcons.arrow_left, size: 18),
+              label: Text("Back".tl),
+              onPressed: () {
+                context.pop();
+              },
+            ),
             retry: () {
               setState(() {
                 reader.isLoading = true;
@@ -1220,6 +1251,16 @@ ImageProvider _createImageProviderFromKey(
   int page,
 ) {
   var reader = context.reader;
+  if (imageKey.startsWith('webdav://')) {
+    return WebDavImageProvider(
+      imageKey,
+      'webdav',
+      reader.cid,
+      reader.eid,
+      reader.page,
+      enableResize: reader.mode.isContinuous,
+    );
+  }
   return ReaderImageProvider(
     imageKey,
     reader.type.comicSource?.key,

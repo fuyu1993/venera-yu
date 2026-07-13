@@ -1,0 +1,135 @@
+import 'dart:typed_data';
+
+import 'package:webdav_client/webdav_client.dart';
+import 'package:venera/foundation/appdata.dart';
+import 'package:venera/network/app_dio.dart';
+
+/// Remote library WebDAV manager.
+///
+/// Provides configuration access, a shared webdav client and the helpers used
+/// by the remote library page and the reader to browse / read files stored on
+/// a remote WebDAV drive.
+class RemoteWebDav {
+  static const String configKey = 'remoteWebDav';
+
+  static const String rootKey = 'remoteLibraryRoot';
+
+  static const String enableKey = 'enableRemoteLibrary';
+
+  /// Whether the remote library feature is enabled (lab toggle).
+  static bool get enabled => appdata.settings[enableKey] == true;
+
+  /// Whether a valid [url, user, pass] triple is configured.
+  static bool get isConfigured {
+    var c = appdata.settings[configKey];
+    return c is List && c.whereType<String>().length == 3;
+  }
+
+  /// Configured root path on the remote drive (always starts with '/').
+  static String get root {
+    var r = appdata.settings[rootKey];
+    if (r is! String || r.isEmpty) return '/';
+    return r.startsWith('/') ? r : '/$r';
+  }
+
+  /// Build a webdav client using the dedicated remote-library credentials.
+  static Client? getClient() {
+    if (!isConfigured) return null;
+    var c = appdata.settings[configKey] as List;
+    return newClient(
+      c[0],
+      user: c[1],
+      password: c[2],
+      adapter: RHttpAdapter(),
+    );
+  }
+
+  /// Encode a remote file path into an image key understood by
+  /// [WebDavImageProvider].
+  static String encodeKey(String path) => 'webdav://${Uri.encodeComponent(path)}';
+
+  /// Decode an image key back into a remote file path.
+  static String decodeKey(String key) {
+    if (key.startsWith('webdav://')) {
+      return Uri.decodeComponent(key.substring('webdav://'.length));
+    }
+    return key;
+  }
+
+  static const List<String> _imageExtensions = [
+    'jpg',
+    'jpeg',
+    'png',
+    'webp',
+    'gif',
+    'bmp',
+    'avif',
+  ];
+
+  /// Whether a file name looks like an image.
+  static bool isImageName(String? name) {
+    if (name == null) return false;
+    var i = name.lastIndexOf('.');
+    if (i < 0) return false;
+    return _imageExtensions.contains(name.substring(i + 1).toLowerCase());
+  }
+
+  /// List the entries of a remote directory.
+  static Future<List<File>> readDir(String path) async {
+    var client = getClient();
+    if (client == null) throw 'Remote WebDAV not configured';
+    var files = await client.readDir(path);
+    files.removeWhere((e) => e.name == null);
+    return files;
+  }
+
+  /// Read the raw bytes of a remote file.
+  static Future<Uint8List> readFile(String path) async {
+    var client = getClient();
+    if (client == null) throw 'Remote WebDAV not configured';
+    return Uint8List.fromList(await client.read(path));
+  }
+
+  /// List image keys (webdav:// encoded) inside a directory, sorted by name.
+  static Future<List<String>> listImageKeys(String dirPath) async {
+    var files = await readDir(dirPath);
+    var imgs = files
+        .where((e) => e.isDir != true && isImageName(e.name))
+        .toList();
+    imgs.sort((a, b) => (a.name ?? '').compareTo(b.name ?? ''));
+    return imgs.map((e) => encodeKey(e.path!)).toList();
+  }
+
+  /// Inspect a folder and build a chapter map for the reader.
+  ///
+  /// Returns a map where the **key** is the directory path (passed back to
+  /// [getImagesForChapter]) and the **value** is the display title.
+  /// - If the folder only contains images -> one chapter "All".
+  /// - If the folder contains sub folders -> one chapter per sub folder.
+  /// - Top level images mixed with sub folders are added as an "Others" chapter.
+  static Future<Map<String, String>> buildChapters(String folderPath) async {
+    var files = await readDir(folderPath);
+    var subDirs = files
+        .where((e) => e.isDir == true && e.name != null)
+        .toList()
+      ..sort((a, b) => (a.name ?? '').compareTo(b.name ?? ''));
+    var imgs = files.where((e) => e.isDir != true && isImageName(e.name)).toList();
+    var map = <String, String>{};
+    if (subDirs.isNotEmpty) {
+      for (var d in subDirs) {
+        map[d.path!] = d.name!;
+      }
+      if (imgs.isNotEmpty) {
+        map[folderPath] = 'Others';
+      }
+    } else if (imgs.isNotEmpty) {
+      map[folderPath] = 'All';
+    }
+    return map;
+  }
+
+  /// Return the image keys for a given chapter (directory path).
+  static Future<List<String>> getImagesForChapter(String chapterPath) async {
+    return await listImageKeys(chapterPath);
+  }
+}

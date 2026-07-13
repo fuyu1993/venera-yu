@@ -12,6 +12,7 @@ import '../foundation/app.dart';
 import 'explore_page.dart';
 import 'favorites/favorites_page.dart';
 import 'home_page.dart';
+import 'remote_library_page.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -45,6 +46,7 @@ class _MainPageState extends State<MainPage> {
     {'id': 'categories', 'label': 'Categories', 'icon': LucideIcons.list, 'activeIcon': LucideIcons.list},
     {'id': 'history', 'label': 'History', 'icon': LucideIcons.history, 'activeIcon': LucideIcons.history},
     {'id': 'comic_sources', 'label': 'Comic Source', 'icon': LucideIcons.code, 'activeIcon': LucideIcons.code},
+    {'id': 'remote_library', 'label': 'Remote Library', 'icon': LucideIcons.globe, 'activeIcon': LucideIcons.globe},
   ];
 
   // Get all pages
@@ -55,6 +57,7 @@ class _MainPageState extends State<MainPage> {
     'categories': CategoriesPage(key: PageStorageKey('categories')),
     'history': HistoryPage(key: PageStorageKey('history')),
     'comic_sources': ComicSourcePage(key: PageStorageKey('comic_sources')),
+    'remote_library': RemoteLibraryPage(key: PageStorageKey('remote_library')),
   };
 
   List<Map<String, dynamic>> get _customTabs {
@@ -81,6 +84,10 @@ class _MainPageState extends State<MainPage> {
 
   List<Map<String, dynamic>> get _visibleTabs {
     var tabs = _customTabs.where((t) => t['visible'] == true).toList();
+    // The remote library tab is gated behind the lab toggle.
+    if (appdata.settings['enableRemoteLibrary'] != true) {
+      tabs.removeWhere((t) => t['id'] == 'remote_library');
+    }
     _ensureMinTabs(tabs);
     tabs.sort((a, b) => (a['order'] as int).compareTo(b['order'] as int));
     return tabs;

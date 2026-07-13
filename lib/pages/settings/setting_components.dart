@@ -49,7 +49,7 @@ class _SwitchSetting extends StatefulWidget {
 class _SwitchSettingState extends State<_SwitchSetting> {
   @override
   Widget build(BuildContext context) {
-    var value = widget.comicId != null
+    var rawValue = widget.comicId != null
         ? appdata.settings.getReaderSetting(
             widget.comicId!,
             widget.comicSource!,
@@ -59,7 +59,11 @@ class _SwitchSettingState extends State<_SwitchSetting> {
         ? appdata.settings.getDeviceReaderSetting(widget.settingKey)
         : appdata.settings[widget.settingKey];
 
-    assert(value is bool);
+    // Coerce to bool defensively. Some settings keys (e.g. freshly added
+    // toggles) may be missing from the persisted config, in which case the
+    // value is null rather than a bool. Treat any non-bool value as `false`
+    // instead of asserting, which would crash the whole settings page.
+    final bool value = rawValue is bool ? rawValue : false;
 
     return _divided(
       context,

@@ -14,13 +14,15 @@ class ComicType {
   String get sourceKey {
     if(this == local) {
       return "local";
+    } else if(this == webdav) {
+      return "webdav";
     } else {
       return comicSource!.key;
     }
   }
 
   ComicSource? get comicSource {
-    if(this == local) {
+    if(this == local || this == webdav) {
       return null;
     } else {
       return ComicSource.fromIntKey(value);
@@ -29,9 +31,14 @@ class ComicType {
 
   static const local = ComicType(0);
 
+  /// Remote WebDAV library comic type.
+  static const webdav = ComicType(1001);
+
   factory ComicType.fromKey(String key) {
     if(key == "local") {
       return local;
+    } else if(key == "webdav") {
+      return webdav;
     } else {
       return ComicType(key.hashCode);
     }
