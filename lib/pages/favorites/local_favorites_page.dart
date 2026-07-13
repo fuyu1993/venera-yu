@@ -953,7 +953,6 @@ class _ReorderComicsPage extends StatefulWidget {
 
 class _ReorderComicsPageState extends State<_ReorderComicsPage> {
   final _key = GlobalKey();
-  var reorderWidgetKey = UniqueKey();
   final _scrollController = ScrollController();
   late var comics = LocalFavoritesManager().getFolderComics(widget.name);
   bool changed = false;
@@ -987,6 +986,15 @@ class _ReorderComicsPageState extends State<_ReorderComicsPage> {
   @override
   Widget build(BuildContext context) {
     var type = appdata.settings['comicDisplayMode'];
+
+    // Derive the ReorderableBuilder key from the SET of comics (order-independent).
+    // When an item is removed (e.g. via the LocalFavoritesManager listener) the set
+    // changes -> the builder remounts and re-initializes its internal entities with
+    // fresh 0..n-1 order ids, keeping them in sync with `comics`. A pure reorder or
+    // reverse only changes order, not the set, so the key stays stable.
+    final sortedIds = comics.map((c) => '${c.id}:${c.type.value}').toList()..sort();
+    final reorderWidgetKey = ValueKey('${comics.length}:${sortedIds.join('\u0000')}');
+
     var tiles = comics.map(
       (e) {
         var comicSource = e.type.comicSource;
@@ -1048,11 +1056,18 @@ class _ReorderComicsPageState extends State<_ReorderComicsPage> {
             ? const Duration(milliseconds: 100)
             : const Duration(milliseconds: 500),
         onReorder: (reorderFunc) {
-          changed = true;
-          setState(() {
-            comics = reorderFunc(comics);
-          });
-          widget.onReorder(comics);
+          try {
+            final reordered = reorderFunc(comics);
+            changed = true;
+            setState(() {
+              comics = reordered;
+            });
+            widget.onReorder(comics);
+          } catch (e) {
+            // Safety net: keep the app from crashing if the package ever
+            // computes out-of-range indices (e.g. entity list desync).
+            Log.error('reorder failed', e.toString());
+          }
         },
         dragChildBoxDecoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),

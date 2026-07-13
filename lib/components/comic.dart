@@ -1051,6 +1051,10 @@ class ComicListState extends State<ComicList> {
         }
       }
     }
+    // Persist the removal to PageStorage, otherwise a later
+    // didChangeDependencies -> restoreState would read back the stale
+    // snapshot (which still contains the deleted item) and resurrect it.
+    storeState();
     setState(() {});
   }
 

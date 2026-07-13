@@ -155,8 +155,9 @@ class DataSync with ChangeNotifier {
         return const Res(true);
       } catch (e, s) {
         Log.error("Upload Data", e, s);
-        _lastError = e.toString();
-        return Res.error(e.toString());
+        final msg = _formatWebDavError(e);
+        _lastError = msg;
+        return Res.error(msg);
       }
     } finally {
       _isUploading = false;
@@ -219,12 +220,45 @@ class DataSync with ChangeNotifier {
         return const Res(true);
       } catch (e, s) {
         Log.error("Data Sync", e, s);
-        _lastError = e.toString();
-        return Res.error(e.toString());
+        final msg = _formatWebDavError(e);
+        _lastError = msg;
+        return Res.error(msg);
       }
     } finally {
       _isDownloading = false;
       notifyListeners();
     }
   }
+}
+
+/// Convert a WebDAV exception into a user-actionable message.
+String _formatWebDavError(dynamic e) {
+  if (e is DioException) {
+    final code = e.response?.statusCode;
+    switch (code) {
+      case 401:
+        return 'WebDAV 同步失败：账号或密码错误（401）。请检查用户名和密码。';
+      case 403:
+        return 'WebDAV 同步失败：没有权限访问该目录（403）。请检查账号对该目录的读写权限。';
+      case 404:
+        return 'WebDAV 同步失败：找不到该目录（404）。请检查填写的 WebDAV 地址是否正确。';
+      case 405:
+        return 'WebDAV 同步失败：服务器返回 405，说明该地址不是 WebDAV 目录或不支持 '
+            'PROPFIND。请确认填写的是真正的 WebDAV 端点，并以 “/” 结尾，例如：\n'
+            '· Nextcloud：https://域名/remote.php/dav/files/用户名/\n'
+            '· ownCloud：https://域名/remote.php/webdav/\n'
+            '· 群晖 NAS：https://域名/dav/';
+      case 502:
+      case 503:
+      case 504:
+        return 'WebDAV 同步失败：服务器暂时不可用（$code）。请稍后重试。';
+    }
+    if (e.type == DioExceptionType.connectionTimeout ||
+        e.type == DioExceptionType.connectionError ||
+        e.type == DioExceptionType.unknown) {
+      return 'WebDAV 同步失败：无法连接到服务器。请检查网络、WebDAV 地址以及代理设置。';
+    }
+    return 'WebDAV 同步失败：${e.message ?? e.toString()}';
+  }
+  return 'WebDAV 同步失败：${e.toString()}';
 }

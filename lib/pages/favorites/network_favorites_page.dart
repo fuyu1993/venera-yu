@@ -29,23 +29,35 @@ Future<bool> _deleteComic(
                 setState(() {
                   loading = true;
                 });
-                var res = await source.favoriteData!.addOrDelFavorite!(
-                  cid,
-                  fid ?? '',
-                  false,
-                  favId,
-                );
-                if (res.success) {
-                  // Invalidate network cache so next loads fetch fresh data
-                  NetworkCacheManager().clear();
-                  context.showMessage(message: "Deleted".tl);
-                  result = true;
-                  context.pop();
-                } else {
+                try {
+                  var res = await source.favoriteData!.addOrDelFavorite!(
+                    cid,
+                    fid ?? '',
+                    false,
+                    favId,
+                  );
+                  if (res.success) {
+                    // Invalidate network cache so next loads fetch fresh data
+                    NetworkCacheManager().clear();
+                    context.showMessage(message: "Deleted".tl);
+                    result = true;
+                    context.pop();
+                  } else {
+                    setState(() {
+                      loading = false;
+                    });
+                    context.showMessage(message: res.errorMessage!);
+                  }
+                } catch (e) {
+                  // The actual delete runs inside a JS comic source. If it
+                  // throws (network error, source script bug, etc.) the
+                  // exception would otherwise leak out of this async handler
+                  // and leave the dialog stuck on the loading spinner with no
+                  // visible effect. Catch it and surface a message instead.
                   setState(() {
                     loading = false;
                   });
-                  context.showMessage(message: res.errorMessage!);
+                  context.showMessage(message: e.toString());
                 }
               },
               child: Text("Confirm".tl),

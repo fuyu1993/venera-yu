@@ -562,13 +562,22 @@ class _MultiPagesFilterState extends State<_MultiPagesFilter> {
     });
   }
 
-  var reorderWidgetKey = UniqueKey();
   var scrollController = ScrollController();
   final _key = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
     var tiles = keys.map((e) => buildItem(e)).toList();
+
+    // Derive the ReorderableBuilder key from the SET of keys (order-independent).
+    // When an item is added/removed, the set changes -> the builder remounts and
+    // re-initializes its internal entities with fresh 0..n-1 order ids, keeping
+    // them in sync with `keys`. A pure reorder only changes order, not the set,
+    // so the key stays stable and the drag animation is preserved.
+    final sortedKeys = [...keys]..sort();
+    final reorderWidgetKey = ValueKey(
+      '${keys.length}:${sortedKeys.join('\u0000')}',
+    );
 
     var view = ReorderableBuilder<String>(
       key: reorderWidgetKey,
@@ -588,9 +597,17 @@ class _MultiPagesFilterState extends State<_MultiPagesFilter> {
         ],
       ),
       onReorder: (reorderFunc) {
-        setState(() {
-          keys = List.from(reorderFunc(keys));
-        });
+        try {
+          final reordered = reorderFunc(keys);
+          setState(() {
+            keys = List.from(reordered);
+          });
+        } catch (e) {
+          // Safety net: if the package ever computes out-of-range indices
+          // (e.g. its internal entity list got out of sync with `keys`),
+          // keep the current order instead of crashing the app.
+          Log.error('reorder failed', e.toString());
+        }
       },
       children: tiles,
       builder: (children) {
