@@ -120,8 +120,8 @@ void passCloudflare(CloudflareException e, void Function() onFinished) async {
   }
 
   // windows version of package `flutter_inappwebview` cannot get some cookies
-  // Using DesktopWebview instead
-  if (App.isLinux) {
+  // (cf_clearance etc.), so we use DesktopWebview on both Linux and Windows.
+  if (App.isLinux || App.isWindows) {
     var webview = DesktopWebview(
       initialUrl: url,
       onTitleChange: (title, controller) async {
@@ -153,7 +153,6 @@ void passCloudflare(CloudflareException e, void Function() onFinished) async {
           }
           saveCookies(cookiesMap);
           controller.close();
-          onFinished();
         }
       },
       onClose: onFinished,
