@@ -104,20 +104,22 @@ mixin class JsUiApi {
 
   int _showLoading(JSInvokable? onCancel) {
     var func = onCancel == null ? null : JSAutoFreeFunction(onCancel);
-    var controller = showLoadingDialog(
-      App.rootContext,
-      barrierDismissible: onCancel != null,
-      allowCancel: onCancel != null,
-      onCancel: onCancel == null
-          ? null
-          : () {
-              func?.call([]);
-            },
-    );
     var i = 0;
     while (_loadingDialogControllers.containsKey(i)) {
       i++;
     }
+    // Always allow the user to dismiss the loading dialog so that a
+    // misbehaving comic source (e.g. one that shows "need login first"
+    // but forgets to call cancelLoading) cannot lock the UI permanently.
+    var controller = showLoadingDialog(
+      App.rootContext,
+      barrierDismissible: true,
+      allowCancel: true,
+      onCancel: () {
+        _loadingDialogControllers.remove(i);
+        func?.call([]);
+      },
+    );
     _loadingDialogControllers[i] = controller;
     return i;
   }
