@@ -199,7 +199,11 @@ class _ReaderGestureDetectorState extends AutomaticGlobalState<_ReaderGestureDet
   }
 
   void onTap(Offset location) {
-    if (reader._imageViewController!.handleOnTap(location)) {
+    final controller = reader._imageViewController;
+    // The reader view may not be mounted yet while images are still loading.
+    // Ignore the tap instead of crashing on a null controller.
+    if (controller == null) return;
+    if (controller.handleOnTap(location)) {
       return;
     } else if (context.readerScaffold.isOpen) {
       context.readerScaffold.openOrClose();

@@ -38,6 +38,40 @@ class _ReaderImagesState extends State<_ReaderImages> {
   void load() async {
     if (inProgress) return;
     inProgress = true;
+    if (reader.type == ComicType.pdf) {
+      // Defer past the current build phase. The other branches reach this
+      // point only after an `await`, which is what keeps `setState`/`update`
+      // out of `build()`. Without this, calling `context.readerScaffold.update()`
+      // (and the `setState` below) synchronously during `_ReaderImages.build`
+      // throws "setState() called during build" and leaves the image-view
+      // controller unassigned (null _imageViewController on tap).
+      await Future.microtask(() {});
+      try {
+        var session = PdfSessionManager().get(reader.cid);
+        if (session == null) {
+          throw 'PDF session not found';
+        }
+        var images =
+            List.generate(session.pageCount, (i) => 'pdfpage://$i');
+        setState(() {
+          reader.images = images;
+          reader.isLoading = false;
+          inProgress = false;
+          _handleJumpToLastPage();
+          Future.microtask(() {
+            reader.updateHistory();
+          });
+        });
+      } catch (e) {
+        setState(() {
+          error = e.toString();
+          reader.isLoading = false;
+          inProgress = false;
+        });
+      }
+      context.readerScaffold.update();
+      return;
+    }
     if (reader.type == ComicType.webdav) {
       try {
         var cp = reader.widget.chapters?.ids.elementAtOrNull(reader.chapter - 1) ??
@@ -1251,6 +1285,15 @@ ImageProvider _createImageProviderFromKey(
   int page,
 ) {
   var reader = context.reader;
+  if (imageKey.startsWith('pdfpage://')) {
+    var pageIndex =
+        int.tryParse(imageKey.substring('pdfpage://'.length)) ?? 0;
+    return PdfImageProvider(
+      reader.cid,
+      pageIndex,
+      enableResize: reader.mode.isContinuous,
+    );
+  }
   if (imageKey.startsWith('webdav://')) {
     return WebDavImageProvider(
       imageKey,

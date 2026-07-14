@@ -16,13 +16,15 @@ class ComicType {
       return "local";
     } else if(this == webdav) {
       return "webdav";
+    } else if(this == pdf) {
+      return "pdf";
     } else {
       return comicSource!.key;
     }
   }
 
   ComicSource? get comicSource {
-    if(this == local || this == webdav) {
+    if(this == local || this == webdav || this == pdf) {
       return null;
     } else {
       return ComicSource.fromIntKey(value);
@@ -34,11 +36,17 @@ class ComicType {
   /// Remote WebDAV library comic type.
   static const webdav = ComicType(1001);
 
+  /// Remote PDF read as a comic: each page is rendered to an image on demand
+  /// and served to the built-in comic reader.
+  static const pdf = ComicType(2001);
+
   factory ComicType.fromKey(String key) {
     if(key == "local") {
       return local;
     } else if(key == "webdav") {
       return webdav;
+    } else if(key == "pdf") {
+      return pdf;
     } else {
       return ComicType(key.hashCode);
     }

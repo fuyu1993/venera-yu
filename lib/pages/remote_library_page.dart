@@ -13,7 +13,7 @@ import 'package:venera/foundation/image_provider/webdav_image.dart';
 import 'package:venera/foundation/log.dart';
 import 'package:venera/foundation/remote_webdav.dart';
 import 'package:venera/pages/reader/reader.dart';
-import 'package:venera/pages/remote_pdf_comic_page.dart';
+import 'package:venera/foundation/pdf/pdf_session.dart';
 import 'package:venera/pages/comic_details_page/comic_page.dart';
 import 'package:venera/utils/cbz.dart';
 import 'package:venera/foundation/local.dart';
@@ -218,10 +218,12 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
   }
 
   void _openPdfComic(String folderPath, String name, List<wd.File> pdfs) {
-    context.to(() => RemotePdfComicPage(
-          folderPath: folderPath,
+    if (pdfs.isEmpty) return;
+    final file = pdfs.first;
+    context.to(() => RemotePdfReaderWithLoading(
+          remotePath: file.path!,
           name: name,
-          pdfs: pdfs,
+          cover: null,
         ));
   }
 
@@ -898,13 +900,16 @@ class _RemoteHistoryModel with HistoryMixin {
   @override
   final String cover;
 
+  final ComicType _type;
+
   @override
   String? get subTitle => null;
 
   @override
-  ComicType get historyType => ComicType.webdav;
+  ComicType get historyType => _type;
 
-  _RemoteHistoryModel(this.id, this.title, this.cover);
+  _RemoteHistoryModel(this.id, this.title, this.cover,
+      [this._type = ComicType.webdav]);
 }
 
 /// Loads the chapters of a remote WebDAV folder and launches the reader.
@@ -979,5 +984,95 @@ class _RemoteReaderWithLoadingState
         tags: const [],
       ),
     );
+  }
+}
+
+/// Opens a remote PDF as a comic: renders each page to an image on demand and
+/// feeds it to the built-in comic reader (paged/continuous modes, gestures,
+/// history — the full reading experience). The PDF is streamed via WebDAV
+/// Range requests, so multi-GB files start reading almost immediately.
+class RemotePdfReaderWithLoading extends StatefulWidget {
+  final String remotePath;
+
+  final String name;
+
+  final String? cover;
+
+  const RemotePdfReaderWithLoading({
+    super.key,
+    required this.remotePath,
+    required this.name,
+    this.cover,
+  });
+
+  @override
+  State<RemotePdfReaderWithLoading> createState() =>
+      _RemotePdfReaderWithLoadingState();
+}
+
+class _RemotePdfReaderWithLoadingState
+    extends LoadingState<RemotePdfReaderWithLoading, ReaderProps> {
+  bool _sessionOpened = false;
+
+  @override
+  Widget buildContent(BuildContext context, ReaderProps data) {
+    return Reader(
+      type: data.type,
+      cid: data.cid,
+      name: data.name,
+      chapters: data.chapters,
+      history: data.history,
+      initialChapter: data.history.ep,
+      initialPage: data.history.page,
+      initialChapterGroup: data.history.group,
+      author: data.author,
+      tags: data.tags,
+    );
+  }
+
+  @override
+  Future<Res<ReaderProps>> loadData() async {
+    try {
+      await PdfSessionManager().open(
+        sessionKey: widget.remotePath,
+        remotePath: widget.remotePath,
+      );
+      _sessionOpened = true;
+    } catch (e, s) {
+      Log.error('Remote PDF', e, s);
+      return Res.error('Failed to load'.tl);
+    }
+    var history = HistoryManager().find(widget.remotePath, ComicType.pdf) ??
+        History.fromModel(
+          model: _RemoteHistoryModel(
+            widget.remotePath,
+            widget.name,
+            widget.cover ?? '',
+            ComicType.pdf,
+          ),
+          ep: 0,
+          page: 0,
+        );
+    return Res(
+      ReaderProps(
+        type: ComicType.pdf,
+        cid: widget.remotePath,
+        name: widget.name,
+        chapters: null,
+        history: history,
+        author: '',
+        tags: const [],
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    if (_sessionOpened) {
+      // Fire-and-forget close: releases the pdfium document, the local sparse
+      // cache file and the rendered-page PNG cache.
+      PdfSessionManager().close(widget.remotePath);
+    }
+    super.dispose();
   }
 }
