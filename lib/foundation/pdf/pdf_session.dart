@@ -493,4 +493,32 @@ class PdfSessionManager {
     final s = _sessions.remove(key);
     if (s != null) await s.dispose();
   }
+
+  /// Renders the first page of a remote PDF as a cover image (PNG bytes),
+  /// suitable for history-grid thumbnails. Reuses an already-open session if
+  /// one is active (e.g. the reader is currently open); otherwise opens a
+  /// throwaway session that is closed immediately. Returns `null` on failure
+  /// so callers can fall back to a placeholder instead of crashing.
+  Future<Uint8List?> renderCover(String remotePath) async {
+    final existing = _sessions[remotePath];
+    if (existing != null) {
+      try {
+        return await existing.renderPage(0);
+      } catch (e) {
+        Log.error('PDF cover', e);
+        return null;
+      }
+    }
+    PdfSession? s;
+    try {
+      s = await PdfSession.open(sessionKey: remotePath, remotePath: remotePath);
+      _sessions[remotePath] = s;
+      return await s.renderPage(0);
+    } catch (e) {
+      Log.error('PDF cover', e);
+      return null;
+    } finally {
+      if (s != null) await close(remotePath);
+    }
+  }
 }

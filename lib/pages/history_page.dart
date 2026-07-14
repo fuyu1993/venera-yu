@@ -4,6 +4,8 @@ import 'package:venera/foundation/app.dart';
 import 'package:venera/foundation/comic_source/comic_source.dart';
 import 'package:venera/foundation/comic_type.dart';
 import 'package:venera/foundation/history.dart';
+import 'package:venera/pages/comic_details_page/comic_page.dart';
+import 'package:venera/pages/remote_library_page.dart';
 import 'package:venera/utils/translations.dart';
 
 class HistoryPage extends StatefulWidget {
@@ -63,6 +65,46 @@ class _HistoryPageState extends State<HistoryPage> {
       });
       selectedComics.removeWhere((k, v) => !v);
     });
+  }
+
+  /// Opens a history entry. Remote-library (WebDAV) and PDF entries have no
+  /// comic source, so they must launch the dedicated remote readers instead of
+  /// [ComicPage] (which would fail with "Comic source not found").
+  void _openHistory(History h, int heroID) {
+    if (h.type == ComicType.webdav) {
+      App.rootContext.to(() => RemoteReaderWithLoading(
+            folderPath: h.id,
+            name: h.title,
+            cover: h.cover,
+          ));
+      return;
+    }
+    if (h.type == ComicType.pdf) {
+      App.rootContext.to(() => RemotePdfReaderWithLoading(
+            remotePath: h.id,
+            name: h.title,
+            cover: h.cover,
+          ));
+      return;
+    }
+    // Comic-source / local entries behave exactly as the default tile tap.
+    App.rootContext.to(() => ComicPage(
+          id: h.id,
+          sourceKey: h.sourceKey,
+          cover: h.cover,
+          title: h.title,
+          heroID: heroID,
+        ));
+  }
+
+  /// Source label shown as the tile badge. Remote-library entries have no
+  /// comic source, so we label them explicitly instead of leaving it blank.
+  String? _sourceLabel(Comic c) {
+    if (c is History) {
+      if (c.type == ComicType.webdav) return 'WebDAV';
+      if (c.type == ComicType.pdf) return 'PDF';
+    }
+    return ComicSource.find(c.sourceKey)?.name;
   }
 
   void _removeHistory(History comic) {
@@ -283,9 +325,11 @@ class _HistoryPageState extends State<HistoryPage> {
                         }
                       });
                     }
-                  : null,
+                  : (c, heroID) {
+                      _openHistory(c as History, heroID);
+                    },
               badgeBuilder: (c) {
-                return ComicSource.find(c.sourceKey)?.name;
+                return _sourceLabel(c);
               },
               menuBuilder: (c) {
                 return [

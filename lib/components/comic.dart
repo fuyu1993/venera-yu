@@ -5,7 +5,13 @@ ImageProvider? _findImageProvider(Comic comic) {
   if (comic is LocalComic) {
     image = LocalComicImageProvider(comic);
   } else if (comic is History) {
-    image = HistoryImageProvider(comic);
+    if (comic.type == ComicType.webdav) {
+      image = WebDavImageProvider(comic.cover, 'webdav', comic.id, '', 0);
+    } else if (comic.type == ComicType.pdf) {
+      image = PdfCoverImageProvider(comic.id, comic.title);
+    } else {
+      image = HistoryImageProvider(comic);
+    }
   } else if (comic.sourceKey == 'local') {
     var localComic = LocalManager().find(comic.id, ComicType.local);
     if (localComic == null) {
