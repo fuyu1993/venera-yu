@@ -584,17 +584,18 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
   var sliderFocus = FocusNode();
 
   Widget buildSlider() {
-    // Clamp page to maxPage (excluding chapter comments page)
-    final displayPage = context.reader.page.clamp(1, context.reader.maxPage);
+    // maxPage can be 0 while images are not loaded yet, which would make
+    // clamp(1, 0) throw. Guard the upper bound to be at least 1.
+    final maxPage =
+        context.reader.maxPage < 1 ? 1 : context.reader.maxPage;
+    final displayPage = context.reader.page.clamp(1, maxPage);
     return CustomSlider(
       focusNode: sliderFocus,
       value: displayPage.toDouble(),
       min: 1,
-      max: context.reader.maxPage
-          .clamp(displayPage, 1 << 16)
-          .toDouble(),
+      max: maxPage.toDouble(),
       reversed: isReversed,
-      divisions: (context.reader.maxPage - 1).clamp(2, 1 << 16),
+      divisions: (maxPage - 1).clamp(2, 1 << 16),
       onChanged: (i) {
         context.reader.toPage(i.toInt());
       },

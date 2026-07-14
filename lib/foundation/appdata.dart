@@ -240,6 +240,7 @@ class Settings with ChangeNotifier {
     'lab_hideThumbnails': false,
     'lab_developerMode': false,
     'enableRemoteLibrary': false, // lab: add "Remote Library" tab
+    'remoteLibraryViewMode': 'grid', // grid, list
     'readerScrollSpeed': 1.0, // 0.5 - 3.0
     'localFavoritesFirst': true,
     'autoCloseFavoritePanel': false,

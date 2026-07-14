@@ -59,11 +59,18 @@ class RemoteWebDav {
   static const List<String> _imageExtensions = [
     'jpg',
     'jpeg',
+    'jpe',
     'png',
     'webp',
     'gif',
     'bmp',
     'avif',
+    'heic',
+    'heif',
+    'tif',
+    'tiff',
+    'jfif',
+    'jxl',
   ];
 
   /// Whether a file name looks like an image.
@@ -72,6 +79,31 @@ class RemoteWebDav {
     var i = name.lastIndexOf('.');
     if (i < 0) return false;
     return _imageExtensions.contains(name.substring(i + 1).toLowerCase());
+  }
+
+  /// Whether a file name looks like a PDF.
+  static bool isPdfName(String? name) {
+    if (name == null) return false;
+    var i = name.lastIndexOf('.');
+    if (i < 0) return false;
+    return name.substring(i + 1).toLowerCase() == 'pdf';
+  }
+
+  /// Whether a file name looks like a comic archive.
+  static bool isArchiveName(String? name) {
+    if (name == null) return false;
+    var i = name.lastIndexOf('.');
+    if (i < 0) return false;
+    var ext = name.substring(i + 1).toLowerCase();
+    return ['cbz', 'zip', 'cbr', 'rar', '7z'].contains(ext);
+  }
+
+  /// Get the file extension (lowercase, without dot), or empty string.
+  static String getFileExtension(String? name) {
+    if (name == null) return '';
+    var i = name.lastIndexOf('.');
+    if (i < 0) return '';
+    return name.substring(i + 1).toLowerCase();
   }
 
   /// List the entries of a remote directory.
@@ -88,6 +120,20 @@ class RemoteWebDav {
     var client = getClient();
     if (client == null) throw 'Remote WebDAV not configured';
     return Uint8List.fromList(await client.read(path));
+  }
+
+  /// Stream a remote file directly to a local path with download progress.
+  ///
+  /// Unlike [readFile], this does not load the whole file into memory, which
+  /// matters for multi-GB PDFs.
+  static Future<void> downloadToFile(
+    String path,
+    String savePath, {
+    void Function(int count, int total)? onProgress,
+  }) async {
+    var client = getClient();
+    if (client == null) throw 'Remote WebDAV not configured';
+    await client.read2File(path, savePath, onProgress: onProgress);
   }
 
   /// List image keys (webdav:// encoded) inside a directory, sorted by name.
