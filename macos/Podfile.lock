@@ -28,6 +28,9 @@ PODS:
   - path_provider_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
+  - pdfium_flutter (0.1.5):
+    - Flutter
+    - FlutterMacOS
   - rhttp (0.0.1):
     - FlutterMacOS
   - screen_retriever_macos (0.0.1):
@@ -80,6 +83,7 @@ DEPENDENCIES:
   - local_auth_darwin (from `Flutter/ephemeral/.symlinks/plugins/local_auth_darwin/darwin`)
   - lodepng_flutter (from `Flutter/ephemeral/.symlinks/plugins/lodepng_flutter/macos`)
   - path_provider_foundation (from `Flutter/ephemeral/.symlinks/plugins/path_provider_foundation/darwin`)
+  - pdfium_flutter (from `Flutter/ephemeral/.symlinks/plugins/pdfium_flutter/darwin`)
   - rhttp (from `Flutter/ephemeral/.symlinks/plugins/rhttp/macos`)
   - screen_retriever_macos (from `Flutter/ephemeral/.symlinks/plugins/screen_retriever_macos/macos`)
   - share_plus (from `Flutter/ephemeral/.symlinks/plugins/share_plus/macos`)
@@ -120,6 +124,8 @@ EXTERNAL SOURCES:
     :path: Flutter/ephemeral/.symlinks/plugins/lodepng_flutter/macos
   path_provider_foundation:
     :path: Flutter/ephemeral/.symlinks/plugins/path_provider_foundation/darwin
+  pdfium_flutter:
+    :path: Flutter/ephemeral/.symlinks/plugins/pdfium_flutter/darwin
   rhttp:
     :path: Flutter/ephemeral/.symlinks/plugins/rhttp/macos
   screen_retriever_macos:
@@ -150,6 +156,7 @@ SPEC CHECKSUMS:
   lodepng_flutter: 9d67af9e5dd6a16fba4005fecf31e52638a6ec0b
   OrderedSet: e539b66b644ff081c73a262d24ad552a69be3a94
   path_provider_foundation: 2b6b4c569c0fb62ec74538f866245ac84301af46
+  pdfium_flutter: 814416ae1e24618fc80353aacbf17c7229373559
   rhttp: 337afda4c3e4df31087160719ffca6452c225cc2
   screen_retriever_macos: 776e0fa5d42c6163d2bf772d22478df4b302b161
   share_plus: 1fa619de8392a4398bfaf176d441853922614e89
@@ -159,6 +166,6 @@ SPEC CHECKSUMS:
   window_manager: e25faf20d88283a0d46e7b1a759d07261ca27575
   zip_flutter: a9fc4fab0e9256b40025afd7a5d3edf3c4f3c309
 
-PODFILE CHECKSUM: f0c21717cb7ee9112f915044c74bfceb5b12e02a
+PODFILE CHECKSUM: e97d10d1632566e74f70910a8a3487c6009eeac2
 
 COCOAPODS: 1.15.2

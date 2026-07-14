@@ -12,3 +12,13 @@ PRODUCT_BUNDLE_IDENTIFIER = com.github.yfu.venera
 
 // The copyright displayed in application information
 PRODUCT_COPYRIGHT = Copyright © 2024 com.github.wgh136. All rights reserved.
+
+// Link the CocoaPods frameworks (incl. PDFium from pdfrx/pdfium_flutter) into
+// the Runner. Without this, `DynamicLibrary.process()` cannot resolve the
+// PDFium symbols at runtime and crashes with
+// "Failed to lookup symbol 'FPDF_InitLibrary'". The `#include?` is conditional
+// so a missing Pods file (e.g. before `pod install`) will not break the build.
+// `$(CONFIGURATION)` inside the included file resolves to the active build
+// config, so this single include is correct for Debug/Release/Profile.
+// Path is relative to this file's directory (macos/Runner/Configs).
+#include? "../../Pods/Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"
