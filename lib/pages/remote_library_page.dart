@@ -181,22 +181,52 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
   }
 
   Future<void> _onFolderTap(wd.File folder) async {
-    // Probe the folder to decide: comic (has images) or category (sub folders).
+    final path = folder.path!;
+    // 1) Manually marked as a comic folder (e.g. `manga/chapter/page.png`).
+    //    Open it directly — buildChapters turns each sub folder into a chapter.
+    if (WebDavComicMarks.isMarked(path)) {
+      String? cover;
+      try {
+        cover = await RemoteWebDav.firstImageKey(path);
+      } catch (_) {}
+      _openComic(path, folder.name ?? 'Comic'.tl, cover);
+      return;
+    }
+    // Probe the folder to decide: comic (has images) or container (sub folders).
     try {
-      var entries = await RemoteWebDav.readDir(folder.path!);
+      var entries = await RemoteWebDav.readDir(path);
       var files = entries.where((e) => e.isDir != true).toList();
       var hasImages = files.any((e) => RemoteWebDav.isImageName(e.name));
       var hasSubDirs = entries.any((e) => e.isDir == true);
       if (hasImages) {
         var firstImage = files
             .firstWhere((e) => RemoteWebDav.isImageName(e.name));
-        _openComic(folder.path!, folder.name ?? 'Comic'.tl,
+        _openComic(path, folder.name ?? 'Comic'.tl,
             RemoteWebDav.encodeKey(firstImage.path!));
-      } else if (hasSubDirs || files.any((e) => RemoteWebDav.isPdfName(e.name))) {
-        // A folder of PDFs (or with sub folders) is just a container — navigate
-        // into it so each PDF shows up as its own comic.
-        _navigateTo(folder.path!);
-      } else if (entries.isEmpty) {
+        return;
+      }
+      // 2) Exactly one comic file (PDF or archive) and no sub folders -> open
+      //    it directly instead of drilling in.
+      var comicFiles = files
+          .where((e) =>
+              RemoteWebDav.isPdfName(e.name) ||
+              RemoteWebDav.isArchiveName(e.name))
+          .toList();
+      if (!hasSubDirs && comicFiles.length == 1) {
+        final f = comicFiles.first;
+        if (RemoteWebDav.isPdfName(f.name)) {
+          _openPdfComic(path, f.name ?? 'PDF'.tl, [f]);
+        } else {
+          _openArchive(f);
+        }
+        return;
+      }
+      // 3) Contains sub folders or several comic files -> container, navigate in.
+      if (hasSubDirs || comicFiles.isNotEmpty) {
+        _navigateTo(path);
+        return;
+      }
+      if (entries.isEmpty) {
         context.showMessage(message: 'Empty folder'.tl);
       } else {
         // The folder has files, but none are readable images (e.g. archives
@@ -207,6 +237,30 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
     } catch (e) {
       context.showMessage(message: 'Failed to load remote library'.tl);
     }
+  }
+
+  /// Long-press / right-click menu for a folder: toggle its "comic" mark so a
+  /// nested `manga/chapter/page.png` structure opens directly as one comic.
+  void _showFolderMenu(wd.File folder, Offset position) {
+    final path = folder.path!;
+    final marked = WebDavComicMarks.isMarked(path);
+    showMenuX(
+      context,
+      position,
+      [
+        MenuEntry(
+          icon: LucideIcons.bookmark,
+          text: marked ? 'Unmark as comic'.tl : 'Mark as comic'.tl,
+          onClick: () {
+            final next = WebDavComicMarks.toggle(path);
+            context.showMessage(
+              message: next ? 'Marked as comic'.tl : 'Unmarked as comic'.tl,
+            );
+            setState(() {});
+          },
+        ),
+      ],
+    );
   }
 
   void _openComic(String folderPath, String name, String? coverKey) {
@@ -568,18 +622,41 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
 
   Widget _buildGridTile(wd.File file) {
     var type = _getFileType(file);
+    final marked = type == _RemoteFileType.folder &&
+        WebDavComicMarks.isMarked(file.path!);
     final name = file.name ?? '';
     final sub = (type == _RemoteFileType.folder &&
             _folderInfo.containsKey(file.path!))
         ? _folderInfoText(file.path!)
         : '';
-    return InkWell(
-      borderRadius: BorderRadius.circular(12),
-      onTap: () => _onFileTap(file),
-      child: Card(
+    return Builder(builder: (context) {
+      return InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () => _onFileTap(file),
+        onLongPress: type == _RemoteFileType.folder
+            ? () {
+                final box = context.findRenderObject() as RenderBox;
+                final o = box.localToGlobal(Offset.zero);
+                _showFolderMenu(
+                  file,
+                  Offset(
+                    o.dx + box.size.width / 2,
+                    o.dy + box.size.height - 8,
+                  ),
+                );
+              }
+            : null,
+        onSecondaryTapUp: type == _RemoteFileType.folder
+            ? (d) => _showFolderMenu(file, d.globalPosition)
+            : null,
+        child: Card(
         clipBehavior: Clip.antiAlias,
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: marked
+              ? BorderSide(color: context.colorScheme.primary, width: 2)
+              : BorderSide.none,
+        ),
         // The tile itself is a perfect square; the label is overlaid inside
         // (with a scrim) so it does not add height and cause bottom overflow.
         child: AspectRatio(
@@ -636,17 +713,49 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
         ),
       ),
     );
+    });
+  }
+
+  Widget _comicBadge() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: context.colorScheme.primary,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(LucideIcons.book_open, size: 11, color: Colors.white),
+          const SizedBox(width: 3),
+          Text('Comic'.tl,
+              style: const TextStyle(fontSize: 10, color: Colors.white)),
+        ],
+      ),
+    );
   }
 
   Widget _buildGridThumbnail(wd.File file, _RemoteFileType type) {
     switch (type) {
       case _RemoteFileType.folder:
-        return Container(
-          color: context.colorScheme.primaryContainer.withAlpha(76),
-          child: Center(
-            child: Icon(LucideIcons.folder,
-                size: 48, color: context.colorScheme.primary),
-          ),
+        final marked = WebDavComicMarks.isMarked(file.path!);
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            Container(
+              color: context.colorScheme.primaryContainer.withAlpha(76),
+              child: Center(
+                child: Icon(LucideIcons.folder,
+                    size: 48, color: context.colorScheme.primary),
+              ),
+            ),
+            if (marked)
+              Positioned(
+                top: 6,
+                right: 6,
+                child: _comicBadge(),
+              ),
+          ],
         );
       case _RemoteFileType.image:
         return Image(
@@ -706,9 +815,28 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
 
   Widget _buildListTile(wd.File file) {
     var type = _getFileType(file);
-    return InkWell(
-      onTap: () => _onFileTap(file),
-      child: Padding(
+    final marked = type == _RemoteFileType.folder &&
+        WebDavComicMarks.isMarked(file.path!);
+    return Builder(builder: (context) {
+      return InkWell(
+        onTap: () => _onFileTap(file),
+        onLongPress: type == _RemoteFileType.folder
+            ? () {
+                final box = context.findRenderObject() as RenderBox;
+                final o = box.localToGlobal(Offset.zero);
+                _showFolderMenu(
+                  file,
+                  Offset(
+                    o.dx + box.size.width / 2,
+                    o.dy + box.size.height - 8,
+                  ),
+                );
+              }
+            : null,
+        onSecondaryTapUp: type == _RemoteFileType.folder
+            ? (d) => _showFolderMenu(file, d.globalPosition)
+            : null,
+        child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Row(
           children: [
@@ -718,11 +846,21 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    file.name ?? '',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 14),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          file.name ?? '',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                      ),
+                      if (marked) ...[
+                        const SizedBox(width: 6),
+                        _comicBadge(),
+                      ],
+                    ],
                   ),
                   const SizedBox(height: 2),
                   Text(
@@ -744,6 +882,7 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
         ),
       ),
     );
+    });
   }
 
   Widget _buildListLeading(wd.File file, _RemoteFileType type) {
@@ -823,7 +962,9 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
     var parts = <String>[];
     switch (type) {
       case _RemoteFileType.folder:
-        parts.add('Folder'.tl);
+        if (!WebDavComicMarks.isMarked(file.path!)) {
+          parts.add('Folder'.tl);
+        }
         if (_folderInfo.containsKey(file.path!)) {
           parts.add(_folderInfoText(file.path!));
         }

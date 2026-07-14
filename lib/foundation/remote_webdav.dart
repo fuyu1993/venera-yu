@@ -248,6 +248,33 @@ class RemoteWebDav {
     return imgs.map((e) => encodeKey(e.path!)).toList();
   }
 
+  /// Recursively find the first image inside a directory (depth-limited) and
+  /// return its `webdav://` encoded key, or `null` if none is found.
+  ///
+  /// Used to pick a cover for a folder that was manually marked as a comic
+  /// (e.g. a `manga/chapter/page.png` structure). [maxDepth] bounds the number
+  /// of directory levels scanned to avoid pathological deep trees.
+  static Future<String?> firstImageKey(String dirPath,
+      {int maxDepth = 3}) async {
+    if (maxDepth <= 0) return null;
+    List<dynamic> entries;
+    try {
+      entries = await readDir(dirPath);
+    } catch (_) {
+      return null;
+    }
+    for (var e in entries) {
+      if (e.isDir != true && isImageName(e.name)) {
+        return encodeKey(e.path!);
+      }
+    }
+    for (var d in entries.where((e) => e.isDir == true)) {
+      final k = await firstImageKey(d.path!, maxDepth: maxDepth - 1);
+      if (k != null) return k;
+    }
+    return null;
+  }
+
   /// Inspect a folder and build a chapter map for the reader.
   ///
   /// Returns a map where the **key** is the directory path (passed back to
@@ -279,5 +306,45 @@ class RemoteWebDav {
   /// Return the image keys for a given chapter (directory path).
   static Future<List<String>> getImagesForChapter(String chapterPath) async {
     return await listImageKeys(chapterPath);
+  }
+}
+
+/// Persistent marks for folders that the user has explicitly flagged as a
+/// single comic (e.g. a `manga/chapter/page.png` structure that cannot be
+/// auto-detected because it looks identical to a category of multiple comics).
+///
+/// Stored under [appdata] settings key so it survives restarts.
+class WebDavComicMarks {
+  static const String _key = 'webdavComicFolders';
+
+  static List<String> _read() {
+    final v = appdata.settings[_key];
+    if (v is List) return List<String>.from(v, growable: true);
+    return <String>[];
+  }
+
+  /// Whether [path] is marked as a comic folder.
+  static bool isMarked(String path) => _read().contains(path);
+
+  /// Add or remove the mark for [path].
+  static void setMarked(String path, bool marked) {
+    final list = _read();
+    final existed = list.contains(path);
+    if (marked && !existed) {
+      list.add(path);
+    } else if (!marked && existed) {
+      list.remove(path);
+    } else {
+      return;
+    }
+    appdata.settings[_key] = list;
+    appdata.saveData();
+  }
+
+  /// Toggle the mark for [path] and return the new state.
+  static bool toggle(String path) {
+    final next = !isMarked(path);
+    setMarked(path, next);
+    return next;
   }
 }
