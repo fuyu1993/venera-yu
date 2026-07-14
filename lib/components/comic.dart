@@ -12,6 +12,10 @@ ImageProvider? _findImageProvider(Comic comic) {
     } else {
       image = HistoryImageProvider(comic);
     }
+  } else if (comic is FavoriteItem && comic.type == ComicType.webdav) {
+    image = WebDavImageProvider(comic.cover, 'webdav', comic.id, '', 0);
+  } else if (comic is FavoriteItem && comic.type == ComicType.pdf) {
+    image = PdfCoverImageProvider(comic.id, comic.title);
   } else if (comic.sourceKey == 'local') {
     var localComic = LocalManager().find(comic.id, ComicType.local);
     if (localComic == null) {

@@ -77,6 +77,22 @@ String? validateFolderName(String newFolderName) {
   return null;
 }
 
+/// Resolves the correct [ComicType] for a comic being added to favorites.
+///
+/// [History] and [FavoriteItem] already carry a proper [ComicType] (e.g.
+/// [ComicType.webdav] / [ComicType.pdf] whose `sourceKey` is "Unknown:1001"
+/// and therefore useless for hashing), so we use it directly. For plain
+/// [Comic] objects we fall back to the legacy `sourceKey` hashing used by
+/// comic sources.
+ComicType _resolveFavoriteType(Comic comic) {
+  if (comic is FavoriteItem) return comic.type;
+  if (comic is History) return comic.type;
+  if (comic.sourceKey == 'local') return ComicType.local;
+  if (comic.sourceKey == 'webdav') return ComicType.webdav;
+  if (comic.sourceKey == 'pdf') return ComicType.pdf;
+  return ComicType(comic.sourceKey.hashCode);
+}
+
 void addFavorite(List<Comic> comics) {
   var folders = LocalFavoritesManager().folderNames;
 
@@ -105,21 +121,19 @@ void addFavorite(List<Comic> comics) {
             FilledButton(
               onPressed: () {
                 if (selectedFolder != null) {
-                  for (var comic in comics) {
-                    LocalFavoritesManager().addComic(
-                      selectedFolder!,
-                      FavoriteItem(
-                        id: comic.id,
-                        name: comic.title,
-                        coverPath: comic.cover,
-                        author: comic.subtitle ?? '',
-                        type: ComicType((comic.sourceKey == 'local'
-                            ? 0
-                            : comic.sourceKey.hashCode)),
-                        tags: comic.tags ?? [],
-                      ),
-                    );
-                  }
+              for (var comic in comics) {
+                LocalFavoritesManager().addComic(
+                  selectedFolder!,
+                  FavoriteItem(
+                    id: comic.id,
+                    name: comic.title,
+                    coverPath: comic.cover,
+                    author: comic.subtitle ?? '',
+                    type: _resolveFavoriteType(comic),
+                    tags: comic.tags ?? [],
+                  ),
+                );
+              }
                   context.pop();
                 }
               },

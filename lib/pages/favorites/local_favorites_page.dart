@@ -685,12 +685,7 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
                     icon: LucideIcons.book_open,
                     text: "Read".tl,
                     onClick: () {
-                      App.mainNavigatorKey?.currentContext?.to(
-                        () => ReaderWithLoading(
-                          id: c.id,
-                          sourceKey: c.sourceKey,
-                        )
-                      );
+                      _readFavorite(c as FavoriteItem);
                     },
                   ),
               ];
@@ -706,20 +701,8 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
                   }
                   lastSelectedIndex = comics.indexOf(c);
                 });
-              } else if (appdata.settings["onClickFavorite"] == "viewDetail") {
-                App.mainNavigatorKey?.currentContext?.to(
-                  () => ComicPage(
-                    id: c.id,
-                    sourceKey: c.sourceKey,
-                    cover: c.cover,
-                    title: c.title,
-                    heroID: heroID,
-                  )
-                );
               } else {
-                App.mainNavigatorKey?.currentContext?.to(
-                  () => ReaderWithLoading(id: c.id, sourceKey: c.sourceKey),
-                );
+                _openFavorite(c as FavoriteItem, heroID);
               }
             },
             onLongPressed: (c, heroID) {
@@ -924,6 +907,55 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
         multiSelectMode = false;
       });
     }
+  }
+
+  /// Opens a favorite on tap. Remote-library (WebDAV) and PDF favorites have no
+  /// comic source, so they must go straight to their dedicated remote readers
+  /// instead of [ComicPage]/[ReaderWithLoading] (which would fail with
+  /// "Comic source not found").
+  void _openFavorite(FavoriteItem c, int heroID) {
+    if (c.type != ComicType.webdav &&
+        c.type != ComicType.pdf &&
+        appdata.settings["onClickFavorite"] == "viewDetail") {
+      App.mainNavigatorKey?.currentContext?.to(
+        () => ComicPage(
+          id: c.id,
+          sourceKey: c.sourceKey,
+          cover: c.cover,
+          title: c.title,
+          heroID: heroID,
+        ),
+      );
+      return;
+    }
+    _readFavorite(c);
+  }
+
+  /// Routes a favorite directly to the appropriate reader.
+  void _readFavorite(FavoriteItem c) {
+    if (c.type == ComicType.webdav) {
+      App.mainNavigatorKey?.currentContext?.to(
+        () => RemoteReaderWithLoading(
+          folderPath: c.id,
+          name: c.name,
+          cover: c.coverPath,
+        ),
+      );
+      return;
+    }
+    if (c.type == ComicType.pdf) {
+      App.mainNavigatorKey?.currentContext?.to(
+        () => RemotePdfReaderWithLoading(
+          remotePath: c.id,
+          name: c.name,
+          cover: c.coverPath,
+        ),
+      );
+      return;
+    }
+    App.mainNavigatorKey?.currentContext?.to(
+      () => ReaderWithLoading(id: c.id, sourceKey: c.sourceKey),
+    );
   }
 
   void _cancel() {

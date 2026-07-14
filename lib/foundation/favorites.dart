@@ -78,9 +78,18 @@ class FavoriteItem implements Comic {
   @override
   String get description {
     var time = this.time.substring(0, 10);
+    var sourceLabel = _sourceLabel;
     return appdata.settings['comicDisplayMode'] == 'detailed'
-        ? "$time | ${type == ComicType.local ? 'local' : type.comicSource?.name ?? "Unknown"}"
-        : "${type.comicSource?.name ?? "Unknown"} | $time";
+        ? "$time | $sourceLabel"
+        : "$sourceLabel | $time";
+  }
+
+  /// Human-readable source label for display.
+  String get _sourceLabel {
+    if (type == ComicType.webdav) return "WebDAV";
+    if (type == ComicType.pdf) return "PDF";
+    if (type == ComicType.local) return "local";
+    return type.comicSource?.name ?? "Unknown";
   }
 
   @override
@@ -185,7 +194,11 @@ class FavoriteItemWithUpdateInfo extends FavoriteItem {
   @override
   String get description {
     var updateTime = this.updateTime ?? "Unknown";
-    var sourceName = type.comicSource?.name ?? "Unknown";
+    var sourceName = type == ComicType.webdav
+        ? "WebDAV"
+        : type == ComicType.pdf
+            ? "PDF"
+            : type.comicSource?.name ?? "Unknown";
     return "$updateTime | $sourceName";
   }
 
@@ -273,6 +286,7 @@ class LocalFavoritesManager with ChangeNotifier {
       appdata.settings['followUpdatesFolder'] = null;
     }
     initCounts();
+    repairBrokenFavoriteTypes();
   }
 
   void initCounts() {
@@ -283,6 +297,38 @@ class LocalFavoritesManager with ChangeNotifier {
       _hashedIds = value;
       notifyListeners();
     });
+  }
+
+  /// One-time repair for favorites whose [ComicType] was stored as a hash of
+  /// the placeholder `sourceKey` ("Unknown:1001" for webdav / "Unknown:2001"
+  /// for pdf) instead of the real enum value. Re-derives the correct type from
+  /// the stored id (a pdf remote path ends with ".pdf", otherwise treat it as
+  /// a webdav folder path) and updates the row.
+  void repairBrokenFavoriteTypes() {
+    const known = {0, 1001, 2001}; // local, webdav, pdf
+    var changed = false;
+    for (final folder in folderNames) {
+      final rows = _db.select('select id, type from "$folder"');
+      for (final row in rows) {
+        final t = row['type'] as int;
+        if (known.contains(t)) continue;
+        final type = ComicType(t);
+        if (type.comicSource != null) continue; // valid comic-source favorite
+        final id = row['id'] as String;
+        final fixed = id.toLowerCase().endsWith('.pdf')
+            ? ComicType.pdf
+            : ComicType.webdav;
+        _db.execute(
+          'update "$folder" set type = ? where id == ? and type == ?',
+          [fixed.value, id, t],
+        );
+        changed = true;
+      }
+    }
+    if (changed) {
+      refreshHashedIds();
+      notifyListeners();
+    }
   }
 
   void refreshHashedIds() {
