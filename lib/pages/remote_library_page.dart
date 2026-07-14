@@ -187,17 +187,15 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
       var files = entries.where((e) => e.isDir != true).toList();
       var hasImages = files.any((e) => RemoteWebDav.isImageName(e.name));
       var hasSubDirs = entries.any((e) => e.isDir == true);
-      var pdfFiles = files.where((e) => RemoteWebDav.isPdfName(e.name)).toList();
       if (hasImages) {
         var firstImage = files
             .firstWhere((e) => RemoteWebDav.isImageName(e.name));
         _openComic(folder.path!, folder.name ?? 'Comic'.tl,
             RemoteWebDav.encodeKey(firstImage.path!));
-      } else if (hasSubDirs) {
+      } else if (hasSubDirs || files.any((e) => RemoteWebDav.isPdfName(e.name))) {
+        // A folder of PDFs (or with sub folders) is just a container — navigate
+        // into it so each PDF shows up as its own comic.
         _navigateTo(folder.path!);
-      } else if (pdfFiles.isNotEmpty) {
-        // A folder of PDF files: treat each PDF as a chapter.
-        _openPdfComic(folder.path!, folder.name ?? 'Comic'.tl, pdfFiles);
       } else if (entries.isEmpty) {
         context.showMessage(message: 'Empty folder'.tl);
       } else {

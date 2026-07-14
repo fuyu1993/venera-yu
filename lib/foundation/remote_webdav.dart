@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:webdav_client/webdav_client.dart';
@@ -134,6 +136,106 @@ class RemoteWebDav {
     var client = getClient();
     if (client == null) throw 'Remote WebDAV not configured';
     await client.read2File(path, savePath, onProgress: onProgress);
+  }
+
+  /// Get the byte size of a remote file via PROPFIND.
+  static Future<int> fileSize(String path) async {
+    var client = getClient();
+    if (client == null) throw 'Remote WebDAV not configured';
+    var file = await client.readProps(path);
+    return file.size ?? 0;
+  }
+
+  /// Perform a HTTP Range GET and write the received bytes into [raf] at
+  /// [start].
+  ///
+  /// This is the core of progressive (streaming) PDF reading: the reader can
+  /// fetch the tail (where the xref lives) and then arbitrary byte ranges as
+  /// the user scrolls, without downloading the whole multi-GB file up front.
+  ///
+  /// Returns the HTTP status code:
+  /// - `206` partial content: the requested range was written to [raf].
+  /// - `200` full content: the server ignored the Range header (range is not
+  ///   supported), the response stream was consumed but **not** written — the
+  ///   caller should fall back to a full sequential download.
+  static Future<int> downloadRange(
+    String path,
+    int start,
+    int end,
+    RandomAccessFile raf, {
+    Client? client,
+    CancelToken? cancelToken,
+    void Function(int count, int total)? onProgress,
+  }) async {
+    client ??= getClient();
+    if (client == null) throw 'Remote WebDAV not configured';
+    if (start < 0 || end < start) return 0;
+
+    late Response<ResponseBody> resp;
+    try {
+      resp = await client.c.req<ResponseBody>(
+        client,
+        'GET',
+        path,
+        optionsHandler: (options) {
+          options.responseType = ResponseType.stream;
+          options.headers ??= {};
+          options.headers?['Range'] = 'bytes=$start-$end';
+        },
+        cancelToken: cancelToken,
+      );
+    } on DioException catch (e) {
+      if (e.response?.statusCode != null) return e.response!.statusCode!;
+      rethrow;
+    }
+
+    final status = resp.statusCode ?? 0;
+    final stream = resp.data?.stream;
+    if (stream == null) {
+      throw Exception('Empty response (HTTP $status)');
+    }
+
+    if (status == 206) {
+      // Partial content: write exactly this range at the requested offset.
+      await raf.setPosition(start);
+      var received = 0;
+      final total = end - start + 1;
+      await for (final chunk in stream) {
+        if (chunk.isEmpty) continue;
+        await raf.writeFrom(chunk);
+        received += chunk.length;
+        onProgress?.call(received, total);
+      }
+      return 206;
+    } else {
+      // 200 (or anything else): Range unsupported. Read the full stream but
+      // keep only the requested [start, end] range by draining the prefix,
+      // writing the middle, then draining the rest. This lets on-demand reads
+      // work even when the server ignores Range.
+      var pos = 0;
+      await for (final chunk in stream) {
+        if (chunk.isEmpty) continue;
+        var cStart = 0;
+        var cEnd = chunk.length;
+        if (pos < start) {
+          if (pos + cEnd <= start) {
+            pos += cEnd;
+            continue;
+          }
+          cStart = start - pos;
+        }
+        if (pos + cEnd > end + 1) {
+          cEnd = end + 1 - pos;
+        }
+        if (cEnd > cStart) {
+          await raf.setPosition(pos + cStart);
+          await raf.writeFrom(chunk.sublist(cStart, cEnd));
+        }
+        pos += chunk.length;
+        if (pos > end) break;
+      }
+      return status;
+    }
   }
 
   /// List image keys (webdav:// encoded) inside a directory, sorted by name.
