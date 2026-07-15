@@ -537,6 +537,11 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
       } else {
         controller.close();
       }
+      // Drop any stale remote-library history for this item so the imported
+      // (local) comic is the only entry that remains in reading history.
+      for (final t in const [ComicType.webdav, ComicType.pdf, ComicType.zip]) {
+        HistoryManager().remove(file.path!, t);
+      }
     } catch (e) {
       controller.close();
       if (mounted) {

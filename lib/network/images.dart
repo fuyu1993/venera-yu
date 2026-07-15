@@ -52,10 +52,7 @@ abstract class ImageDownloader {
       responseType: ResponseType.stream,
     ));
 
-    String requestUrl = configs['url'] ?? url;
-    if (requestUrl.startsWith('//')) {
-      requestUrl = 'https:$requestUrl';
-    }
+    final requestUrl = _resolveUrl(configs['url'] ?? url, sourceKey);
     var req = await dio.request<ResponseBody>(requestUrl,
         data: configs['data']);
     var stream = req.data?.stream ?? (throw "Error: Empty response body.");
@@ -86,6 +83,30 @@ abstract class ImageDownloader {
       totalBytes: buffer.length,
       imageBytes: Uint8List.fromList(buffer),
     );
+  }
+
+  /// Resolve [raw] to an absolute url. A relative url (e.g. "/thumb/x.jpg" or
+  /// "thumb/x.jpg") is joined with the comic source's base url, otherwise Dio
+  /// fails with "relative URL without a base". Urls starting with "//" get an
+  /// "https:" scheme, and already-absolute urls are returned unchanged.
+  static String _resolveUrl(String raw, String? sourceKey) {
+    if (raw.startsWith('//')) {
+      return 'https:$raw';
+    }
+    if (raw.contains('://')) {
+      return raw;
+    }
+    if (sourceKey != null) {
+      final base = ComicSource.find(sourceKey)?.url;
+      if (base != null && base.isNotEmpty) {
+        try {
+          return Uri.parse(base).resolve(raw).toString();
+        } catch (_) {
+          // ignore and return raw below
+        }
+      }
+    }
+    return raw;
   }
 
   static final _loadingImages = <String, _StreamWrapper<ImageDownloadProgress>>{};
@@ -168,7 +189,8 @@ abstract class ImageDownloader {
           responseType: ResponseType.stream,
         ));
 
-        var req = await dio.request<ResponseBody>(configs['url'] ?? imageKey,
+        var req = await dio.request<ResponseBody>(
+            _resolveUrl(configs['url'] ?? imageKey, sourceKey),
             data: configs['data']);
         var stream = req.data?.stream ?? (throw "Error: Empty response body.");
         int? expectedBytes = req.data!.contentLength;

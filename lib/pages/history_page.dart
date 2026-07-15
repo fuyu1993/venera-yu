@@ -4,6 +4,7 @@ import 'package:venera/foundation/app.dart';
 import 'package:venera/foundation/comic_source/comic_source.dart';
 import 'package:venera/foundation/comic_type.dart';
 import 'package:venera/foundation/history.dart';
+import 'package:venera/foundation/local.dart';
 import 'package:venera/pages/comic_details_page/comic_page.dart';
 import 'package:venera/pages/remote_library_page.dart';
 import 'package:venera/utils/translations.dart';
@@ -67,10 +68,50 @@ class _HistoryPageState extends State<HistoryPage> {
     });
   }
 
-  /// Opens a history entry. Remote-library (WebDAV) and PDF entries have no
-  /// comic source, so they must launch the dedicated remote readers instead of
-  /// [ComicPage] (which would fail with "Comic source not found").
+  /// Opens a history entry. Remote-library (WebDAV) and PDF/ZIP entries that
+  /// were streamed directly from the server have no comic source, so they
+  /// launch the dedicated remote readers instead of [ComicPage] (which would
+  /// fail with "Comic source not found").
+  ///
+  /// Imported remote-library comics, however, live in the local library and
+  /// must open through the local route even if their stored history type is
+  /// still [ComicType.pdf]/[ComicType.zip]/[ComicType.webdav] — i.e. stale
+  /// entries created before local import was unified under [ComicType.local]
+  /// (see the earlier PDF-import fix). Such entries would otherwise be sent to
+  /// the remote streaming reader and fail / re-fetch from the server.
   void _openHistory(History h, int heroID) {
+    // A comic that exists in the local library always opens via the local
+    // route. This covers freshly-imported comics (sourceKey == 'local') and
+    // any history entry whose id still matches a local comic.
+    if (h.sourceKey == 'local' ||
+        LocalManager().find(h.id, ComicType.local) != null) {
+      App.rootContext.to(() => ComicPage(
+            id: h.id,
+            sourceKey: 'local',
+            cover: h.cover,
+            title: h.title,
+            heroID: heroID,
+          ));
+      return;
+    }
+    // Recovery for pre-fix history entries that were recorded with a remote
+    // type even though the comic was imported into the local library. The
+    // remote id/path no longer resolves to a local comic, so match by title.
+    if (h.type == ComicType.webdav ||
+        h.type == ComicType.pdf ||
+        h.type == ComicType.zip) {
+      final local = LocalManager().findByName(h.title);
+      if (local != null) {
+        App.rootContext.to(() => ComicPage(
+              id: local.id,
+              sourceKey: 'local',
+              cover: h.cover,
+              title: h.title,
+              heroID: heroID,
+            ));
+        return;
+      }
+    }
     if (h.type == ComicType.webdav) {
       App.rootContext.to(() => RemoteReaderWithLoading(
             folderPath: h.id,
