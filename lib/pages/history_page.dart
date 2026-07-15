@@ -109,11 +109,9 @@ class _HistoryPageState extends State<HistoryPage> {
   /// comic source, so we label them explicitly instead of leaving it blank.
   String? _sourceLabel(Comic c) {
     if (c is History) {
-      if (c.type == ComicType.webdav) return 'WebDAV';
-      if (c.type == ComicType.pdf) return 'PDF';
-      if (c.type == ComicType.zip) return 'ZIP';
+      return ComicType.sourceLabel(c.type, c.sourceKey);
     }
-    return ComicSource.find(c.sourceKey)?.name;
+    return null;
   }
 
   void _removeHistory(History comic) {

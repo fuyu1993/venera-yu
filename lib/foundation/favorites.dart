@@ -85,13 +85,7 @@ class FavoriteItem implements Comic {
   }
 
   /// Human-readable source label for display.
-  String get _sourceLabel {
-    if (type == ComicType.webdav) return "WebDAV";
-    if (type == ComicType.pdf) return "PDF";
-    if (type == ComicType.zip) return "ZIP";
-    if (type == ComicType.local) return "local";
-    return type.comicSource?.name ?? "Unknown";
-  }
+  String get _sourceLabel => ComicType.sourceLabel(type, sourceKey);
 
   @override
   String? get favoriteId => null;
@@ -199,11 +193,7 @@ class FavoriteItemWithUpdateInfo extends FavoriteItem {
   @override
   String get description {
     var updateTime = this.updateTime ?? "Unknown";
-    var sourceName = type == ComicType.webdav
-        ? "WebDAV"
-        : type == ComicType.pdf
-            ? "PDF"
-            : type.comicSource?.name ?? "Unknown";
+    var sourceName = ComicType.sourceLabel(type, sourceKey);
     return "$updateTime | $sourceName";
   }
 

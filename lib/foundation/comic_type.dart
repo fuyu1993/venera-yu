@@ -60,4 +60,25 @@ class ComicType {
       return ComicType(key.hashCode);
     }
   }
+
+  /// Unified, human-readable source label for badges across History /
+  /// Favorites / Reader. Three top-level categories:
+  ///   - 本地导入
+  ///       [local] (imported local comics)
+  ///   - 远程书库/PDF | 远程书库/ZIP | 远程书库/FolderComic
+  ///       [pdf] / [zip] / [webdav]
+  ///   - 漫画源/`<key>`
+  ///       installed comic-source plugins (e-hentai, jm, ...), where `<key>`
+  ///       is the source's machine key passed via [sourceKey].
+  ///
+  /// [sourceKey] must be the comic's machine source key (e.g. from
+  /// [Comic.sourceKey]); it is only consulted for plugin sources.
+  static String sourceLabel(ComicType type, String sourceKey) {
+    if (type == local) return '本地导入';
+    if (type == webdav) return '远程书库/FolderComic';
+    if (type == pdf) return '远程书库/PDF';
+    if (type == zip) return '远程书库/ZIP';
+    if (sourceKey.startsWith('Unknown')) return 'Unknown';
+    return '漫画源/$sourceKey';
+  }
 }

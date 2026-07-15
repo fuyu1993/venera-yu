@@ -1000,14 +1000,10 @@ class _ReorderComicsPageState extends State<_ReorderComicsPage> {
   late var comics = LocalFavoritesManager().getFolderComics(widget.name);
   bool changed = false;
 
-  /// Human-readable source label for [FavoriteItem] types whose
-  /// [ComicType.comicSource] is null (local-only types like webdav/pdf/zip).
-  static String _favoriteSourceLabel(FavoriteItem item) {
-    if (item.type == ComicType.webdav) return 'WebDAV';
-    if (item.type == ComicType.pdf) return 'PDF';
-    if (item.type == ComicType.zip) return 'ZIP';
-    return item.type.comicSource?.name ?? 'Unknown';
-  }
+  /// Human-readable source label using the unified [ComicType.sourceLabel]
+  /// helper (本地导入 / 远程书库/... / 漫画源/`<key>`).
+  static String _favoriteSourceLabel(FavoriteItem item) =>
+      ComicType.sourceLabel(item.type, item.sourceKey);
 
   /// Machine-readable sourceKey for image-provider / routing fallback.
   static String? _favoriteSourceKey(FavoriteItem item) {
