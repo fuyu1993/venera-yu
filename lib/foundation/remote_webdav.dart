@@ -145,10 +145,18 @@ class RemoteWebDav {
   }
 
   /// Read the raw bytes of a remote file.
-  static Future<Uint8List> readFile(String path) async {
+  ///
+  /// [onProgress] reports download progress as `(count, total)` byte counts
+  /// when the server provides a content length.
+  static Future<Uint8List> readFile(
+    String path, {
+    void Function(int count, int total)? onProgress,
+  }) async {
     var client = getClient();
     if (client == null) throw 'Remote WebDAV not configured';
-    return Uint8List.fromList(await client.read(path));
+    return Uint8List.fromList(
+      await client.read(path, onProgress: onProgress),
+    );
   }
 
   /// Issue a HTTP Range GET for [start, end] and return just the received

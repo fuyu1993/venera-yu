@@ -431,18 +431,35 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
   /// read offline. Supports folders (images), ZIP/CBZ archives and PDFs.
   Future<void> _importItem(wd.File file) async {
     final type = _getFileType(file);
-    final isPdf = type == _RemoteFileType.pdf;
     final controller = showLoadingDialog(
       context,
       barrierDismissible: false,
       allowCancel: false,
-      message: (isPdf ? 'Downloading' : 'Importing').tl,
+      withProgress: true,
+      message: 'Preparing'.tl,
     );
+
+    // Map the two-phase (download + import) progress onto a single 0..1 bar:
+    // first half = downloading, second half = importing. The message shows
+    // the live percentage for each phase.
+    void onProgress(ImportStage stage, int current, int total) {
+      final fraction = total > 0 ? current / total : 1.0;
+      final value = stage == ImportStage.download
+          ? 0.5 * fraction
+          : 0.5 + 0.5 * fraction;
+      controller.setProgress(value);
+      final pct = total > 0 ? (current * 100 ~/ total) : 100;
+      controller.setMessage(
+        '${stage == ImportStage.download ? 'Downloading'.tl : 'Importing'.tl} $pct%',
+      );
+    }
+
     try {
       if (type == _RemoteFileType.folder) {
         final comic = await RemoteImporter.importWebDavFolder(
           file.path!,
           file.name ?? 'Comic'.tl,
+          onProgress: onProgress,
         );
         final id = LocalManager().findValidId(ComicType.local);
         await LocalManager().add(comic, id);
@@ -462,7 +479,10 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
               ));
         }
       } else if (type == _RemoteFileType.archive) {
-        final comic = await RemoteImporter.importArchive(file);
+        final comic = await RemoteImporter.importArchive(
+          file,
+          onProgress: onProgress,
+        );
         final id = LocalManager().findValidId(ComicType.local);
         await LocalManager().add(comic, id);
         RemoteDownloads.record(RemoteDownloadEntry(
@@ -481,7 +501,10 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
               ));
         }
       } else if (type == _RemoteFileType.pdf) {
-        final localPath = await RemoteImporter.importPdf(file);
+        final localPath = await RemoteImporter.importPdf(
+          file,
+          onProgress: onProgress,
+        );
         RemoteDownloads.record(RemoteDownloadEntry(
           remotePath: file.path!,
           type: 'pdf',

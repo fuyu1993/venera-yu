@@ -81,7 +81,10 @@ abstract class CBZ {
     }
   }
 
-  static Future<LocalComic> import(File file) async {
+  static Future<LocalComic> import(
+    File file, {
+    void Function(int current, int total)? onProgress,
+  }) async {
     var cache = Directory(FilePath.join(App.cachePath, 'cbz_import'));
     if (cache.existsSync()) cache.deleteSync(recursive: true);
     cache.createSync();
@@ -141,13 +144,17 @@ abstract class CBZ {
       FilePath.join(LocalManager().path, sanitizeFileName(metaData.title)),
     );
     dest.createSync();
+    var copied = 0;
+    final totalFiles = files.length + 1; // +1 for the cover image
     coverFile.copyMem(FilePath.join(dest.path, 'cover.${coverFile.extension}'));
+    onProgress?.call(++copied, totalFiles);
     if (metaData.chapters == null) {
       for (var i = 0; i < files.length; i++) {
         var src = files[i];
         var dst = File(
             FilePath.join(dest.path, '${i + 1}.${src.path.split('.').last}'));
         await src.copyMem(dst.path);
+        onProgress?.call(++copied, totalFiles);
       }
     } else {
       dest.createSync();
@@ -166,6 +173,7 @@ abstract class CBZ {
           var dst = File(FilePath.join(
               chapterDir.path, '${i + 1}.${src.path.split('.').last}'));
           await src.copyMem(dst.path);
+          onProgress?.call(++copied, totalFiles);
         }
       }
     }

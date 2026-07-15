@@ -19,20 +19,41 @@ import 'package:venera/utils/io.dart';
 ///   sub-folder chapters) and build a local image comic.
 /// - [importPdf]      : download a PDF to a local cache file so it can be read
 ///   by the streaming reader offline.
+/// Phase of a download-and-import operation, reported via [ImportProgress].
+enum ImportStage {
+  /// Downloading bytes / images from the remote server.
+  download,
+
+  /// Importing into the local library (extract / copy / register).
+  import,
+}
+
+/// Progress reporter for [RemoteImporter] operations.
+typedef ImportProgress = void Function(ImportStage stage, int current, int total);
+
 class RemoteImporter {
   RemoteImporter._();
 
   /// Download a ZIP/CBZ and import it as a local image comic. Returns the
   /// imported [LocalComic] (caller assigns the final id via [LocalManager.add]).
-  static Future<LocalComic> importArchive(wd.File file) async {
-    final bytes = await RemoteWebDav.readFile(file.path!);
+  static Future<LocalComic> importArchive(
+    wd.File file, {
+    ImportProgress? onProgress,
+  }) async {
+    final bytes = await RemoteWebDav.readFile(
+      file.path!,
+      onProgress: (c, t) => onProgress?.call(ImportStage.download, c, t),
+    );
     final ext = RemoteWebDav.getFileExtension(file.name);
     final tempDir = Directory('${App.cachePath}/remote_zip');
     if (!tempDir.existsSync()) tempDir.createSync(recursive: true);
     final tempFile = File('${tempDir.path}/${file.name ?? "archive.$ext"}');
     await tempFile.writeAsBytes(bytes);
     try {
-      return await CBZ.import(tempFile);
+      return await CBZ.import(
+        tempFile,
+        onProgress: (c, t) => onProgress?.call(ImportStage.import, c, t),
+      );
     } finally {
       try {
         if (tempFile.existsSync()) await tempFile.delete();
@@ -46,7 +67,7 @@ class RemoteImporter {
   static Future<LocalComic> importWebDavFolder(
     String folderPath,
     String name, {
-    void Function(int done, int total)? onProgress,
+    ImportProgress? onProgress,
   }) async {
     final chaptersMap = await RemoteWebDav.buildChapters(folderPath);
     if (chaptersMap.isEmpty) {
@@ -81,7 +102,7 @@ class RemoteImporter {
       for (var i = 0; i < keys.length; i++) {
         downloaded.add(await _downloadOne(keys[i], dest, '${i + 1}'));
         done++;
-        onProgress?.call(done, total);
+        onProgress?.call(ImportStage.download, done, total);
       }
     } else {
       cpMap = {};
@@ -94,7 +115,7 @@ class RemoteImporter {
         for (var i = 0; i < keys.length; i++) {
           downloaded.add(await _downloadOne(keys[i], chapterDest, '${i + 1}'));
           done++;
-          onProgress?.call(done, total);
+          onProgress?.call(ImportStage.download, done, total);
         }
         cpMap[ci.toString()] = chaptersMap[dir]!;
       }
@@ -109,6 +130,7 @@ class RemoteImporter {
     await coverFile.copyMem(
       FilePath.join(dest.path, 'cover.${coverFile.extension}'),
     );
+    onProgress?.call(ImportStage.import, 1, 1);
 
     return LocalComic(
       id: LocalManager().findValidId(ComicType.local),
@@ -126,8 +148,14 @@ class RemoteImporter {
 
   /// Download a remote PDF to a local cache file and return its path. The PDF
   /// is then read by the streaming reader offline (no re-download).
-  static Future<String> importPdf(wd.File file) async {
-    final bytes = await RemoteWebDav.readFile(file.path!);
+  static Future<String> importPdf(
+    wd.File file, {
+    ImportProgress? onProgress,
+  }) async {
+    final bytes = await RemoteWebDav.readFile(
+      file.path!,
+      onProgress: (c, t) => onProgress?.call(ImportStage.download, c, t),
+    );
     final base = await getTemporaryDirectory();
     final dir = Directory(p.join(base.path, 'venera_remote_pdf'));
     if (!dir.existsSync()) dir.createSync(recursive: true);
@@ -135,6 +163,7 @@ class RemoteImporter {
     final hash = sha1.convert(seed.codeUnits).toString().substring(0, 16);
     final localPath = p.join(dir.path, '$hash.pdf');
     await File(localPath).writeAsBytes(bytes);
+    onProgress?.call(ImportStage.import, 1, 1);
     return localPath;
   }
 
