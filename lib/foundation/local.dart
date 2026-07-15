@@ -10,7 +10,6 @@ import 'package:venera/foundation/comic_type.dart';
 import 'package:venera/foundation/favorites.dart';
 import 'package:venera/foundation/log.dart';
 import 'package:venera/foundation/pdf/pdf_session.dart';
-import 'package:venera/foundation/remote_history_model.dart';
 import 'package:venera/network/download.dart';
 import 'package:venera/pages/reader/reader.dart';
 import 'package:venera/utils/io.dart';
@@ -109,8 +108,23 @@ class LocalComic with HistoryMixin implements Comic {
   @override
   int? get maxPage => null;
 
+  /// Whether this local comic is actually a PDF file (imported from a remote
+  /// library). We detect it by the presence of a `.pdf` file in [baseDir]
+  /// rather than by [comicType], so that locally-imported PDFs can share the
+  /// [ComicType.local] identity (correct "本地导入" label, local-comic open
+  /// routing) while still being rendered through the pdfium reader.
+  bool _isPdfComic() {
+    try {
+      return Directory(baseDir).listSync().any(
+            (e) => e is File && e.path.toLowerCase().endsWith('.pdf'),
+          );
+    } catch (_) {
+      return false;
+    }
+  }
+
   Future<void> read() async {
-    if (comicType == ComicType.pdf) {
+    if (_isPdfComic()) {
       await _readPdf();
       return;
     }
@@ -183,25 +197,29 @@ class LocalComic with HistoryMixin implements Comic {
       }
     } catch (_) {}
     if (pdf == null) return;
+    final pdfPath = pdf.path;
     try {
       await PdfSessionManager().openLocal(
-        sessionKey: pdf.path,
-        localPath: pdf.path,
+        sessionKey: pdfPath,
+        localPath: pdfPath,
       );
     } catch (e) {
       Log.error('PDF', e);
       return;
     }
-    final cid = pdf.path;
-    final history = HistoryManager().find(cid, ComicType.pdf) ??
+    // Record history as a LOCAL comic (type [ComicType.local]) keyed by this
+    // comic's id, so it shows the "本地导入" label and re-opens through the
+    // local-comic route. The reader still uses [ComicType.pdf] with the pdf
+    // file path as its session key to render the PDF.
+    final history = HistoryManager().find(id, ComicType.local) ??
         History.fromModel(
-          model: RemoteHistoryModel(cid, title, '', ComicType.pdf),
+          model: this,
           ep: 0,
           page: 0,
         );
     App.rootContext.to(() => Reader(
           type: ComicType.pdf,
-          cid: cid,
+          cid: pdfPath,
           name: title,
           chapters: null,
           initialChapter: history.ep,

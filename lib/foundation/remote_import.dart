@@ -147,9 +147,10 @@ class RemoteImporter {
   }
 
   /// Download a remote PDF into the local comic library and register it as a
-  /// [LocalComic] (type [ComicType.pdf]) so it appears in "本地漫画" and can be
-  /// read offline. Returns the imported [LocalComic] together with the absolute
-  /// path of the downloaded PDF file.
+  /// [LocalComic] (type [ComicType.local]) so it appears in "本地漫画", is
+  /// labelled "本地导入" in history/favorites, and can be read offline. Returns
+  /// the imported [LocalComic] together with the absolute path of the
+  /// downloaded PDF file.
   static Future<(LocalComic, String)> importPdf(
     wd.File file, {
     ImportProgress? onProgress,
@@ -186,14 +187,14 @@ class RemoteImporter {
     onProgress?.call(ImportStage.import, 1, 1);
 
     final comic = LocalComic(
-      id: LocalManager().findValidId(ComicType.pdf),
+      id: LocalManager().findValidId(ComicType.local),
       title: file.name ?? 'PDF',
       subtitle: '',
       tags: const [],
       directory: folderName,
       chapters: null,
       cover: cover != null ? 'cover.png' : '',
-      comicType: ComicType.pdf,
+      comicType: ComicType.local,
       downloadedChapters: const [],
       createdAt: DateTime.now(),
     );

@@ -334,9 +334,7 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
   void _openImported(String remotePath) {
     final e = RemoteDownloads.get(remotePath);
     if (e == null) return;
-    if (e.type == 'pdf' && e.localPath != null) {
-      _openDownloadedPdf(e.localPath!, e.name);
-    } else if (e.comicId != null) {
+    if (e.comicId != null) {
       context.to(() => ComicPage(
             id: e.comicId!,
             sourceKey: 'local',
@@ -364,7 +362,7 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
       }
       if (e.comicId != null) {
         try {
-          LocalManager().remove(e.comicId!, ComicType.pdf);
+          LocalManager().remove(e.comicId!, ComicType.local);
         } catch (_) {}
       }
     } else if (e.comicId != null) {
@@ -518,7 +516,7 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
           file,
           onProgress: onProgress,
         );
-        final id = LocalManager().findValidId(ComicType.pdf);
+        final id = LocalManager().findValidId(ComicType.local);
         await LocalManager().add(comic, id);
         RemoteDownloads.record(RemoteDownloadEntry(
           remotePath: file.path!,
@@ -529,10 +527,11 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
         ));
         controller.close();
         if (mounted) {
-          context.to(() => RemotePdfReaderWithLoading(
-                localPath: localPath,
-                name: file.name ?? 'PDF'.tl,
-                cover: 'cover.png',
+          context.to(() => ComicPage(
+                id: id,
+                sourceKey: comic.sourceKey,
+                cover: comic.cover,
+                title: comic.title,
               ));
         }
       } else {
@@ -545,16 +544,6 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
             message: '${'Import failed'.tl}: ${e.toString()}');
       }
     }
-  }
-
-  /// Open a previously-downloaded PDF from its local file via the streaming
-  /// reader (offline).
-  void _openDownloadedPdf(String localPath, String name) {
-    context.to(() => RemotePdfReaderWithLoading(
-          localPath: localPath,
-          name: name,
-          cover: null,
-        ));
   }
 
   void _showFileInfo(wd.File file, _RemoteFileType type) {
