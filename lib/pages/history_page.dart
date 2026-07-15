@@ -83,32 +83,26 @@ class _HistoryPageState extends State<HistoryPage> {
     // A comic that exists in the local library always opens via the local
     // route. This covers freshly-imported comics (sourceKey == 'local') and
     // any history entry whose id still matches a local comic.
-    if (h.sourceKey == 'local' ||
-        LocalManager().find(h.id, ComicType.local) != null) {
-      App.rootContext.to(() => ComicPage(
-            id: h.id,
-            sourceKey: 'local',
-            cover: h.cover,
-            title: h.title,
-            heroID: heroID,
-          ));
-      return;
+    // A locally-stored comic opens directly in the reader, skipping the
+    // detail page.
+    if (h.sourceKey == 'local') {
+      final comic = LocalManager().find(h.id, ComicType.local);
+      if (comic != null) {
+        comic.read();
+        return;
+      }
     }
     // Recovery for pre-fix history entries that were recorded with a remote
     // type even though the comic was imported into the local library. The
     // remote id/path no longer resolves to a local comic, so match by title.
+    // Stale pre-fix entries recorded with a remote type but imported locally
+    // are recovered by title and also open directly in the reader.
     if (h.type == ComicType.webdav ||
         h.type == ComicType.pdf ||
         h.type == ComicType.zip) {
-      final local = LocalManager().findByName(h.title);
-      if (local != null) {
-        App.rootContext.to(() => ComicPage(
-              id: local.id,
-              sourceKey: 'local',
-              cover: h.cover,
-              title: h.title,
-              heroID: heroID,
-            ));
+      final comic = LocalManager().findByName(h.title);
+      if (comic != null) {
+        comic.read();
         return;
       }
     }
