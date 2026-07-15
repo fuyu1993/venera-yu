@@ -1,12 +1,11 @@
 import 'package:crypto/crypto.dart';
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 import 'package:webdav_client/webdav_client.dart' as wd;
 
 import 'package:venera/foundation/app.dart';
 import 'package:venera/foundation/comic_source/comic_source.dart';
 import 'package:venera/foundation/comic_type.dart';
 import 'package:venera/foundation/local.dart';
+import 'package:venera/foundation/pdf/pdf_session.dart';
 import 'package:venera/foundation/remote_webdav.dart';
 import 'package:venera/utils/cbz.dart';
 import 'package:venera/utils/io.dart';
@@ -17,8 +16,9 @@ import 'package:venera/utils/io.dart';
 /// - [importArchive]  : download a ZIP/CBZ and import it via [CBZ.import].
 /// - [importWebDavFolder] : download a remote image folder (with optional
 ///   sub-folder chapters) and build a local image comic.
-/// - [importPdf]      : download a PDF to a local cache file so it can be read
-///   by the streaming reader offline.
+/// - [importPdf]      : download a PDF into the local comic library and
+///   register it as a [LocalComic] (type [ComicType.pdf]) so it appears in the
+///   local library and can be read offline by the streaming reader.
 /// Phase of a download-and-import operation, reported via [ImportProgress].
 enum ImportStage {
   /// Downloading bytes / images from the remote server.
@@ -146,9 +146,11 @@ class RemoteImporter {
     );
   }
 
-  /// Download a remote PDF to a local cache file and return its path. The PDF
-  /// is then read by the streaming reader offline (no re-download).
-  static Future<String> importPdf(
+  /// Download a remote PDF into the local comic library and register it as a
+  /// [LocalComic] (type [ComicType.pdf]) so it appears in "本地漫画" and can be
+  /// read offline. Returns the imported [LocalComic] together with the absolute
+  /// path of the downloaded PDF file.
+  static Future<(LocalComic, String)> importPdf(
     wd.File file, {
     ImportProgress? onProgress,
   }) async {
@@ -156,15 +158,46 @@ class RemoteImporter {
       file.path!,
       onProgress: (c, t) => onProgress?.call(ImportStage.download, c, t),
     );
-    final base = await getTemporaryDirectory();
-    final dir = Directory(p.join(base.path, 'venera_remote_pdf'));
-    if (!dir.existsSync()) dir.createSync(recursive: true);
+    final folderName = sanitizeFileName(file.name ?? 'PDF');
+    final dest = Directory(FilePath.join(LocalManager().path, folderName));
+    if (dest.existsSync()) {
+      throw Exception('Comic with name ${file.name ?? 'PDF'} already exists');
+    }
+    dest.createSync(recursive: true);
+
     final seed = file.path ?? file.name ?? 'pdf';
     final hash = sha1.convert(seed.codeUnits).toString().substring(0, 16);
-    final localPath = p.join(dir.path, '$hash.pdf');
+    final pdfName = '$hash.pdf';
+    final localPath = FilePath.join(dest.path, pdfName);
     await File(localPath).writeAsBytes(bytes);
+
+    // Render a cover from the first PDF page so it shows up in the library
+    // grid (falls back to no cover if rendering fails).
+    Uint8List? cover;
+    try {
+      cover = await PdfSessionManager().renderCoverLocal(localPath);
+    } catch (_) {
+      cover = null;
+    }
+    if (cover != null) {
+      await File(FilePath.join(dest.path, 'cover.png')).writeAsBytes(cover);
+    }
+
     onProgress?.call(ImportStage.import, 1, 1);
-    return localPath;
+
+    final comic = LocalComic(
+      id: LocalManager().findValidId(ComicType.pdf),
+      title: file.name ?? 'PDF',
+      subtitle: '',
+      tags: const [],
+      directory: folderName,
+      chapters: null,
+      cover: cover != null ? 'cover.png' : '',
+      comicType: ComicType.pdf,
+      downloadedChapters: const [],
+      createdAt: DateTime.now(),
+    );
+    return (comic, localPath);
   }
 
   static Future<File> _downloadOne(

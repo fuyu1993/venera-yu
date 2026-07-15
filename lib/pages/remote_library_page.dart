@@ -12,6 +12,7 @@ import 'package:venera/foundation/history.dart';
 import 'package:venera/foundation/image_provider/webdav_image.dart';
 import 'package:venera/foundation/log.dart';
 import 'package:venera/foundation/remote_webdav.dart';
+import 'package:venera/foundation/remote_history_model.dart';
 import 'package:venera/pages/reader/reader.dart';
 import 'package:venera/foundation/pdf/pdf_session.dart';
 import 'package:venera/foundation/zip/zip_session.dart';
@@ -350,10 +351,22 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
   void _removeDownload(String remotePath) {
     final e = RemoteDownloads.get(remotePath);
     if (e == null) return;
-    if (e.type == 'pdf' && e.localPath != null) {
-      try {
-        File(e.localPath!).deleteSync();
-      } catch (_) {}
+    if (e.type == 'pdf') {
+      if (e.localPath != null) {
+        try {
+          final f = File(e.localPath!);
+          if (f.parent.existsSync()) {
+            f.parent.deleteSync(recursive: true);
+          } else {
+            f.deleteSync();
+          }
+        } catch (_) {}
+      }
+      if (e.comicId != null) {
+        try {
+          LocalManager().remove(e.comicId!, ComicType.pdf);
+        } catch (_) {}
+      }
     } else if (e.comicId != null) {
       try {
         LocalManager().remove(e.comicId!, ComicType.local);
@@ -501,18 +514,27 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
               ));
         }
       } else if (type == _RemoteFileType.pdf) {
-        final localPath = await RemoteImporter.importPdf(
+        final (comic, localPath) = await RemoteImporter.importPdf(
           file,
           onProgress: onProgress,
         );
+        final id = LocalManager().findValidId(ComicType.pdf);
+        await LocalManager().add(comic, id);
         RemoteDownloads.record(RemoteDownloadEntry(
           remotePath: file.path!,
           type: 'pdf',
           name: file.name ?? 'PDF'.tl,
+          comicId: id,
           localPath: localPath,
         ));
         controller.close();
-        if (mounted) _openDownloadedPdf(localPath, file.name ?? 'PDF'.tl);
+        if (mounted) {
+          context.to(() => RemotePdfReaderWithLoading(
+                localPath: localPath,
+                name: file.name ?? 'PDF'.tl,
+                cover: 'cover.png',
+              ));
+        }
       } else {
         controller.close();
       }
@@ -1284,29 +1306,6 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
   }
 }
 
-/// Minimal history model used to seed a [History] for a remote comic.
-class _RemoteHistoryModel with HistoryMixin {
-  @override
-  final String title;
-
-  @override
-  final String id;
-
-  @override
-  final String cover;
-
-  final ComicType _type;
-
-  @override
-  String? get subTitle => null;
-
-  @override
-  ComicType get historyType => _type;
-
-  _RemoteHistoryModel(this.id, this.title, this.cover,
-      [this._type = ComicType.webdav]);
-}
-
 /// Loads the chapters of a remote WebDAV folder and launches the reader.
 class RemoteReaderWithLoading extends StatefulWidget {
   final String folderPath;
@@ -1360,7 +1359,7 @@ class _RemoteReaderWithLoadingState
     var chapters = ComicChapters(map);
     var history = HistoryManager().find(widget.folderPath, ComicType.webdav) ??
         History.fromModel(
-          model: _RemoteHistoryModel(
+          model: RemoteHistoryModel(
             widget.folderPath,
             widget.name,
             widget.cover ?? '',
@@ -1458,7 +1457,7 @@ class _RemotePdfReaderWithLoadingState
     }
     var history = HistoryManager().find(_cid, ComicType.pdf) ??
         History.fromModel(
-          model: _RemoteHistoryModel(
+          model: RemoteHistoryModel(
             _cid,
             widget.name,
             widget.cover ?? '',
@@ -1548,7 +1547,7 @@ class _RemoteZipReaderWithLoadingState
     var history =
         HistoryManager().find(widget.remotePath, ComicType.zip) ??
             History.fromModel(
-              model: _RemoteHistoryModel(
+              model: RemoteHistoryModel(
                 widget.remotePath,
                 widget.name,
                 widget.cover ?? '',

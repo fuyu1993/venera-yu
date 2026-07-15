@@ -9,6 +9,8 @@ import 'package:venera/foundation/comic_source/comic_source.dart';
 import 'package:venera/foundation/comic_type.dart';
 import 'package:venera/foundation/favorites.dart';
 import 'package:venera/foundation/log.dart';
+import 'package:venera/foundation/pdf/pdf_session.dart';
+import 'package:venera/foundation/remote_history_model.dart';
 import 'package:venera/network/download.dart';
 import 'package:venera/pages/reader/reader.dart';
 import 'package:venera/utils/io.dart';
@@ -107,7 +109,11 @@ class LocalComic with HistoryMixin implements Comic {
   @override
   int? get maxPage => null;
 
-  void read() {
+  Future<void> read() async {
+    if (comicType == ComicType.pdf) {
+      await _readPdf();
+      return;
+    }
     var history = HistoryManager().find(id, comicType);
     int? firstDownloadedChapter;
     int? firstDownloadedChapterGroup;
@@ -155,6 +161,56 @@ class LocalComic with HistoryMixin implements Comic {
         tags: tags,
       )
     );
+  }
+
+  /// Open a locally-imported PDF comic with the streaming PDF reader. The PDF
+  /// file lives inside this comic's [baseDir]; locate it, open a pdfium session
+  /// and launch the reader.
+  Future<void> _readPdf() async {
+    late final Directory dir;
+    try {
+      dir = Directory(baseDir);
+    } catch (_) {
+      return;
+    }
+    File? pdf;
+    try {
+      await for (final e in dir.list()) {
+        if (e is File && e.path.toLowerCase().endsWith('.pdf')) {
+          pdf = e;
+          break;
+        }
+      }
+    } catch (_) {}
+    if (pdf == null) return;
+    try {
+      await PdfSessionManager().openLocal(
+        sessionKey: pdf.path,
+        localPath: pdf.path,
+      );
+    } catch (e) {
+      Log.error('PDF', e);
+      return;
+    }
+    final cid = pdf.path;
+    final history = HistoryManager().find(cid, ComicType.pdf) ??
+        History.fromModel(
+          model: RemoteHistoryModel(cid, title, '', ComicType.pdf),
+          ep: 0,
+          page: 0,
+        );
+    App.rootContext.to(() => Reader(
+          type: ComicType.pdf,
+          cid: cid,
+          name: title,
+          chapters: null,
+          initialChapter: history.ep,
+          initialPage: history.page,
+          initialChapterGroup: history.group,
+          history: history,
+          author: subtitle,
+          tags: tags,
+        ));
   }
 
   @override
