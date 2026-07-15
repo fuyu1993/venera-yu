@@ -88,6 +88,7 @@ class FavoriteItem implements Comic {
   String get _sourceLabel {
     if (type == ComicType.webdav) return "WebDAV";
     if (type == ComicType.pdf) return "PDF";
+    if (type == ComicType.zip) return "ZIP";
     if (type == ComicType.local) return "local";
     return type.comicSource?.name ?? "Unknown";
   }
@@ -102,9 +103,13 @@ class FavoriteItem implements Comic {
   int? get maxPage => null;
 
   @override
-  String get sourceKey => type == ComicType.local
-      ? 'local'
-      : type.comicSource?.key ?? "Unknown:${type.value}";
+  String get sourceKey {
+    if (type == ComicType.local) return 'local';
+    if (type == ComicType.webdav) return 'webdav';
+    if (type == ComicType.pdf) return 'pdf';
+    if (type == ComicType.zip) return 'zip';
+    return type.comicSource?.key ?? "Unknown:${type.value}";
+  }
 
   @override
   double? get stars => null;

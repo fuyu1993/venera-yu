@@ -916,6 +916,7 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
   void _openFavorite(FavoriteItem c, int heroID) {
     if (c.type != ComicType.webdav &&
         c.type != ComicType.pdf &&
+        c.type != ComicType.zip &&
         appdata.settings["onClickFavorite"] == "viewDetail") {
       App.mainNavigatorKey?.currentContext?.to(
         () => ComicPage(
@@ -946,6 +947,16 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
     if (c.type == ComicType.pdf) {
       App.mainNavigatorKey?.currentContext?.to(
         () => RemotePdfReaderWithLoading(
+          remotePath: c.id,
+          name: c.name,
+          cover: c.coverPath,
+        ),
+      );
+      return;
+    }
+    if (c.type == ComicType.zip) {
+      App.mainNavigatorKey?.currentContext?.to(
+        () => RemoteZipReaderWithLoading(
           remotePath: c.id,
           name: c.name,
           cover: c.coverPath,
@@ -989,6 +1000,23 @@ class _ReorderComicsPageState extends State<_ReorderComicsPage> {
   late var comics = LocalFavoritesManager().getFolderComics(widget.name);
   bool changed = false;
 
+  /// Human-readable source label for [FavoriteItem] types whose
+  /// [ComicType.comicSource] is null (local-only types like webdav/pdf/zip).
+  static String _favoriteSourceLabel(FavoriteItem item) {
+    if (item.type == ComicType.webdav) return 'WebDAV';
+    if (item.type == ComicType.pdf) return 'PDF';
+    if (item.type == ComicType.zip) return 'ZIP';
+    return item.type.comicSource?.name ?? 'Unknown';
+  }
+
+  /// Machine-readable sourceKey for image-provider / routing fallback.
+  static String? _favoriteSourceKey(FavoriteItem item) {
+    if (item.type == ComicType.webdav) return 'webdav';
+    if (item.type == ComicType.pdf) return 'pdf';
+    if (item.type == ComicType.zip) return 'zip';
+    return item.type.comicSource?.key;
+  }
+
   static int _floatToInt8(double x) {
     return (x * 255.0).round() & 0xff;
   }
@@ -1029,7 +1057,6 @@ class _ReorderComicsPageState extends State<_ReorderComicsPage> {
 
     var tiles = comics.map(
       (e) {
-        var comicSource = e.type.comicSource;
         return ComicTile(
           key: Key(e.hashCode.toString()),
           enableLongPressed: false,
@@ -1040,10 +1067,9 @@ class _ReorderComicsPageState extends State<_ReorderComicsPage> {
             e.author,
             e.tags,
             type == 'detailed'
-                ? "${e.time} | ${comicSource?.name ?? "Unknown"}"
-                : "${e.type.comicSource?.name ?? "Unknown"} | ${e.time}",
-            comicSource?.key ??
-                (e.type == ComicType.local ? "local" : "Unknown"),
+                ? "${e.time} | ${_favoriteSourceLabel(e)}"
+                : "${_favoriteSourceLabel(e)} | ${e.time}",
+            _favoriteSourceKey(e) ?? "Unknown",
             null,
             null,
           ),
