@@ -485,7 +485,16 @@
     "Comic": "漫画",
     "items": "项",
     "Opening archive": "正在打开压缩包",
-    "Failed to open archive": "打开压缩包失败"
+    "Failed to open archive": "打开压缩包失败",
+    "Mark as comic": "标记为漫画",
+    "Marked as comic": "已标记为漫画",
+    "Unmark as comic": "取消标记为漫画",
+    "Unmarked as comic": "已取消标记为漫画",
+    "Blocked": "已屏蔽",
+    "Title copied": "标题已复制",
+    "Invalid page": "无效页面",
+    "New Name": "新名称",
+    "Unknown error": "未知错误"
   },
   "zh_TW": {
     "Home": "首頁",
@@ -967,7 +976,16 @@
     "Grid View": "網格檢視",
     "items": "項",
     "Opening archive": "正在開啟壓縮檔",
-    "Failed to open archive": "開啟壓縮檔失敗"
+    "Failed to open archive": "開啟壓縮檔失敗",
+    "Mark as comic": "標記為漫畫",
+    "Marked as comic": "已標記為漫畫",
+    "Unmark as comic": "取消標記為漫畫",
+    "Unmarked as comic": "已取消標記為漫畫",
+    "Blocked": "已封鎖",
+    "Title copied": "標題已複製",
+    "Invalid page": "無效頁面",
+    "New Name": "新名稱",
+    "Unknown error": "未知錯誤"
   },
   "en_US": {
     "List View": "List View",
@@ -998,6 +1016,15 @@
     "Preparing": "Preparing",
     "Failed to load": "Failed to load",
     "Next": "Next",
-    "Previous": "Previous"
+    "Previous": "Previous",
+    "Mark as comic": "Mark as comic",
+    "Marked as comic": "Marked as comic",
+    "Unmark as comic": "Unmark as comic",
+    "Unmarked as comic": "Unmarked as comic",
+    "Blocked": "Blocked",
+    "Title copied": "Title copied",
+    "Invalid page": "Invalid page",
+    "New Name": "New Name",
+    "Unknown error": "Unknown error"
   }
 }
