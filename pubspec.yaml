@@ -133,6 +133,8 @@ dependencies:
   flutter_lucide: ^1.11.0
   # PDF 阅读：基于 pdfium，PdfViewer.custom 底层使用 FPDF_FILEACCESS 实现真·流式（按需 Range 拉取）
   pdfrx: ^2.4.0
+  # ZIP 流式阅读：解压单个 entry（DEFLATE）用到的 inflate
+  archive: ^3.3.2
 
 dev_dependencies:
   # Flutter 测试框架
@@ -143,11 +145,9 @@ dev_dependencies:
   # 构建到架构工具
   flutter_to_arch: ^1.0.1
   # Debian 打包工具，来自 Git 仓库
-  flutter_to_debian: 
+  flutter_to_debian:
     git:
       url: https://github.com/venera-app/flutter_to_debian.git
-  # 通用归档库
-  archive: any
 
 flutter:
   # 使用 Material Design 组件

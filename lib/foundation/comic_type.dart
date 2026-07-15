@@ -18,13 +18,15 @@ class ComicType {
       return "webdav";
     } else if(this == pdf) {
       return "pdf";
+    } else if(this == zip) {
+      return "zip";
     } else {
       return comicSource!.key;
     }
   }
 
   ComicSource? get comicSource {
-    if(this == local || this == webdav || this == pdf) {
+    if(this == local || this == webdav || this == pdf || this == zip) {
       return null;
     } else {
       return ComicSource.fromIntKey(value);
@@ -40,6 +42,11 @@ class ComicType {
   /// and served to the built-in comic reader.
   static const pdf = ComicType(2001);
 
+  /// Remote ZIP/CBZ comic read as a comic: each image entry is fetched on
+  /// demand (WebDAV Range) and inflated, then served to the built-in reader —
+  /// exactly like [pdf], but for archive comics instead of PDF pages.
+  static const zip = ComicType(3001);
+
   factory ComicType.fromKey(String key) {
     if(key == "local") {
       return local;
@@ -47,6 +54,8 @@ class ComicType {
       return webdav;
     } else if(key == "pdf") {
       return pdf;
+    } else if(key == "zip") {
+      return zip;
     } else {
       return ComicType(key.hashCode);
     }

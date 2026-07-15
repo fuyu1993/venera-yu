@@ -24,19 +24,47 @@ Future<File> exportAppData([bool sync = true]) async {
     await cacheFile.delete();
   }
   await Isolate.run(() {
-    var zipFile = ZipFile.open(cacheFilePath);
+    // zip_flutter's native writer (minizip) opens the destination with
+    // create+truncate and fails with "Failed to open file" when the parent
+    // directory is missing. Guarantee it exists before opening. Note: derive
+    // the directory from the captured [cacheFilePath] string — [App.cachePath]
+    // is a `late` static initialized only in the main isolate and is NOT
+    // available inside this spawned isolate.
+    final cacheDir = File(cacheFilePath).parent;
+    if (!cacheDir.existsSync()) {
+      cacheDir.createSync(recursive: true);
+    }
+    ZipFile zipFile;
+    try {
+      zipFile = ZipFile.open(cacheFilePath);
+    } on ZipException {
+      throw ZipException(
+        'Failed to open file: $cacheFilePath '
+        '(parent dir exists: ${cacheDir.existsSync()})',
+      );
+    }
+    // Only add a source file if it actually exists; a missing db (e.g. no
+    // cookies / no sync data) must not abort the whole export.
+    void addIfExists(String entryName, String path) {
+      if (File(path).existsSync()) {
+        zipFile.addFile(entryName, path);
+      }
+    }
+
     var historyFile = FilePath.join(dataPath, "history.db");
     var localFavoriteFile = FilePath.join(dataPath, "local_favorite.db");
     var appdata = FilePath.join(dataPath, sync ? "syncdata.json" : "appdata.json");
     var cookies = FilePath.join(dataPath, "cookie.db");
-    zipFile.addFile("history.db", historyFile);
-    zipFile.addFile("local_favorite.db", localFavoriteFile);
-    zipFile.addFile("appdata.json", appdata);
-    zipFile.addFile("cookie.db", cookies);
-    for (var file
-        in Directory(FilePath.join(dataPath, "comic_source")).listSync()) {
-      if (file is File) {
-        zipFile.addFile("comic_source/${file.name}", file.path);
+    addIfExists("history.db", historyFile);
+    addIfExists("local_favorite.db", localFavoriteFile);
+    addIfExists("appdata.json", appdata);
+    addIfExists("cookie.db", cookies);
+    final comicSourceDir = Directory(FilePath.join(dataPath, "comic_source"));
+    if (comicSourceDir.existsSync()) {
+      for (var file in comicSourceDir.listSync()) {
+        if (file is File) {
+          zipFile.addFile("comic_source/${file.name}", file.path);
+        }
       }
     }
     zipFile.close();

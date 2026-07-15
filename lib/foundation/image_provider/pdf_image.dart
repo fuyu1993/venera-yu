@@ -77,3 +77,35 @@ class PdfCoverImageProvider
   @override
   String get key => "pdfcover://$remotePath";
 }
+
+/// Cover/thumbnail image provider for a locally-downloaded PDF (imported from
+/// the remote library). Renders the first page via
+/// [PdfSessionManager.renderCoverLocal]. Falls back to a 1x1 white PNG.
+class PdfLocalCoverImageProvider
+    extends BaseImageProvider<image_provider.PdfLocalCoverImageProvider> {
+  const PdfLocalCoverImageProvider(this.localPath, this.title);
+
+  /// The local PDF file path (also the [PdfSession] key / reader `cid`).
+  final String localPath;
+
+  final String title;
+
+  static final Uint8List _placeholder = base64Decode(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+  );
+
+  @override
+  Future<Uint8List> load(chunkEvents, checkStop) async {
+    final bytes = await PdfSessionManager().renderCoverLocal(localPath);
+    checkStop();
+    return bytes ?? _placeholder;
+  }
+
+  @override
+  Future<PdfLocalCoverImageProvider> obtainKey(
+          ImageConfiguration configuration) =>
+      SynchronousFuture(this);
+
+  @override
+  String get key => "pdflocalcover://$localPath";
+}

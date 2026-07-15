@@ -8,14 +8,24 @@ ImageProvider? _findImageProvider(Comic comic) {
     if (comic.type == ComicType.webdav) {
       image = WebDavImageProvider(comic.cover, 'webdav', comic.id, '', 0);
     } else if (comic.type == ComicType.pdf) {
-      image = PdfCoverImageProvider(comic.id, comic.title);
+      // An imported PDF is recorded with its local file path as the id, so it
+      // must render from the local file; otherwise it's a remote PDF.
+      image = File(comic.id).existsSync()
+          ? PdfLocalCoverImageProvider(comic.id, comic.title)
+          : PdfCoverImageProvider(comic.id, comic.title);
+    } else if (comic.type == ComicType.zip) {
+      image = ZipCoverImageProvider(comic.id, comic.title);
     } else {
       image = HistoryImageProvider(comic);
     }
   } else if (comic is FavoriteItem && comic.type == ComicType.webdav) {
     image = WebDavImageProvider(comic.cover, 'webdav', comic.id, '', 0);
   } else if (comic is FavoriteItem && comic.type == ComicType.pdf) {
-    image = PdfCoverImageProvider(comic.id, comic.title);
+    image = File(comic.id).existsSync()
+        ? PdfLocalCoverImageProvider(comic.id, comic.title)
+        : PdfCoverImageProvider(comic.id, comic.title);
+  } else if (comic is FavoriteItem && comic.type == ComicType.zip) {
+    image = ZipCoverImageProvider(comic.id, comic.title);
   } else if (comic.sourceKey == 'local') {
     var localComic = LocalManager().find(comic.id, ComicType.local);
     if (localComic == null) {

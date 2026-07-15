@@ -72,6 +72,35 @@ class _ReaderImagesState extends State<_ReaderImages> {
       context.readerScaffold.update();
       return;
     }
+    if (reader.type == ComicType.zip) {
+      // Defer past the current build phase, exactly like the PDF branch.
+      await Future.microtask(() {});
+      try {
+        var session = ZipSessionManager().get(reader.cid);
+        if (session == null) {
+          throw 'ZIP session not found';
+        }
+        var images =
+            List.generate(session.pageCount, (i) => 'zippage://$i');
+        setState(() {
+          reader.images = images;
+          reader.isLoading = false;
+          inProgress = false;
+          _handleJumpToLastPage();
+          Future.microtask(() {
+            reader.updateHistory();
+          });
+        });
+      } catch (e) {
+        setState(() {
+          error = e.toString();
+          reader.isLoading = false;
+          inProgress = false;
+        });
+      }
+      context.readerScaffold.update();
+      return;
+    }
     if (reader.type == ComicType.webdav) {
       try {
         var cp = reader.widget.chapters?.ids.elementAtOrNull(reader.chapter - 1) ??
@@ -1289,6 +1318,15 @@ ImageProvider _createImageProviderFromKey(
     var pageIndex =
         int.tryParse(imageKey.substring('pdfpage://'.length)) ?? 0;
     return PdfImageProvider(
+      reader.cid,
+      pageIndex,
+      enableResize: reader.mode.isContinuous,
+    );
+  }
+  if (imageKey.startsWith('zippage://')) {
+    var pageIndex =
+        int.tryParse(imageKey.substring('zippage://'.length)) ?? 0;
+    return ZipImageProvider(
       reader.cid,
       pageIndex,
       enableResize: reader.mode.isContinuous,

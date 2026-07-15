@@ -50,29 +50,30 @@ class PdfSession {
     required this.key,
     required this.remotePath,
     required this.fileSize,
-    required RandomAccessFile raf,
-    required String cachePath,
+    RandomAccessFile? raf,
+    String? cachePath,
     required String pageCacheDir,
-    required wd.Client client,
+    wd.Client? client,
   })  : _raf = raf,
         _cachePath = cachePath,
         _pageCacheDir = pageCacheDir,
         _client = client;
 
-  /// Unique session key (the WebDAV file path). Also used as the reader `cid`.
+  /// Unique session key (the WebDAV file path, or the local file path for a
+  /// downloaded PDF). Also used as the reader `cid`.
   final String key;
 
   final String remotePath;
 
   final int fileSize;
 
-  final RandomAccessFile _raf;
+  final RandomAccessFile? _raf;
 
-  final String _cachePath;
+  final String? _cachePath;
 
   final String _pageCacheDir;
 
-  final wd.Client _client;
+  final wd.Client? _client;
 
   PdfDocument? _document;
 
@@ -167,6 +168,42 @@ class PdfSession {
     }
   }
 
+  /// Opens a PDF that has already been downloaded to a local file, so an
+  /// imported PDF can be read by the streaming reader without touching the
+  /// network. [sessionKey] must match the reader `cid` (use the local path).
+  static Future<PdfSession> openLocal({
+    required String sessionKey,
+    required String localPath,
+  }) async {
+    final base = await getTemporaryDirectory();
+    final dir = Directory(p.join(base.path, 'venera_pdf'));
+    if (!await dir.exists()) await dir.create(recursive: true);
+    final hash = sha1.convert(sessionKey.codeUnits).toString().substring(0, 16);
+    final pageDir = Directory(p.join(dir.path, 'pages_$hash'));
+    if (!await pageDir.exists()) await pageDir.create(recursive: true);
+
+    final session = PdfSession._(
+      key: sessionKey,
+      remotePath: localPath,
+      fileSize: 0,
+      raf: null,
+      cachePath: null,
+      pageCacheDir: pageDir.path,
+      client: null,
+    );
+
+    try {
+      // pdfrx reads directly from the local file: no Range / sparse cache.
+      final doc = await PdfDocument.openFile(localPath);
+      session._document = doc;
+      session._pageCount = doc.pages.length;
+      return session;
+    } catch (e) {
+      await session.dispose();
+      rethrow;
+    }
+  }
+
   // ---------------------------------------------------------------------------
   // Byte source (FPDF_FILEACCESS m_GetBlock, Dart async version)
   // ---------------------------------------------------------------------------
@@ -205,16 +242,16 @@ class PdfSession {
   Future<void> _warmTail() async {
     final tail = fileSize > _tailSize ? _tailSize : fileSize;
     final tailStart = fileSize - tail;
-    final status = await _ioLock.run(() async {
-      return RemoteWebDav.downloadRange(
-        remotePath,
-        tailStart,
-        fileSize - 1,
-        _raf,
-        client: _client,
-        cancelToken: _cancel,
-      );
-    });
+      final status = await _ioLock.run(() async {
+        return RemoteWebDav.downloadRange(
+          remotePath,
+          tailStart,
+          fileSize - 1,
+          _raf!,
+          client: _client,
+          cancelToken: _cancel,
+        );
+      });
     if (status == 206) {
       await _ioLock.run(() async => _addCached(tailStart, fileSize - 1));
     } else {
@@ -241,7 +278,7 @@ class PdfSession {
             remotePath,
             start,
             end,
-            _raf,
+            _raf!,
             client: _client,
             cancelToken: _cancel,
           );
@@ -258,8 +295,9 @@ class PdfSession {
   Future<void> _ensureFullDownload() {
     return _fullDownload ??= () async {
       try {
-        final resp = await _client.c.req<ResponseBody>(
-          _client,
+        final client = _client!;
+        final resp = await client.c.req<ResponseBody>(
+          client,
           'GET',
           remotePath,
           optionsHandler: (options) {
@@ -268,11 +306,12 @@ class PdfSession {
           cancelToken: _cancel,
         );
         await _ioLock.run(() async {
-          await _raf.setPosition(0);
+          final raf = _raf!;
+          await raf.setPosition(0);
           await for (final c in resp.data!.stream) {
             if (c.isEmpty) continue;
             if (_cancel.isCancelled) break;
-            await _raf.writeFrom(c);
+            await raf.writeFrom(c);
           }
           _addCached(0, fileSize - 1);
         });
@@ -312,7 +351,7 @@ class PdfSession {
             remotePath,
             start,
             blockEnd,
-            _raf,
+            _raf!,
             client: _client,
             cancelToken: _cancel,
           );
@@ -338,10 +377,11 @@ class PdfSession {
   }
 
   Future<int> _readFromCache(Uint8List buffer, int position, int size) async {
-    await _raf.setPosition(position);
+    final raf = _raf!;
+    await raf.setPosition(position);
     var read = 0;
     while (read < size) {
-      final n = await _raf.readInto(buffer, read, size);
+      final n = await raf.readInto(buffer, read, size);
       if (n <= 0) break;
       read += n;
     }
@@ -452,10 +492,10 @@ class PdfSession {
       await _document?.dispose();
     } catch (_) {}
     try {
-      await _raf.close();
+      await _raf?.close();
     } catch (_) {}
     try {
-      await File(_cachePath).delete();
+      if (_cachePath != null) await File(_cachePath).delete();
     } catch (_) {}
     try {
       await Directory(_pageCacheDir).delete(recursive: true);
@@ -485,6 +525,21 @@ class PdfSessionManager {
     await close(sessionKey);
     final session =
         await PdfSession.open(sessionKey: sessionKey, remotePath: remotePath);
+    _sessions[sessionKey] = session;
+    return session;
+  }
+
+  /// Opens (or replaces) a session for a locally-downloaded PDF, keyed by
+  /// [sessionKey] (the local file path).
+  Future<PdfSession> openLocal({
+    required String sessionKey,
+    required String localPath,
+  }) async {
+    await close(sessionKey);
+    final session = await PdfSession.openLocal(
+      sessionKey: sessionKey,
+      localPath: localPath,
+    );
     _sessions[sessionKey] = session;
     return session;
   }
@@ -519,6 +574,32 @@ class PdfSessionManager {
       return null;
     } finally {
       if (s != null) await close(remotePath);
+    }
+  }
+
+  /// Renders the first page of a locally-downloaded PDF (see [PdfSession.openLocal])
+  /// as a cover image. Used by history-grid thumbnails for imported PDFs.
+  Future<Uint8List?> renderCoverLocal(String localPath) async {
+    final existing = _sessions[localPath];
+    if (existing != null) {
+      try {
+        return await existing.renderPage(0);
+      } catch (e) {
+        Log.error('PDF cover', e);
+        return null;
+      }
+    }
+    PdfSession? s;
+    try {
+      s = await PdfSession.openLocal(
+          sessionKey: localPath, localPath: localPath);
+      _sessions[localPath] = s;
+      return await s.renderPage(0);
+    } catch (e) {
+      Log.error('PDF cover', e);
+      return null;
+    } finally {
+      if (s != null) await close(localPath);
     }
   }
 }

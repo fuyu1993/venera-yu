@@ -151,6 +151,49 @@ class RemoteWebDav {
     return Uint8List.fromList(await client.read(path));
   }
 
+  /// Issue a HTTP Range GET for [start, end] and return just the received
+  /// bytes (rather than writing them into a [RandomAccessFile] like
+  /// [downloadRange] does).
+  ///
+  /// Used by [ZipSession] to fetch small, precisely-addressed slices of a
+  /// remote archive (the end-of-central-directory record, the central
+  /// directory, and individual entry byte ranges) without downloading the
+  /// whole file.
+  ///
+  /// Returns the bytes for the requested range. If the server ignores Range
+  /// (returns `200` with the whole file) the full body is returned and the
+  /// caller should switch to a full-download fallback.
+  static Future<Uint8List> readRangeBytes(
+    String path,
+    int start,
+    int end, {
+    Client? client,
+    CancelToken? cancelToken,
+  }) async {
+    client ??= getClient();
+    if (client == null) throw 'Remote WebDAV not configured';
+    if (start < 0 || end < start) return Uint8List(0);
+    final resp = await client.c.req<ResponseBody>(
+      client,
+      'GET',
+      path,
+      optionsHandler: (options) {
+        options.responseType = ResponseType.stream;
+        options.headers ??= {};
+        options.headers?['Range'] = 'bytes=$start-$end';
+      },
+      cancelToken: cancelToken,
+    );
+    final stream = resp.data?.stream;
+    if (stream == null) throw Exception('Empty response (HTTP ${resp.statusCode})');
+    final out = BytesBuilder(copy: false);
+    await for (final chunk in stream) {
+      if (chunk.isEmpty) continue;
+      out.add(chunk);
+    }
+    return out.takeBytes();
+  }
+
   /// Stream a remote file directly to a local path with download progress.
   ///
   /// Unlike [readFile], this does not load the whole file into memory, which

@@ -87,6 +87,14 @@ class _HistoryPageState extends State<HistoryPage> {
           ));
       return;
     }
+    if (h.type == ComicType.zip) {
+      App.rootContext.to(() => RemoteZipReaderWithLoading(
+            remotePath: h.id,
+            name: h.title,
+            cover: h.cover,
+          ));
+      return;
+    }
     // Comic-source / local entries behave exactly as the default tile tap.
     App.rootContext.to(() => ComicPage(
           id: h.id,
@@ -103,6 +111,7 @@ class _HistoryPageState extends State<HistoryPage> {
     if (c is History) {
       if (c.type == ComicType.webdav) return 'WebDAV';
       if (c.type == ComicType.pdf) return 'PDF';
+      if (c.type == ComicType.zip) return 'ZIP';
     }
     return ComicSource.find(c.sourceKey)?.name;
   }

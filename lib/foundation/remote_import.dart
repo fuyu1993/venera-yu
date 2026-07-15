@@ -1,0 +1,153 @@
+import 'package:crypto/crypto.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
+import 'package:webdav_client/webdav_client.dart' as wd;
+
+import 'package:venera/foundation/app.dart';
+import 'package:venera/foundation/comic_source/comic_source.dart';
+import 'package:venera/foundation/comic_type.dart';
+import 'package:venera/foundation/local.dart';
+import 'package:venera/foundation/remote_webdav.dart';
+import 'package:venera/utils/cbz.dart';
+import 'package:venera/utils/io.dart';
+
+/// Downloads remote-library items to the local device and turns them into
+/// local comics, mirroring the three remote comic formats:
+///
+/// - [importArchive]  : download a ZIP/CBZ and import it via [CBZ.import].
+/// - [importWebDavFolder] : download a remote image folder (with optional
+///   sub-folder chapters) and build a local image comic.
+/// - [importPdf]      : download a PDF to a local cache file so it can be read
+///   by the streaming reader offline.
+class RemoteImporter {
+  RemoteImporter._();
+
+  /// Download a ZIP/CBZ and import it as a local image comic. Returns the
+  /// imported [LocalComic] (caller assigns the final id via [LocalManager.add]).
+  static Future<LocalComic> importArchive(wd.File file) async {
+    final bytes = await RemoteWebDav.readFile(file.path!);
+    final ext = RemoteWebDav.getFileExtension(file.name);
+    final tempDir = Directory('${App.cachePath}/remote_zip');
+    if (!tempDir.existsSync()) tempDir.createSync(recursive: true);
+    final tempFile = File('${tempDir.path}/${file.name ?? "archive.$ext"}');
+    await tempFile.writeAsBytes(bytes);
+    try {
+      return await CBZ.import(tempFile);
+    } finally {
+      try {
+        if (tempFile.existsSync()) await tempFile.delete();
+      } catch (_) {}
+    }
+  }
+
+  /// Download a remote WebDAV folder (images, optionally organised into
+  /// sub-folder chapters) and build a local image comic. [onProgress] reports
+  /// the number of images downloaded so far and the total.
+  static Future<LocalComic> importWebDavFolder(
+    String folderPath,
+    String name, {
+    void Function(int done, int total)? onProgress,
+  }) async {
+    final chaptersMap = await RemoteWebDav.buildChapters(folderPath);
+    if (chaptersMap.isEmpty) {
+      throw Exception('No readable images in this folder');
+    }
+    final dirs = chaptersMap.keys.toList();
+    final single = dirs.length == 1 && chaptersMap[dirs[0]] == 'All';
+
+    // Pre-fetch image keys and the total count for progress reporting.
+    final keysPerDir = <String, List<String>>{};
+    var total = 0;
+    for (final dir in dirs) {
+      final keys = await RemoteWebDav.getImagesForChapter(dir);
+      keysPerDir[dir] = keys;
+      total += keys.length;
+    }
+
+    final dest = Directory(
+      FilePath.join(LocalManager().path, sanitizeFileName(name)),
+    );
+    if (dest.existsSync()) {
+      throw Exception('Comic with name $name already exists');
+    }
+    dest.createSync();
+
+    final downloaded = <File>[];
+    Map<String, String>? cpMap;
+    var done = 0;
+
+    if (single) {
+      final keys = keysPerDir[dirs[0]]!;
+      for (var i = 0; i < keys.length; i++) {
+        downloaded.add(await _downloadOne(keys[i], dest, '${i + 1}'));
+        done++;
+        onProgress?.call(done, total);
+      }
+    } else {
+      cpMap = {};
+      for (var ci = 0; ci < dirs.length; ci++) {
+        final dir = dirs[ci];
+        final chapterDest =
+            Directory(FilePath.join(dest.path, ci.toString()));
+        chapterDest.createSync();
+        final keys = keysPerDir[dir]!;
+        for (var i = 0; i < keys.length; i++) {
+          downloaded.add(await _downloadOne(keys[i], chapterDest, '${i + 1}'));
+          done++;
+          onProgress?.call(done, total);
+        }
+        cpMap[ci.toString()] = chaptersMap[dir]!;
+      }
+    }
+
+    if (downloaded.isEmpty) {
+      await dest.delete(recursive: true);
+      throw Exception('No images found');
+    }
+
+    final coverFile = downloaded.first;
+    await coverFile.copyMem(
+      FilePath.join(dest.path, 'cover.${coverFile.extension}'),
+    );
+
+    return LocalComic(
+      id: LocalManager().findValidId(ComicType.local),
+      title: name,
+      subtitle: '',
+      tags: const [],
+      comicType: ComicType.local,
+      directory: dest.name,
+      chapters: ComicChapters.fromJsonOrNull(cpMap),
+      downloadedChapters: cpMap?.keys.toList() ?? [],
+      cover: 'cover.${coverFile.extension}',
+      createdAt: DateTime.now(),
+    );
+  }
+
+  /// Download a remote PDF to a local cache file and return its path. The PDF
+  /// is then read by the streaming reader offline (no re-download).
+  static Future<String> importPdf(wd.File file) async {
+    final bytes = await RemoteWebDav.readFile(file.path!);
+    final base = await getTemporaryDirectory();
+    final dir = Directory(p.join(base.path, 'venera_remote_pdf'));
+    if (!dir.existsSync()) dir.createSync(recursive: true);
+    final seed = file.path ?? file.name ?? 'pdf';
+    final hash = sha1.convert(seed.codeUnits).toString().substring(0, 16);
+    final localPath = p.join(dir.path, '$hash.pdf');
+    await File(localPath).writeAsBytes(bytes);
+    return localPath;
+  }
+
+  static Future<File> _downloadOne(
+    String webdavKey,
+    Directory dir,
+    String index,
+  ) async {
+    final path = RemoteWebDav.decodeKey(webdavKey);
+    final bytes = await RemoteWebDav.readFile(path);
+    final ext = RemoteWebDav.getFileExtension(path.split('/').last);
+    final f = File(FilePath.join(dir.path, '$index.$ext'));
+    await f.writeAsBytes(bytes);
+    return f;
+  }
+}
