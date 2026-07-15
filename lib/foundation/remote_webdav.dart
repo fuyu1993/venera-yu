@@ -11,6 +11,33 @@ import 'package:venera/network/app_dio.dart';
 /// Provides configuration access, a shared webdav client and the helpers used
 /// by the remote library page and the reader to browse / read files stored on
 /// a remote WebDAV drive.
+
+/// Natural-order comparison for file/folder names so that numeric segments are
+/// ordered by value instead of lexicographically (e.g. `2` before `12`, and
+/// `page_2` before `page_10`). The string is split into digit and non-digit
+/// chunks and compared piece by piece, falling back to a plain string compare
+/// for non-numeric chunks.
+final RegExp _naturalChunk = RegExp(r'(\d+|\D+)');
+int naturalCompare(String a, String b) {
+  final aChunks =
+      _naturalChunk.allMatches(a).map((m) => m.group(0)!).toList();
+  final bChunks =
+      _naturalChunk.allMatches(b).map((m) => m.group(0)!).toList();
+  final len =
+      aChunks.length < bChunks.length ? aChunks.length : bChunks.length;
+  for (var k = 0; k < len; k++) {
+    final ac = aChunks[k];
+    final bc = bChunks[k];
+    final aNum = int.tryParse(ac);
+    final bNum = int.tryParse(bc);
+    final cmp = (aNum != null && bNum != null)
+        ? aNum.compareTo(bNum)
+        : ac.compareTo(bc);
+    if (cmp != 0) return cmp;
+  }
+  return aChunks.length.compareTo(bChunks.length);
+}
+
 class RemoteWebDav {
   static const String configKey = 'remoteWebDav';
 
@@ -244,7 +271,7 @@ class RemoteWebDav {
     var imgs = files
         .where((e) => e.isDir != true && isImageName(e.name))
         .toList();
-    imgs.sort((a, b) => (a.name ?? '').compareTo(b.name ?? ''));
+    imgs.sort((a, b) => naturalCompare(a.name ?? '', b.name ?? ''));
     return imgs.map((e) => encodeKey(e.path!)).toList();
   }
 
@@ -287,7 +314,7 @@ class RemoteWebDav {
     var subDirs = files
         .where((e) => e.isDir == true && e.name != null)
         .toList()
-      ..sort((a, b) => (a.name ?? '').compareTo(b.name ?? ''));
+      ..sort((a, b) => naturalCompare(a.name ?? '', b.name ?? ''));
     var imgs = files.where((e) => e.isDir != true && isImageName(e.name)).toList();
     var map = <String, String>{};
     if (subDirs.isNotEmpty) {

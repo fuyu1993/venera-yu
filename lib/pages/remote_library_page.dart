@@ -140,12 +140,13 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
     if (mounted) setState(() => _loading = true);
     try {
       var files = await RemoteWebDav.readDir(_currentPath);
-      // Sort: folders first, then files, both alphabetical.
+      // Sort: folders first, then files, both in natural order so numbered
+      // names (e.g. 1, 2, 12) line up by value instead of lexicographically.
       files.sort((a, b) {
         var ad = a.isDir == true;
         var bd = b.isDir == true;
         if (ad != bd) return ad ? -1 : 1;
-        return (a.name ?? '').compareTo(b.name ?? '');
+        return naturalCompare(a.name ?? '', b.name ?? '');
       });
       if (mounted) {
         setState(() {
