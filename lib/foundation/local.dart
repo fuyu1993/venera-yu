@@ -123,58 +123,87 @@ class LocalComic with HistoryMixin implements Comic {
     }
   }
 
+  /// Comics currently running [read] (in flight). Used to debounce rapid
+  /// repeated taps that would otherwise open multiple readers.
+  static final Set<String> _openingReaders = {};
+
+  /// Per-comic-id timestamp of the last successful [read], used together with
+  /// [_openingReaders] to also suppress a quick re-tap right after a reader
+  /// settles.
+  static final Map<String, DateTime> _lastReadAt = {};
+
   Future<void> read() async {
-    if (_isPdfComic()) {
-      await _readPdf();
+    // Debounce rapid repeated taps (e.g. double-tapping a comic). [read]
+    // performs async work before navigating (e.g. [_readPdf] opens a pdfium
+    // session), so a time-based guard on the navigation call itself cannot
+    // catch it: the two navigations get spaced out by the async latency and
+    // slip past a simple cooldown. Instead guard here, at the action level,
+    // keyed by comic id: ignore a new [read] while one is already in flight,
+    // and also enforce a short cooldown after it settles.
+    final now = DateTime.now();
+    if (_openingReaders.contains(id)) return;
+    final last = _lastReadAt[id];
+    if (last != null &&
+        now.difference(last) < const Duration(milliseconds: 600)) {
       return;
     }
-    var history = HistoryManager().find(id, comicType);
-    int? firstDownloadedChapter;
-    int? firstDownloadedChapterGroup;
-    if (downloadedChapters.isNotEmpty && chapters != null) {
-      final chapters = this.chapters!;
-      if (chapters.isGrouped) {
-        for (int i=0; i<chapters.groupCount; i++) {
-          var group = chapters.getGroupByIndex(i);
-          var keys = group.keys.toList();
-          for (int j=0; j<keys.length; j++) {
-            var chapterId = keys[j];
-            if (downloadedChapters.contains(chapterId)) {
-              firstDownloadedChapter = j + 1;
-              firstDownloadedChapterGroup = i + 1;
+    _openingReaders.add(id);
+    _lastReadAt[id] = now;
+    try {
+      if (_isPdfComic()) {
+        await _readPdf();
+        return;
+      }
+      var history = HistoryManager().find(id, comicType);
+      int? firstDownloadedChapter;
+      int? firstDownloadedChapterGroup;
+      if (downloadedChapters.isNotEmpty && chapters != null) {
+        final chapters = this.chapters!;
+        if (chapters.isGrouped) {
+          for (int i = 0; i < chapters.groupCount; i++) {
+            var group = chapters.getGroupByIndex(i);
+            var keys = group.keys.toList();
+            for (int j = 0; j < keys.length; j++) {
+              var chapterId = keys[j];
+              if (downloadedChapters.contains(chapterId)) {
+                firstDownloadedChapter = j + 1;
+                firstDownloadedChapterGroup = i + 1;
+                break;
+              }
+            }
+          }
+        } else {
+          var keys = chapters.allChapters.keys;
+          for (int i = 0; i < keys.length; i++) {
+            if (downloadedChapters.contains(keys.elementAt(i))) {
+              firstDownloadedChapter = i + 1;
               break;
             }
           }
         }
-      } else {
-        var keys = chapters.allChapters.keys;
-        for (int i = 0; i < keys.length; i++) {
-          if (downloadedChapters.contains(keys.elementAt(i))) {
-            firstDownloadedChapter = i + 1;
-            break;
-          }
-        }
       }
+      App.rootContext.to(
+        () => Reader(
+          type: comicType,
+          cid: id,
+          name: title,
+          chapters: chapters,
+          initialChapter: history?.ep ?? firstDownloadedChapter,
+          initialPage: history?.page,
+          initialChapterGroup: history?.group ?? firstDownloadedChapterGroup,
+          history: history ??
+              History.fromModel(
+                model: this,
+                ep: 0,
+                page: 0,
+              ),
+          author: subtitle,
+          tags: tags,
+        ),
+      );
+    } finally {
+      _openingReaders.remove(id);
     }
-    App.rootContext.to(
-      () => Reader(
-        type: comicType,
-        cid: id,
-        name: title,
-        chapters: chapters,
-        initialChapter: history?.ep ?? firstDownloadedChapter,
-        initialPage: history?.page,
-        initialChapterGroup: history?.group ?? firstDownloadedChapterGroup,
-        history: history ??
-            History.fromModel(
-              model: this,
-              ep: 0,
-              page: 0,
-            ),
-        author: subtitle,
-        tags: tags,
-      )
-    );
   }
 
   /// Open a locally-imported PDF comic with the streaming PDF reader. The PDF
