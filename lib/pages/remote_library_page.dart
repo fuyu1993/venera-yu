@@ -74,6 +74,12 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
   final Map<String, _FolderInfo> _folderInfo = {};
   bool _loadingFolderInfo = false;
 
+  /// Debounce guard: a fast streak of taps on the same item must not open
+  /// multiple readers / sheets / navigations. Set on entry and cleared once
+  /// the open/navigation settles (including async downloads), so a
+  /// double-tap only ever triggers one action.
+  bool _opening = false;
+
   String get _currentPath => _pathStack.last;
 
   @override
@@ -287,16 +293,24 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
   }
 
   void _onFileTap(wd.File file) {
+    if (_opening) return;
+    _opening = true;
+    _runOpen(file).whenComplete(() {
+      if (mounted) _opening = false;
+    });
+  }
+
+  Future<void> _runOpen(wd.File file) async {
     var type = _getFileType(file);
     switch (type) {
       case _RemoteFileType.folder:
-        _onFolderTap(file);
+        await _onFolderTap(file);
         break;
       case _RemoteFileType.image:
         _onImageTap(file);
         break;
       case _RemoteFileType.archive:
-        _openArchive(file);
+        await _openArchive(file);
         break;
       case _RemoteFileType.pdf:
         _openPdfComic(_currentPath, file.name ?? 'PDF'.tl, [file]);
@@ -308,23 +322,16 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
   }
 
   Future<void> _openArchive(wd.File file) async {
-    // Show loading dialog
-    showDialog(
-      context: context,
+    // Use the shared loading dialog helper. It pushes onto the ROOT navigator
+    // and closes via `removeRoute`, so it always dismisses correctly even
+    // though this page lives inside the nested tab navigator. The previous
+    // manual `showDialog` + `Navigator.pop(context)` mismatched navigators
+    // (dialog on root, pop on nested), leaving "Opening archive" stuck.
+    var controller = showLoadingDialog(
+      context,
       barrierDismissible: false,
-      builder: (ctx) => Dialog(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const CircularProgressIndicator(strokeWidth: 2),
-              const SizedBox(height: 16),
-              Text('Opening archive'.tl),
-            ],
-          ),
-        ),
-      ),
+      allowCancel: false,
+      message: 'Opening archive'.tl,
     );
     try {
       // Download zip from WebDAV
@@ -343,8 +350,8 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
       try {
         if (tempFile.existsSync()) tempFile.deleteSync();
       } catch (_) {}
+      controller.close();
       if (mounted) {
-        Navigator.pop(context); // Close loading dialog
         context.to(() => ComicPage(
               id: id,
               sourceKey: comic.sourceKey,
@@ -353,8 +360,8 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
             ));
       }
     } catch (e) {
+      controller.close();
       if (mounted) {
-        Navigator.pop(context); // Close loading dialog
         context.showMessage(
             message: '${'Failed to open archive'.tl}: ${e.toString()}');
       }
