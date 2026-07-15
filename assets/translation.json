@@ -494,7 +494,17 @@
     "Title copied": "标题已复制",
     "Invalid page": "无效页面",
     "New Name": "新名称",
-    "Unknown error": "未知错误"
+    "Unknown error": "未知错误",
+    "Download & import": "下载并导入",
+    "Importing": "导入中",
+    "Downloaded": "已下载",
+    "Imported": "已导入",
+    "Open downloaded": "打开已下载",
+    "Open imported": "打开已导入",
+    "Remove download": "移除下载",
+    "Download removed": "下载已移除",
+    "Import failed": "导入失败",
+    "ZIP": "ZIP"
   },
   "zh_TW": {
     "Home": "首頁",
@@ -985,7 +995,17 @@
     "Title copied": "標題已複製",
     "Invalid page": "無效頁面",
     "New Name": "新名稱",
-    "Unknown error": "未知錯誤"
+    "Unknown error": "未知錯誤",
+    "Download & import": "下載並匯入",
+    "Importing": "匯入中",
+    "Downloaded": "已下載",
+    "Imported": "已匯入",
+    "Open downloaded": "打開已下載",
+    "Open imported": "打開已匯入",
+    "Remove download": "移除下載",
+    "Download removed": "下載已移除",
+    "Import failed": "匯入失敗",
+    "ZIP": "ZIP"
   },
   "en_US": {
     "List View": "List View",
@@ -1025,6 +1045,16 @@
     "Title copied": "Title copied",
     "Invalid page": "Invalid page",
     "New Name": "New Name",
-    "Unknown error": "Unknown error"
+    "Unknown error": "Unknown error",
+    "Download & import": "Download & import",
+    "Importing": "Importing",
+    "Downloaded": "Downloaded",
+    "Imported": "Imported",
+    "Open downloaded": "Open downloaded",
+    "Open imported": "Open imported",
+    "Remove download": "Remove download",
+    "Download removed": "Download removed",
+    "Import failed": "Import failed",
+    "ZIP": "ZIP"
   }
 }
