@@ -76,8 +76,8 @@ class _CustomTabsSettingState extends State<_CustomTabsSetting> {
     {'id': 'explore', 'label': 'Explore', 'icon': LucideIcons.compass},
     {'id': 'categories', 'label': 'Categories', 'icon': LucideIcons.list},
     {'id': 'history', 'label': 'History', 'icon': LucideIcons.history},
-    {'id': 'comic_sources', 'label': 'Comic Source', 'icon': LucideIcons.code},
-    {'id': 'remote_library', 'label': 'Remote Library', 'icon': LucideIcons.globe},
+    {'id': 'comic_sources', 'label': 'Comic Source', 'icon': LucideIcons.book_key},
+    {'id': 'remote_library', 'label': 'Remote Library', 'icon': LucideIcons.monitor_cloud},
   ];
 
   List<Map<String, dynamic>> get _tabs {

@@ -634,7 +634,7 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
           title: Text('Remote Library'.tl),
           leading: _pathStack.length > 1
               ? IconButton(
-                  icon: const Icon(Icons.arrow_back),
+                  icon: const Icon(LucideIcons.arrow_left),
                   onPressed: _navigateBack,
                 )
               : null,

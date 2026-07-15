@@ -45,8 +45,8 @@ class _MainPageState extends State<MainPage> {
     {'id': 'explore', 'label': 'Explore', 'icon': LucideIcons.compass, 'activeIcon': LucideIcons.compass},
     {'id': 'categories', 'label': 'Categories', 'icon': LucideIcons.list, 'activeIcon': LucideIcons.list},
     {'id': 'history', 'label': 'History', 'icon': LucideIcons.history, 'activeIcon': LucideIcons.history},
-    {'id': 'comic_sources', 'label': 'Comic Source', 'icon': LucideIcons.code, 'activeIcon': LucideIcons.code},
-    {'id': 'remote_library', 'label': 'Remote Library', 'icon': LucideIcons.globe, 'activeIcon': LucideIcons.globe},
+    {'id': 'comic_sources', 'label': 'Comic Source', 'icon': LucideIcons.book_key, 'activeIcon': LucideIcons.book_key},
+    {'id': 'remote_library', 'label': 'Remote Library', 'icon': LucideIcons.monitor_cloud, 'activeIcon': LucideIcons.monitor_cloud},
   ];
 
   // Get all pages

@@ -413,8 +413,8 @@ class _RemotePdfComicPageState extends State<RemotePdfComicPage> {
       appBar: Appbar(
         title: Text(widget.name),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+        icon: const Icon(LucideIcons.arrow_left),
+        onPressed: () => context.pop(),
         ),
         actions: [
           if (total > 1)
