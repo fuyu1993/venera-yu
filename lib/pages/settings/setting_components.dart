@@ -654,12 +654,20 @@ class _MultiPagesFilterState extends State<_MultiPagesFilter> {
       ),
     );
 
-    return ListTile(
-      title: Text(widget.pages[key] ?? "(Invalid) $key"),
+    // Wrap in a transparent Material so the ListTile always has its own
+    // Material ancestor to paint its background / ink splashes on. Without
+    // this, the ReorderableBuilder's `dragChildBoxDecoration` (which has a
+    // background color) wraps the bare ListTile in a DecoratedBox during drag
+    // and hides those effects (Flutter framework warning).
+    return Material(
       key: Key(key),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [removeButton, const Icon(LucideIcons.grip_vertical)],
+      type: MaterialType.transparency,
+      child: ListTile(
+        title: Text(widget.pages[key] ?? "(Invalid) $key"),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [removeButton, const Icon(LucideIcons.grip_vertical)],
+        ),
       ),
     );
   }
