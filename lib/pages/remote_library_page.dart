@@ -19,18 +19,8 @@ import 'package:venera/foundation/zip/zip_session.dart';
 import 'package:venera/foundation/remote_import.dart';
 import 'package:venera/foundation/remote_downloads.dart';
 import 'package:venera/pages/comic_details_page/comic_page.dart';
+import 'package:venera/pages/remote_download_dialog.dart';
 import 'package:venera/foundation/local.dart';
-
-/// File type classification for remote files.
-enum _RemoteFileType { folder, image, pdf, archive, other }
-
-_RemoteFileType _getFileType(wd.File file) {
-  if (file.isDir == true) return _RemoteFileType.folder;
-  if (RemoteWebDav.isImageName(file.name)) return _RemoteFileType.image;
-  if (RemoteWebDav.isPdfName(file.name)) return _RemoteFileType.pdf;
-  if (RemoteWebDav.isArchiveName(file.name)) return _RemoteFileType.archive;
-  return _RemoteFileType.other;
-}
 
 String _formatFileSize(int? bytes) {
   if (bytes == null || bytes <= 0) return '';
@@ -294,7 +284,7 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
     final path = file.path!;
     final entries = <MenuEntry>[];
     if (RemoteDownloads.has(path)) {
-      if (_getFileType(file) == _RemoteFileType.pdf) {
+      if (getFileType(file) == RemoteFileType.pdf) {
         entries.add(MenuEntry(
           icon: LucideIcons.folder_open,
           text: 'Open downloaded'.tl,
@@ -318,17 +308,17 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
 
   /// Dispatch the long-press menu to the right handler based on item type.
   void _showItemMenu(wd.File file, Offset position) {
-    if (_getFileType(file) == _RemoteFileType.folder) {
+    if (getFileType(file) == RemoteFileType.folder) {
       _showFolderMenu(file, position);
     } else {
       _showFileMenu(file, position);
     }
   }
 
-  bool _isMenuType(_RemoteFileType t) =>
-      t == _RemoteFileType.folder ||
-      t == _RemoteFileType.pdf ||
-      t == _RemoteFileType.archive;
+  bool _isMenuType(RemoteFileType t) =>
+      t == RemoteFileType.folder ||
+      t == RemoteFileType.pdf ||
+      t == RemoteFileType.archive;
 
   /// Open a previously imported/downloaded item.
   void _openImported(String remotePath) {
@@ -407,21 +397,21 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
   }
 
   Future<void> _runOpen(wd.File file) async {
-    var type = _getFileType(file);
+    var type = getFileType(file);
     switch (type) {
-      case _RemoteFileType.folder:
+      case RemoteFileType.folder:
         await _onFolderTap(file);
         break;
-      case _RemoteFileType.image:
+      case RemoteFileType.image:
         _onImageTap(file);
         break;
-      case _RemoteFileType.archive:
+      case RemoteFileType.archive:
         _openZipStreaming(file);
         break;
-      case _RemoteFileType.pdf:
+      case RemoteFileType.pdf:
         _openPdfComic(_currentPath, file.name ?? 'PDF'.tl, [file]);
         break;
-      case _RemoteFileType.other:
+      case RemoteFileType.other:
         _showFileInfo(file, type);
         break;
     }
@@ -438,130 +428,32 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
         ));
   }
 
-  /// Download a remote item and import it into the local library so it can be
-  /// read offline. Supports folders (images), ZIP/CBZ archives and PDFs.
+  /// Open a remote item's download dialog. The dialog runs a
+  /// [RemoteDownloadTask] that downloads first (resumable) then imports, with
+  /// Start / Pause / Cancel controls and a live progress bar. On success it
+  /// closes and opens the imported comic's page.
   Future<void> _importItem(wd.File file) async {
-    final type = _getFileType(file);
-    final controller = showLoadingDialog(
-      context,
-      barrierDismissible: false,
-      allowCancel: false,
-      withProgress: true,
-      message: 'Preparing'.tl,
-    );
-
-    // Map the two-phase (download + import) progress onto a single 0..1 bar:
-    // first half = downloading, second half = importing. The message shows
-    // the live percentage for each phase.
-    void onProgress(ImportStage stage, int current, int total) {
-      final fraction = total > 0 ? current / total : 1.0;
-      final value = stage == ImportStage.download
-          ? 0.5 * fraction
-          : 0.5 + 0.5 * fraction;
-      controller.setProgress(value);
-      final pct = total > 0 ? (current * 100 ~/ total) : 100;
-      controller.setMessage(
-        '${stage == ImportStage.download ? 'Downloading'.tl : 'Importing'.tl} $pct%',
-      );
+    final type = getFileType(file);
+    if (type != RemoteFileType.folder &&
+        type != RemoteFileType.archive &&
+        type != RemoteFileType.pdf) {
+      return;
     }
-
-    try {
-      if (type == _RemoteFileType.folder) {
-        final comic = await RemoteImporter.importWebDavFolder(
-          file.path!,
-          file.name ?? 'Comic'.tl,
-          onProgress: onProgress,
-        );
-        final id = LocalManager().findValidId(ComicType.local);
-        await LocalManager().add(comic, id);
-        RemoteDownloads.record(RemoteDownloadEntry(
-          remotePath: file.path!,
-          type: 'folder',
-          name: file.name ?? 'Comic'.tl,
-          comicId: id,
-        ));
-        controller.close();
-        if (mounted) {
-          context.to(() => ComicPage(
-                id: id,
-                sourceKey: comic.sourceKey,
-                cover: comic.cover,
-                title: comic.title,
-              ));
-        }
-      } else if (type == _RemoteFileType.archive) {
-        final comic = await RemoteImporter.importArchive(
-          file,
-          onProgress: onProgress,
-        );
-        final id = LocalManager().findValidId(ComicType.local);
-        await LocalManager().add(comic, id);
-        RemoteDownloads.record(RemoteDownloadEntry(
-          remotePath: file.path!,
-          type: 'zip',
-          name: file.name ?? 'Archive'.tl,
-          comicId: id,
-        ));
-        controller.close();
-        if (mounted) {
-          context.to(() => ComicPage(
-                id: id,
-                sourceKey: comic.sourceKey,
-                cover: comic.cover,
-                title: comic.title,
-              ));
-        }
-      } else if (type == _RemoteFileType.pdf) {
-        final (comic, localPath) = await RemoteImporter.importPdf(
-          file,
-          onProgress: onProgress,
-        );
-        final id = LocalManager().findValidId(ComicType.local);
-        await LocalManager().add(comic, id);
-        RemoteDownloads.record(RemoteDownloadEntry(
-          remotePath: file.path!,
-          type: 'pdf',
-          name: file.name ?? 'PDF'.tl,
-          comicId: id,
-          localPath: localPath,
-        ));
-        controller.close();
-        if (mounted) {
-          context.to(() => ComicPage(
-                id: id,
-                sourceKey: comic.sourceKey,
-                cover: comic.cover,
-                title: comic.title,
-              ));
-        }
-      } else {
-        controller.close();
-      }
-      // Drop any stale remote-library history for this item so the imported
-      // (local) comic is the only entry that remains in reading history.
-      for (final t in const [ComicType.webdav, ComicType.pdf, ComicType.zip]) {
-        HistoryManager().remove(file.path!, t);
-      }
-    } catch (e) {
-      controller.close();
-      if (mounted) {
-        context.showMessage(
-            message: '${'Import failed'.tl}: ${e.toString()}');
-      }
-    }
+    await showRemoteDownloadDialog(context, file: file);
+    if (mounted) setState(() {});
   }
 
-  void _showFileInfo(wd.File file, _RemoteFileType type) {
+  void _showFileInfo(wd.File file, RemoteFileType type) {
     IconData icon;
     String typeLabel;
     Color color;
     switch (type) {
-      case _RemoteFileType.pdf:
+      case RemoteFileType.pdf:
         icon = LucideIcons.file_text;
         typeLabel = 'PDF'.tl;
         color = Colors.red;
         break;
-      case _RemoteFileType.archive:
+      case RemoteFileType.archive:
         icon = LucideIcons.file_archive;
         typeLabel = 'Archive'.tl;
         color = Colors.orange;
@@ -811,11 +703,11 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
   }
 
   Widget _buildGridTile(wd.File file) {
-    var type = _getFileType(file);
-    final marked = type == _RemoteFileType.folder &&
+    var type = getFileType(file);
+    final marked = type == RemoteFileType.folder &&
         WebDavComicMarks.isMarked(file.path!);
     final name = file.name ?? '';
-    final sub = (type == _RemoteFileType.folder &&
+    final sub = (type == RemoteFileType.folder &&
             _folderInfo.containsKey(file.path!))
         ? _folderInfoText(file.path!)
         : '';
@@ -926,11 +818,11 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
   }
 
   /// Short label for an item that has been downloaded/imported locally.
-  String _importLabel(_RemoteFileType type) =>
-      type == _RemoteFileType.pdf ? 'Downloaded'.tl : 'Imported'.tl;
+  String _importLabel(RemoteFileType type) =>
+      type == RemoteFileType.pdf ? 'Downloaded'.tl : 'Imported'.tl;
 
   /// Green pill shown on items that have been downloaded/imported locally.
-  Widget _importedBadge(_RemoteFileType type) {
+  Widget _importedBadge(RemoteFileType type) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
@@ -949,9 +841,9 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
     );
   }
 
-  Widget _buildGridThumbnail(wd.File file, _RemoteFileType type) {
+  Widget _buildGridThumbnail(wd.File file, RemoteFileType type) {
     switch (type) {
-      case _RemoteFileType.folder:
+      case RemoteFileType.folder:
         final marked = WebDavComicMarks.isMarked(file.path!);
         final imported = RemoteDownloads.has(file.path!);
         return Stack(
@@ -968,7 +860,7 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
               Positioned(
                 top: 6,
                 left: 6,
-                child: _importedBadge(_RemoteFileType.folder),
+                child: _importedBadge(RemoteFileType.folder),
               ),
             if (marked)
               Positioned(
@@ -978,7 +870,7 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
               ),
           ],
         );
-      case _RemoteFileType.image:
+      case RemoteFileType.image:
         return Image(
           image: WebDavImageProvider(
             RemoteWebDav.encodeKey(file.path!),
@@ -993,7 +885,7 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
                 size: 32, color: context.colorScheme.outline),
           ),
         );
-      case _RemoteFileType.pdf:
+      case RemoteFileType.pdf:
         final imported = RemoteDownloads.has(file.path!);
         return Stack(
           fit: StackFit.expand,
@@ -1009,11 +901,11 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
               Positioned(
                 top: 6,
                 left: 6,
-                child: _importedBadge(_RemoteFileType.pdf),
+                child: _importedBadge(RemoteFileType.pdf),
               ),
           ],
         );
-      case _RemoteFileType.archive:
+      case RemoteFileType.archive:
         final imported = RemoteDownloads.has(file.path!);
         return Stack(
           fit: StackFit.expand,
@@ -1029,11 +921,11 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
               Positioned(
                 top: 6,
                 left: 6,
-                child: _importedBadge(_RemoteFileType.archive),
+                child: _importedBadge(RemoteFileType.archive),
               ),
           ],
         );
-      case _RemoteFileType.other:
+      case RemoteFileType.other:
         return Container(
           color: context.colorScheme.surfaceContainerHighest.withAlpha(76),
           child: Center(
@@ -1059,8 +951,8 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
   }
 
   Widget _buildListTile(wd.File file) {
-    var type = _getFileType(file);
-    final marked = type == _RemoteFileType.folder &&
+    var type = getFileType(file);
+    final marked = type == RemoteFileType.folder &&
         WebDavComicMarks.isMarked(file.path!);
     return Builder(builder: (context) {
       return InkWell(
@@ -1120,7 +1012,7 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
                 ],
               ),
             ),
-            if (type == _RemoteFileType.folder)
+            if (type == RemoteFileType.folder)
               Icon(LucideIcons.chevron_right,
                   size: 18, color: context.colorScheme.outline),
           ],
@@ -1130,9 +1022,9 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
     });
   }
 
-  Widget _buildListLeading(wd.File file, _RemoteFileType type) {
+  Widget _buildListLeading(wd.File file, RemoteFileType type) {
     switch (type) {
-      case _RemoteFileType.folder:
+      case RemoteFileType.folder:
         return Container(
           width: 48,
           height: 48,
@@ -1143,7 +1035,7 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
           child: Icon(LucideIcons.folder,
               size: 24, color: context.colorScheme.primary),
         );
-      case _RemoteFileType.image:
+      case RemoteFileType.image:
         return ClipRRect(
           borderRadius: BorderRadius.circular(8),
           child: SizedBox(
@@ -1166,7 +1058,7 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
             ),
           ),
         );
-      case _RemoteFileType.pdf:
+      case RemoteFileType.pdf:
         final imported = RemoteDownloads.has(file.path!);
         return Stack(
           children: [
@@ -1184,11 +1076,11 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
               Positioned(
                 top: -2,
                 left: -2,
-                child: _importedBadge(_RemoteFileType.pdf),
+                child: _importedBadge(RemoteFileType.pdf),
               ),
           ],
         );
-      case _RemoteFileType.archive:
+      case RemoteFileType.archive:
         final imported = RemoteDownloads.has(file.path!);
         return Stack(
           children: [
@@ -1206,11 +1098,11 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
               Positioned(
                 top: -2,
                 left: -2,
-                child: _importedBadge(_RemoteFileType.archive),
+                child: _importedBadge(RemoteFileType.archive),
               ),
           ],
         );
-      case _RemoteFileType.other:
+      case RemoteFileType.other:
         return Container(
           width: 48,
           height: 48,
@@ -1225,13 +1117,13 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
     }
   }
 
-  String _buildSubtitle(wd.File file, _RemoteFileType type) {
+  String _buildSubtitle(wd.File file, RemoteFileType type) {
     var parts = <String>[];
     if (RemoteDownloads.has(file.path!)) {
       parts.add(_importLabel(type));
     }
     switch (type) {
-      case _RemoteFileType.folder:
+      case RemoteFileType.folder:
         if (!WebDavComicMarks.isMarked(file.path!)) {
           parts.add('Folder'.tl);
         }
@@ -1239,16 +1131,16 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
           parts.add(_folderInfoText(file.path!));
         }
         break;
-      case _RemoteFileType.image:
+      case RemoteFileType.image:
         parts.add('Image'.tl);
         break;
-      case _RemoteFileType.pdf:
+      case RemoteFileType.pdf:
         parts.add('PDF'.tl);
         break;
-      case _RemoteFileType.archive:
+      case RemoteFileType.archive:
         parts.add('Archive'.tl);
         break;
-      case _RemoteFileType.other:
+      case RemoteFileType.other:
         var ext = RemoteWebDav.getFileExtension(file.name);
         parts.add(ext.isEmpty ? 'File'.tl : ext.toUpperCase());
         break;

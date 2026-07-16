@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:io' as io;
 import 'dart:typed_data';
 
 import 'package:webdav_client/webdav_client.dart';
@@ -214,6 +215,106 @@ class RemoteWebDav {
     var client = getClient();
     if (client == null) throw 'Remote WebDAV not configured';
     await client.read2File(path, savePath, onProgress: onProgress);
+  }
+
+  /// Download a remote file directly to a local path with resume (断点续传)
+  /// support. If a previous download was interrupted, it continues from where
+  /// it left off using HTTP Range requests instead of starting over, so a
+  /// multi-GB PDF need not be re-downloaded after a flaky connection.
+  ///
+  /// A status file at `$savePath.rvdownload` records the total size and how many
+  /// bytes have been flushed so far; it is deleted once the download completes.
+  /// A cancelled/failed download keeps this file so a later run can resume.
+  ///
+  /// [onProgress] reports `(count, total)` byte counts. If the server ignores
+  /// the Range header (returns 200 with the whole file) this falls back to a
+  /// single [downloadToFile] pass, which does not benefit from resuming.
+  static Future<void> downloadResumable(
+    String path,
+    String savePath, {
+    void Function(int count, int total)? onProgress,
+    CancelToken? cancelToken,
+    int chunkSize = 4 * 1024 * 1024,
+  }) async {
+    // Status file format: line 1 = total size, line 2 = bytes flushed so far.
+    final statusFile = io.File('$savePath.rvdownload');
+    final outFile = io.File(savePath);
+
+    final total = await fileSize(path);
+    if (total <= 0) {
+      // Unknown size: fall back to a plain streamed download.
+      await downloadToFile(path, savePath, onProgress: onProgress);
+      return;
+    }
+
+    // Recover the resume point from a previous run, validating it against the
+    // current remote size so a changed file restarts clean.
+    var downloaded = 0;
+    if (outFile.existsSync() && statusFile.existsSync()) {
+      try {
+        final lines = statusFile.readAsLinesSync();
+        if (lines.length >= 2) {
+          final storedTotal = int.tryParse(lines[0]);
+          final storedDone = int.tryParse(lines[1]);
+          if (storedTotal == total &&
+              storedDone != null &&
+              storedDone >= 0 &&
+              storedDone <= total) {
+            downloaded = storedDone;
+          }
+        }
+      } catch (_) {}
+    }
+
+    if (downloaded >= total) {
+      onProgress?.call(total, total);
+      return;
+    }
+
+    if (!outFile.existsSync()) {
+      outFile.createSync(recursive: true);
+    }
+    // Pre-allocate so we can write each received range at its offset.
+    final raf = await outFile.open(mode: io.FileMode.writeOnly);
+    await raf.truncate(total);
+    try {
+      var start = downloaded;
+      while (start < total) {
+        if (cancelToken?.isCancelled ?? false) {
+          return;
+        }
+        final end = (start + chunkSize - 1).clamp(0, total - 1);
+        final status = await downloadRange(
+          path,
+          start,
+          end,
+          raf,
+          cancelToken: cancelToken,
+        );
+        if (status == 200) {
+          // Server ignores Range: abandon the partial file and fall back to a
+          // single full streamed download (no resume benefit, but correct).
+          await raf.close();
+          if (outFile.existsSync()) await outFile.delete();
+          if (statusFile.existsSync()) await statusFile.delete();
+          await downloadToFile(path, savePath, onProgress: onProgress);
+          return;
+        }
+        if (status != 206) {
+          throw Exception('Download failed with HTTP $status');
+        }
+        start = end + 1;
+        await statusFile.writeAsString('$total\n$start');
+        onProgress?.call(start, total);
+      }
+    } finally {
+      await raf.close();
+    }
+
+    // Completed: drop the status file.
+    try {
+      if (statusFile.existsSync()) statusFile.deleteSync();
+    } catch (_) {}
   }
 
   /// Get the byte size of a remote file via PROPFIND.
