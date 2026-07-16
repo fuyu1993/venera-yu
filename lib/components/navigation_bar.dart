@@ -535,16 +535,20 @@ class _SingleBottomNaviWidgetState extends State<_SingleBottomNaviWidget>
   Widget buildContent() {
     final value = controller.value;
     final colorScheme = Theme.of(context).colorScheme;
-    final selectedColor = colorScheme.onSecondaryContainer;
+    // Idle tabs are grey; the active tab uses the theme accent color
+    // (colorScheme.primary, which is the user-selected seed color).
+    final idleColor = colorScheme.onSurfaceVariant;
+    final activeColor = colorScheme.primary;
+    final fg = Color.lerp(idleColor, activeColor, value)!;
     final icon = Icon(
       widget.enabled ? widget.entry.activeIcon : widget.entry.icon,
-      color: widget.enabled ? selectedColor : null,
+      color: fg,
     );
     final label = Text(
       widget.entry.label,
       style: TextStyle(
         fontSize: 11,
-        color: widget.enabled ? selectedColor : null,
+        color: fg,
       ),
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
@@ -555,11 +559,7 @@ class _SingleBottomNaviWidgetState extends State<_SingleBottomNaviWidget>
         height: 50,
         decoration: BoxDecoration(
           borderRadius: const BorderRadius.all(Radius.circular(32)),
-          color: isHovering
-              ? colorScheme.surfaceContainer
-              : (widget.enabled && value != 0
-                  ? colorScheme.secondaryContainer
-                  : Colors.transparent),
+          color: isHovering ? colorScheme.surfaceContainer : Colors.transparent,
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
