@@ -172,19 +172,19 @@ class _LogsPageState extends State<LogsPage> {
                     );
                     showMenu(context: context, position: position, items: [
                       PopupMenuItem(
-                          child: Text("all"),
+                          child: Text("all".tl),
                           onTap: () => setState(() => logLevelToShow = "all")
                       ),
                       PopupMenuItem(
-                          child: Text("info"),
+                          child: Text("info".tl),
                           onTap: () => setState(() => logLevelToShow = "info")
                       ),
                       PopupMenuItem(
-                          child: Text("warning"),
+                          child: Text("warning".tl),
                           onTap: () => setState(() => logLevelToShow = "warning")
                       ),
                       PopupMenuItem(
-                          child: Text("error"),
+                          child: Text("error".tl),
                           onTap: () => setState(() => logLevelToShow = "error")
                       ),
                     ]);
@@ -348,7 +348,7 @@ class _WebdavSettingState extends State<_WebdavSetting> {
   @override
   Widget build(BuildContext context) {
     return PopUpWidgetScaffold(
-      title: "Webdav",
+      title: "Webdav".tl,
       body: SingleChildScrollView(
         child: Column(
           children: [

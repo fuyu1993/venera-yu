@@ -39,8 +39,8 @@ class DebugPageState extends State<DebugPage> {
           child: Column(
             children: [
               const SizedBox(height: 8),
-              const Text(
-                "JS Evaluator",
+              Text(
+                "JS Evaluator".tl,
                 style: TextStyle(fontSize: 16),
               ).toAlign(Alignment.centerLeft).paddingLeft(16),
               Container(
@@ -72,10 +72,10 @@ class DebugPageState extends State<DebugPage> {
                     });
                   }
                 },
-                child: const Text("Run"),
+                child: Text("Run".tl),
               ).toAlign(Alignment.centerRight).paddingRight(16),
-              const Text(
-                "Result",
+              Text(
+                "Result".tl,
                 style: TextStyle(fontSize: 16),
               ).toAlign(Alignment.centerLeft).paddingLeft(16),
               Container(

@@ -125,7 +125,7 @@ class _AppWebviewState extends State<AppWebview> {
   Widget build(BuildContext context) {
     final actions = [
       Tooltip(
-        message: "More",
+        message: "More".tl,
         child: IconButton(
           icon: const Icon(LucideIcons.ellipsis),
           onPressed: () {
@@ -161,7 +161,7 @@ class _AppWebviewState extends State<AppWebview> {
       future: future,
       builder: (context, e) {
         if (e.error != null) {
-          return Center(child: Text("Error: ${e.error}"));
+          return Center(child: Text("${"Error".tl}: ${e.error}"));
         }
         if (!e.hasData) {
           return const SizedBox();

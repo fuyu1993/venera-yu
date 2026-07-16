@@ -10,6 +10,7 @@ import 'package:venera/foundation/comic_type.dart';
 import 'package:venera/foundation/local.dart';
 import 'package:venera/foundation/log.dart';
 import 'package:venera/foundation/res.dart';
+import 'package:venera/utils/translations.dart';
 import 'package:venera/network/images.dart';
 import 'package:venera/utils/ext.dart';
 import 'package:venera/utils/file_type.dart';
@@ -137,7 +138,7 @@ class ImagesDownloadTask extends DownloadTask with _TransferSpeedMixin {
   String? get cover => _cover ?? comic?.cover;
 
   @override
-  String get message => _message;
+  String get message => _message.tl;
 
   @override
   void pause() {
@@ -145,7 +146,7 @@ class ImagesDownloadTask extends DownloadTask with _TransferSpeedMixin {
       return;
     }
     _isRunning = false;
-    _message = "Paused";
+    _message = "Paused".tl;
     _currentSpeed = 0;
     var shouldMove = <int>[];
     for (var entry in tasks.entries) {
@@ -248,7 +249,7 @@ class ImagesDownloadTask extends DownloadTask with _TransferSpeedMixin {
     runRecorder();
 
     if (comic == null) {
-      _message = "Fetching comic info...";
+      _message = "Fetching comic info...".tl;
       notifyListeners();
       var res = await _runWithRetry(() async {
         var r = await source.loadComicInfo!(comicId);
@@ -262,7 +263,7 @@ class ImagesDownloadTask extends DownloadTask with _TransferSpeedMixin {
         return;
       }
       if (res.error) {
-        _setError("Error: ${res.errorMessage}");
+        _setError("${"Error".tl}: ${res.errorMessage}");
         return;
       } else {
         comic = res.data;
@@ -282,7 +283,7 @@ class ImagesDownloadTask extends DownloadTask with _TransferSpeedMixin {
         path = dir.path;
       } catch (e, s) {
         Log.error("Download", e.toString(), s);
-        _setError("Error: $e");
+        _setError("${"Error".tl}: $e");
         return;
       }
     }
@@ -290,7 +291,7 @@ class ImagesDownloadTask extends DownloadTask with _TransferSpeedMixin {
     await LocalManager().saveCurrentDownloadingTasks();
 
     if (_cover == null) {
-      _message = "Downloading cover...";
+      _message = "Downloading cover...".tl;
       notifyListeners();
       var res = await _runWithRetry(() async {
         Uint8List? data;
@@ -310,7 +311,7 @@ class ImagesDownloadTask extends DownloadTask with _TransferSpeedMixin {
       });
       if (res.error) {
         Log.error("Download", res.errorMessage!);
-        _setError("Error: ${res.errorMessage}");
+        _setError("${"Error".tl}: ${res.errorMessage}");
         return;
       } else {
         _cover = res.data;
@@ -321,7 +322,7 @@ class ImagesDownloadTask extends DownloadTask with _TransferSpeedMixin {
 
     if (_images == null) {
       if (comic!.chapters == null) {
-        _message = "Fetching image list...";
+        _message = "Fetching image list...".tl;
         notifyListeners();
         var res = await _runWithRetry(() async {
           var r = await source.loadComicPages!(comicId, null);
@@ -336,7 +337,7 @@ class ImagesDownloadTask extends DownloadTask with _TransferSpeedMixin {
         }
         if (res.error) {
           Log.error("Download", res.errorMessage!);
-          _setError("Error: ${res.errorMessage}");
+          _setError("${"Error".tl}: ${res.errorMessage}");
           return;
         } else {
           _images = {'': res.data};
@@ -371,7 +372,7 @@ class ImagesDownloadTask extends DownloadTask with _TransferSpeedMixin {
           }
           if (res.error) {
             Log.error("Download", res.errorMessage!);
-            _setError("Error: ${res.errorMessage}");
+            _setError("${"Error".tl}: ${res.errorMessage}");
             return;
           } else {
             _images![i] = res.data;
@@ -396,7 +397,7 @@ class ImagesDownloadTask extends DownloadTask with _TransferSpeedMixin {
         }
         if (task.error != null) {
           Log.error("Download", task.error.toString());
-          _setError("Error: ${task.error}");
+          _setError("${"Error".tl}: ${task.error}");
           return;
         }
         _index++;
@@ -430,7 +431,7 @@ class ImagesDownloadTask extends DownloadTask with _TransferSpeedMixin {
   int get speed => currentSpeed;
 
   @override
-  String get title => comic?.title ?? comicTitle ?? "Loading...";
+  String get title => comic?.title ?? comicTitle ?? "Loading...".tl;
 
   @override
   Map<String, dynamic> toJson() {
@@ -710,7 +711,7 @@ class ArchiveDownloadTask extends DownloadTask {
   bool get isPaused => !_isRunning;
 
   @override
-  String get message => _message;
+  String get message => _message.tl;
 
   int _currentBytes = 0;
 
@@ -721,7 +722,7 @@ class ArchiveDownloadTask extends DownloadTask {
   @override
   void pause() {
     _isRunning = false;
-    _message = "Paused";
+    _message = "Paused".tl;
     _downloader?.stop();
     notifyListeners();
   }
@@ -738,7 +739,7 @@ class ArchiveDownloadTask extends DownloadTask {
     _isError = false;
     _isRunning = true;
     notifyListeners();
-    _message = "Downloading...";
+    _message = "Downloading...".tl;
 
     if (path == null) {
       var dir = await LocalManager().findValidDirectory(
@@ -750,7 +751,7 @@ class ArchiveDownloadTask extends DownloadTask {
         try {
           await dir.create();
         } catch (e) {
-          _setError("Error: $e");
+          _setError("${"Error".tl}: $e");
           return;
         }
       }
@@ -777,7 +778,7 @@ class ArchiveDownloadTask extends DownloadTask {
         notifyListeners();
       }
     } catch (e) {
-      _setError("Error: $e");
+      _setError("${"Error".tl}: $e");
       return;
     }
 
@@ -786,14 +787,14 @@ class ArchiveDownloadTask extends DownloadTask {
     }
 
     if (!isDownloaded) {
-      _setError("Error: Download failed");
+      _setError("${"Error".tl}: ${"Download failed".tl}");
       return;
     }
 
     try {
       await _extractArchive(archiveFile.path, path!);
     } catch (e) {
-      _setError("Failed to extract archive: $e");
+      _setError("${"Failed to extract archive".tl}: $e");
       return;
     }
 

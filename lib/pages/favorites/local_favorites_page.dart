@@ -1065,7 +1065,7 @@ class _ReorderComicsPageState extends State<_ReorderComicsPage> {
             type == 'detailed'
                 ? "${e.time} | ${_favoriteSourceLabel(e)}"
                 : "${_favoriteSourceLabel(e)} | ${e.time}",
-            _favoriteSourceKey(e) ?? "Unknown",
+            _favoriteSourceKey(e) ?? "Unknown".tl,
             null,
             null,
           ),

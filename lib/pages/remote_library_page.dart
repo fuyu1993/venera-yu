@@ -670,7 +670,7 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
     return SmoothCustomScrollView(
       slivers: [
         SliverAppbar(
-          title: Text('Remote Library'.tl),
+          title: const SizedBox.shrink(),
           leading: _pathStack.length > 1
               ? IconButton(
                   icon: const Icon(LucideIcons.arrow_left),
@@ -1276,7 +1276,6 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
   Widget _centeredMessage(String title, String subtitle) {
     return SmoothCustomScrollView(
       slivers: [
-        SliverAppbar(title: Text('Remote Library'.tl)),
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.all(32),

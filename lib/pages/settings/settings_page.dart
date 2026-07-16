@@ -288,7 +288,7 @@ class _SettingsPageState extends State<SettingsPage> {
             child: Row(children: [
               const SizedBox(width: 8),
               Tooltip(
-                message: "Back",
+                message: "Back".tl,
                 child: IconButton(
                   icon: const Icon(LucideIcons.chevron_left),
                   onPressed: _isSearching

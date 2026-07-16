@@ -576,7 +576,7 @@ Future<void> openComicFolder(LocalComic comic) async {
     Log.error("Open Folder", "Failed to open comic folder: $e", s);
     // Show error message to user
     if (App.rootContext.mounted) {
-      App.rootContext.showMessage(message: "Failed to open folder: $e");
+      App.rootContext.showMessage(message: "${"Failed to open folder".tl}: $e");
     }
   }
 }

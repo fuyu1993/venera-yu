@@ -10,6 +10,7 @@ import 'package:venera/foundation/image_provider/local_favorite_image.dart';
 import 'package:venera/foundation/local.dart';
 import 'package:venera/foundation/log.dart';
 import 'package:venera/pages/follow_updates_page.dart';
+import 'package:venera/utils/translations.dart';
 import 'package:venera/utils/tags_translation.dart';
 import 'dart:io';
 
@@ -192,7 +193,7 @@ class FavoriteItemWithUpdateInfo extends FavoriteItem {
 
   @override
   String get description {
-    var updateTime = this.updateTime ?? "Unknown";
+    var updateTime = this.updateTime ?? "Unknown".tl;
     var sourceName = ComicType.sourceLabel(type, sourceKey);
     return "$updateTime | $sourceName";
   }

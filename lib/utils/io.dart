@@ -10,6 +10,7 @@ import 'package:path/path.dart' as p;
 import 'package:share_plus/share_plus.dart' as s;
 import 'package:file_selector/file_selector.dart' as file_selector;
 import 'package:venera/utils/file_type.dart';
+import 'package:venera/utils/translations.dart';
 
 export 'dart:io';
 export 'dart:typed_data';
@@ -271,7 +272,7 @@ Future<FileSelectResult?> selectFile({required List<String> ext}) async {
   try {
     var extensions = App.isMacOS || App.isIOS ? null : ext;
     file_selector.XTypeGroup typeGroup = file_selector.XTypeGroup(
-      label: 'files',
+      label: 'files'.tl,
       extensions: extensions,
     );
     FileSelectResult? file;
@@ -299,7 +300,7 @@ Future<FileSelectResult?> selectFile({required List<String> ext}) async {
     }
     if (!ext.contains(file.path.split(".").last)) {
       App.rootContext.showMessage(
-        message: "Invalid file type: ${file.path.split(".").last}",
+        message: "${"Invalid file type".tl}: ${file.path.split(".").last}",
       );
       return null;
     }

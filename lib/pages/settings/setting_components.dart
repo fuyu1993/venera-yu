@@ -242,7 +242,7 @@ class _DoubleLineSelectSettingsState extends State<_DoubleLineSelectSettings> {
             ),
         ],
       ),
-      subtitle: Text(widget.optionTranslation[value] ?? "None"),
+      subtitle: Text(widget.optionTranslation[value] ?? "None".tl),
       trailing: const Icon(LucideIcons.arrow_down),
       onTap: () {
         var renderBox = context.findRenderObject() as RenderBox;
@@ -663,7 +663,7 @@ class _MultiPagesFilterState extends State<_MultiPagesFilter> {
       key: Key(key),
       type: MaterialType.transparency,
       child: ListTile(
-        title: Text(widget.pages[key] ?? "(Invalid) $key"),
+        title: Text(widget.pages[key] ?? "${"(Invalid)".tl} $key"),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [removeButton, const Icon(LucideIcons.grip_vertical)],
