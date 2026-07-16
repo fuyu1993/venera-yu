@@ -54,6 +54,38 @@ class _ReaderWithLoadingState
       if (localComic == null) {
         return Res.error("comic not found");
       }
+      // A locally-imported PDF is stored as a .pdf file inside its folder and
+      // must be read by the streaming PDF reader (pdfium, on-demand page
+      // rendering), not the image reader. Open the session first so the reader
+      // can look it up by `cid` (= the pdf file path) when it loads pages.
+      final pdfPath = localComic.pdfFilePath;
+      if (pdfPath != null) {
+        try {
+          await PdfSessionManager().openLocal(
+            sessionKey: pdfPath,
+            localPath: pdfPath,
+          );
+        } catch (e) {
+          Log.error('PDF', e);
+          return Res.error('Failed to open local PDF');
+        }
+        return Res(
+          ReaderProps(
+            type: ComicType.pdf,
+            cid: pdfPath,
+            name: localComic.title,
+            chapters: null,
+            history: history ??
+                History.fromModel(
+                  model: localComic,
+                  ep: 0,
+                  page: 0,
+                ),
+            author: localComic.subtitle,
+            tags: localComic.tags,
+          ),
+        );
+      }
       return Res(
         ReaderProps(
           type: ComicType.fromKey(widget.sourceKey),

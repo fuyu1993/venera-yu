@@ -551,6 +551,7 @@
     "Page @page / @max": "第 @page / @max 页",
     "Fetching comic info...": "正在获取漫画信息…",
     "Fetching image list...": "正在获取图片列表…",
+    "Fetching image list (@cpCount/@totalCpCount)...": "正在获取图片列表 (@cpCount/@totalCpCount)…",
     "Download failed": "下载失败",
     "Failed to extract archive": "解压归档失败"
   },
@@ -1100,6 +1101,7 @@
     "Page @page / @max": "第 @page / @max 頁",
     "Fetching comic info...": "正在取得漫畫資訊…",
     "Fetching image list...": "正在取得圖片清單…",
+    "Fetching image list (@cpCount/@totalCpCount)...": "正在取得圖片清單 (@cpCount/@totalCpCount)…",
     "Download failed": "下載失敗",
     "Failed to extract archive": "解壓縮封存失敗"
   },

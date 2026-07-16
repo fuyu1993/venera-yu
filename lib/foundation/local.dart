@@ -113,15 +113,24 @@ class LocalComic with HistoryMixin implements Comic {
   /// rather than by [comicType], so that locally-imported PDFs can share the
   /// [ComicType.local] identity (correct "本地导入" label, local-comic open
   /// routing) while still being rendered through the pdfium reader.
-  bool _isPdfComic() {
+  /// Absolute path to the backing `.pdf` file if this local comic was imported
+  /// from a remote-library PDF (the file lives inside its folder); `null`
+  /// otherwise. Let the reader route local-PDF comics through the streaming
+  /// PDF reader instead of the image reader.
+  String? get pdfFilePath {
     try {
-      return Directory(baseDir).listSync().any(
-            (e) => e is File && e.path.toLowerCase().endsWith('.pdf'),
-          );
+      for (final e in Directory(baseDir).listSync()) {
+        if (e is File && e.path.toLowerCase().endsWith('.pdf')) {
+          return e.path;
+        }
+      }
     } catch (_) {
-      return false;
+      return null;
     }
+    return null;
   }
+
+  bool _isPdfComic() => pdfFilePath != null;
 
   /// Comics currently running [read] (in flight). Used to debounce rapid
   /// repeated taps that would otherwise open multiple readers.
@@ -529,6 +538,10 @@ class LocalManager with ChangeNotifier {
       cid = getChapterDirectoryName(cid);
       directory = Directory(FilePath.join(directory.path, cid));
     }
+    const imageExtensions = {
+      'jpg', 'jpeg', 'jpe', 'jfif', 'png', 'webp', 'gif',
+      'bmp', 'avif', 'heic', 'heif', 'tif', 'tiff',
+    };
     var files = <File>[];
     await for (var entity in directory.list()) {
       if (entity is File) {
@@ -539,6 +552,13 @@ class LocalManager with ChangeNotifier {
         }
         //Hidden file in some file system
         if (entity.name.startsWith('.')) {
+          continue;
+        }
+        // Only include real image files. A local import directory may contain
+        // metadata/side-car files (ComicInfo.xml, *.txt/json/nfo, Thumbs.db,
+        // etc.); treating them as pages would throw "Invalid image data" when
+        // the reader tries to decode them.
+        if (!imageExtensions.contains(entity.extension.toLowerCase())) {
           continue;
         }
         files.add(entity);

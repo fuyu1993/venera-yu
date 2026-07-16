@@ -1379,6 +1379,13 @@ void _preDownloadImage(int page, BuildContext context) {
   if (imageKey.startsWith("file://")) {
     return;
   }
+  if (imageKey.startsWith('pdfpage://') || imageKey.startsWith('zippage://')) {
+    // These pages are rendered locally from an in-memory PDF/ZIP session
+    // (via [PdfImageProvider]/[ZipImageProvider]), not fetched over the
+    // network. Pre-downloading them would issue an invalid request such as
+    // `GET pdfpage://18`, which rhttp rejects with `BadScheme`.
+    return;
+  }
   var cid = reader.cid;
   var eid = reader.eid;
   var sourceKey = reader.type.comicSource?.key;

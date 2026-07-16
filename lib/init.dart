@@ -8,6 +8,7 @@ import 'package:rhttp/rhttp.dart';
 import 'package:venera/foundation/app.dart';
 import 'package:venera/foundation/cache_manager.dart';
 import 'package:venera/foundation/comic_source/comic_source.dart';
+import 'package:venera/foundation/favorites.dart';
 import 'package:venera/foundation/js_engine.dart';
 import 'package:venera/foundation/log.dart';
 import 'package:venera/network/cookie_jar.dart';
@@ -53,6 +54,10 @@ Future<void> init() async {
       OpenCC.init(),
     ];
     await Future.wait(futures);
+    // Run favorite-type repair only after comic sources are loaded, so that
+    // comic-source favorites (type == source key hash) are correctly recognized
+    // via ComicSource.fromIntKey and not mis-classified as webdav.
+    LocalFavoritesManager().repairBrokenFavoriteTypes();
   } catch (e, s) {
     Log.error("init", "$e\n$s");
   }

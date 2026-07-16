@@ -357,7 +357,11 @@ class ImagesDownloadTask extends DownloadTask with _TransferSpeedMixin {
             _totalCount += _images![i]!.length;
             continue;
           }
-          _message = "Fetching image list ($cpCount/$totalCpCount)...";
+          _message =
+              "Fetching image list (@cpCount/@totalCpCount)...".tlParams({
+            'cpCount': cpCount,
+            'totalCpCount': totalCpCount,
+          });
           notifyListeners();
           var res = await _runWithRetry(() async {
             var r = await source.loadComicPages!(comicId, i);

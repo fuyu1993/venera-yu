@@ -909,14 +909,17 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
     }
   }
 
-  /// Opens a favorite on tap. Remote-library (WebDAV) and PDF favorites have no
-  /// comic source, so they must go straight to their dedicated remote readers
-  /// instead of [ComicPage]/[ReaderWithLoading] (which would fail with
-  /// "Comic source not found").
+  /// Opens a favorite on tap. Local imports and remote-library (WebDAV) /
+  /// PDF / ZIP favorites have no comic source, so they must go straight to
+  /// their dedicated readers instead of [ComicPage] (which would fail with
+  /// "Comic source not found" or, for local imports, is simply unnecessary).
+  /// Only comic-source favorites honor the [onClickFavorite] "viewDetail"
+  /// setting and open the detail page first.
   void _openFavorite(FavoriteItem c, int heroID) {
     if (c.type != ComicType.webdav &&
         c.type != ComicType.pdf &&
         c.type != ComicType.zip &&
+        c.type != ComicType.local &&
         appdata.settings["onClickFavorite"] == "viewDetail") {
       App.mainNavigatorKey?.currentContext?.to(
         () => ComicPage(

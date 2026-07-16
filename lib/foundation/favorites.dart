@@ -282,7 +282,6 @@ class LocalFavoritesManager with ChangeNotifier {
       appdata.settings['followUpdatesFolder'] = null;
     }
     initCounts();
-    repairBrokenFavoriteTypes();
   }
 
   void initCounts() {
@@ -300,8 +299,13 @@ class LocalFavoritesManager with ChangeNotifier {
   /// for pdf) instead of the real enum value. Re-derives the correct type from
   /// the stored id (a pdf remote path ends with ".pdf", otherwise treat it as
   /// a webdav folder path) and updates the row.
+  ///
+  /// IMPORTANT: must be called only after comic sources have been loaded
+  /// (i.e. after [ComicSourceManager.init]), otherwise a comic-source favorite
+  /// (whose type is the source key hash) would not resolve via
+  /// [ComicSource.fromIntKey] and get mis-classified as webdav.
   void repairBrokenFavoriteTypes() {
-    const known = {0, 1001, 2001}; // local, webdav, pdf
+    const known = {0, 1001, 2001, 3001}; // local, webdav, pdf, zip
     var changed = false;
     for (final folder in folderNames) {
       final rows = _db.select('select id, type from "$folder"');

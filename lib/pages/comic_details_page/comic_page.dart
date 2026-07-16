@@ -16,6 +16,7 @@ import 'package:venera/foundation/consts.dart';
 import 'package:venera/foundation/favorites.dart';
 import 'package:venera/foundation/history.dart';
 import 'package:venera/foundation/image_provider/cached_image.dart';
+import 'package:venera/foundation/image_provider/local_comic_image.dart';
 import 'package:venera/foundation/local.dart';
 import 'package:venera/foundation/res.dart';
 import 'package:venera/network/download.dart';
@@ -326,11 +327,7 @@ class _ComicPageState extends LoadingState<ComicPage, ComicDetails>
                         color: context.colorScheme.onPrimaryContainer.withValues(alpha: 0.5),
                       )
                     : AnimatedImage(
-                        image: CachedImageProvider(
-                          widget.cover ?? comic.cover,
-                          sourceKey: comic.sourceKey,
-                          cid: comic.id,
-                        ),
+                        image: _coverImageProvider(),
                         width: double.infinity,
                         height: double.infinity,
                       ),
@@ -737,12 +734,26 @@ class _ComicPageState extends LoadingState<ComicPage, ComicDetails>
     return _CommentsPart(comments: comic.comments!, showMore: showComments);
   }
 
-  void _viewCover(BuildContext context) {
-    final imageProvider = CachedImageProvider(
+  /// Returns the correct cover [ImageProvider] for the current comic, honoring
+  /// its source type. For local imports this resolves to the on-disk cover
+  /// file (via [LocalComicImageProvider]) instead of the network loader, which
+  /// would otherwise try to GET a relative path like "cover.png".
+  ImageProvider _coverImageProvider() {
+    if (comic.sourceKey == 'local') {
+      final localComic = LocalManager().find(comic.id, ComicType.local);
+      if (localComic != null) {
+        return LocalComicImageProvider(localComic);
+      }
+    }
+    return CachedImageProvider(
       widget.cover ?? comic.cover,
       sourceKey: comic.sourceKey,
       cid: comic.id,
     );
+  }
+
+  void _viewCover(BuildContext context) {
+    final imageProvider = _coverImageProvider();
 
     context.to(
       () => _CoverViewer(
@@ -1040,8 +1051,14 @@ class _ComicPageLoadingPlaceHolder extends StatelessWidget {
   Widget buildImage(BuildContext context) {
     Widget child;
     if (cover != null) {
+      final localFile = sourceKey == 'local'
+          ? LocalManager().find(cid, ComicType.local)?.coverFile
+          : null;
+      final ImageProvider image = localFile != null
+          ? FileImage(localFile)
+          : CachedImageProvider(cover!, sourceKey: sourceKey, cid: cid);
       child = AnimatedImage(
-        image: CachedImageProvider(cover!, sourceKey: sourceKey, cid: cid),
+        image: image,
         width: double.infinity,
         height: double.infinity,
         fit: BoxFit.cover,
