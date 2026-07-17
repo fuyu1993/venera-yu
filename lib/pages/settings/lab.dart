@@ -131,78 +131,89 @@ class _RemoteWebDavSettingState extends State<_RemoteWebDavSetting> {
 
   @override
   Widget build(BuildContext context) {
-    return PopUpWidgetScaffold(
+    return ContentDialog(
       title: "Remote Library WebDAV".tl,
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            const SizedBox(height: 12),
-            TextField(
-              decoration: InputDecoration(
-                labelText: "URL",
-                hintText: "A valid WebDav directory URL, e.g. http://host:5244/dav/".tl,
-                border: const OutlineInputBorder(),
-              ),
-              controller: TextEditingController(text: url),
-              onChanged: (v) => url = v,
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // URL 输入框
+          TextField(
+            decoration: InputDecoration(
+              labelText: "URL".tl,
+              hintText: "http://host:5244/dav/".tl,
+              prefixIcon: const Icon(LucideIcons.link, size: 18),
+              border: const OutlineInputBorder(),
+              isDense: true,
             ),
-            const SizedBox(height: 12),
-            TextField(
-              decoration: InputDecoration(
-                labelText: "Username".tl,
-                border: const OutlineInputBorder(),
-              ),
-              controller: TextEditingController(text: user),
-              onChanged: (v) => user = v,
+            controller: TextEditingController(text: url),
+            onChanged: (v) => url = v,
+          ),
+          const SizedBox(height: 16),
+          // 用户名输入框
+          TextField(
+            decoration: InputDecoration(
+              labelText: "Username".tl,
+              prefixIcon: const Icon(LucideIcons.user, size: 18),
+              border: const OutlineInputBorder(),
+              isDense: true,
             ),
-            const SizedBox(height: 12),
-            TextField(
-              decoration: InputDecoration(
-                labelText: "Password".tl,
-                border: const OutlineInputBorder(),
-              ),
-              controller: TextEditingController(text: pass),
-              onChanged: (v) => pass = v,
-              obscureText: true,
+            controller: TextEditingController(text: user),
+            onChanged: (v) => user = v,
+          ),
+          const SizedBox(height: 16),
+          // 密码输入框
+          TextField(
+            decoration: InputDecoration(
+              labelText: "Password".tl,
+              prefixIcon: const Icon(LucideIcons.lock, size: 18),
+              border: const OutlineInputBorder(),
+              isDense: true,
             ),
-            const SizedBox(height: 12),
-            TextField(
-              decoration: InputDecoration(
-                labelText: "Root Path".tl,
-                hintText: "/  or  /comics".tl,
-                border: const OutlineInputBorder(),
-              ),
-              controller: TextEditingController(text: root),
-              onChanged: (v) => root = v,
+            controller: TextEditingController(text: pass),
+            onChanged: (v) => pass = v,
+            obscureText: true,
+          ),
+          const SizedBox(height: 16),
+          // 根路径输入框
+          TextField(
+            decoration: InputDecoration(
+              labelText: "Root Path".tl,
+              hintText: "/  or  /comics".tl,
+              prefixIcon: const Icon(LucideIcons.folder, size: 18),
+              border: const OutlineInputBorder(),
+              isDense: true,
             ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: FilledButton.tonal(
-                    onPressed: _testing ? null : _test,
-                    child: _testing
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : Text("Test Connection".tl),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: FilledButton(
-                    onPressed: _save,
-                    child: Text("Save".tl),
-                  ),
-                ),
-              ],
+            controller: TextEditingController(text: root),
+            onChanged: (v) => root = v,
+          ),
+          const SizedBox(height: 8),
+          // 提示文本
+          Text(
+            "设置远程书库的根目录路径，例如 /comics".tl,
+            style: TextStyle(
+              fontSize: 12,
+              color: context.colorScheme.outline,
             ),
-            const SizedBox(height: 16),
-          ],
-        ),
+          ),
+        ],
       ),
+      actions: [
+        FilledButton.tonal(
+          onPressed: _testing ? null : _test,
+          child: _testing
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Text("Test Connection".tl),
+        ),
+        FilledButton(
+          onPressed: _save,
+          child: Text("Save".tl),
+        ),
+      ],
     );
   }
 }
