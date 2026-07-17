@@ -291,6 +291,7 @@ class _RemoteDownloadsPageState extends State<RemoteDownloadsPage> {
         e.type == 'pdf' ? 'PDF'.tl : e.type == 'zip' ? 'Archive'.tl : 'Folder'.tl,
         style: TextStyle(color: context.colorScheme.outline, fontSize: 12),
       ),
+      onTap: e.comicId != null ? () => _openImported(e) : null,
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -335,6 +336,17 @@ class _RemoteDownloadsPageState extends State<RemoteDownloadsPage> {
   }
 
   void _removeDownload(RemoteDownloadEntry e) {
+    showConfirmDialog(
+      context: context,
+      title: 'Remove download'.tl,
+      content: 'Are you sure you want to remove this download?'.tl,
+      onConfirm: () {
+        _doRemoveDownload(e);
+      },
+    );
+  }
+
+  void _doRemoveDownload(RemoteDownloadEntry e) {
     if (e.type == 'pdf') {
       if (e.localPath != null) {
         try {
