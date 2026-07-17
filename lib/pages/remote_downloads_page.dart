@@ -327,12 +327,16 @@ class _RemoteDownloadsPageState extends State<RemoteDownloadsPage> {
 
   void _openImported(RemoteDownloadEntry e) {
     if (e.comicId == null) return;
-    context.to(() => ComicPage(
-          id: e.comicId!,
-          sourceKey: 'local',
-          cover: '',
-          title: e.name,
-        ));
+    final localComic = LocalManager().find(e.comicId!, ComicType.local);
+    if (localComic == null) {
+      context.showMessage(message: 'Local comic not found'.tl);
+      return;
+    }
+    // Directly call [read] instead of routing through ComicPage: [read]
+    // detects a PDF backing file and opens the pdfium streaming reader, while
+    // ComicPage's local-comic path always lands on the image Reader — which
+    // shows nothing for a PDF folder (no image pages, only the .pdf file).
+    localComic.read();
   }
 
   void _removeDownload(RemoteDownloadEntry e) {
