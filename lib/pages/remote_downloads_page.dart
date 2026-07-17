@@ -76,6 +76,15 @@ class _RemoteDownloadsPageState extends State<RemoteDownloadsPage> {
     }
 
     final active = _manager.activeTasks;
+    // Only show the aggregate speed header while at least one task is in the
+    // network download phase (importing is local-only, so there is no rate to
+    // show). Tasks past the download phase still appear in the active list
+    // until their import finishes.
+    final anyDownloading = active.any((t) {
+      final s = t.state;
+      return s == RemoteDownloadState.running ||
+          s == RemoteDownloadState.paused;
+    });
 
     return Scaffold(
       appBar: Appbar(
@@ -85,10 +94,12 @@ class _RemoteDownloadsPageState extends State<RemoteDownloadsPage> {
         slivers: [
           // --- Active downloads, styled like the remote library list ---
           if (active.isNotEmpty) ...[
+            if (anyDownloading)
+              SliverToBoxAdapter(child: _buildSpeedHeader(active)),
             SliverToBoxAdapter(child: _sectionHeader('Downloading'.tl)),
             SliverList(
               delegate: SliverChildBuilderDelegate(
-                (context, i) => _buildActiveTaskTile(active[i]),
+                (context, i) => _buildActiveTaskTile(active[i], i, active.length),
                 childCount: active.length,
               ),
             ),
@@ -100,76 +111,130 @@ class _RemoteDownloadsPageState extends State<RemoteDownloadsPage> {
     );
   }
 
-  /// Active task tile, mirroring the remote library's list tile: a leading
-  /// type icon, the file name, a status / progress subtitle, and trailing
-  /// Start / Pause / Cancel controls.
-  Widget _buildActiveTaskTile(RemoteDownloadTask task) {
-    final s = task.state;
-    final (IconData icon, Color color) = _typeIcon(task.type);
-    final subtitle = s == RemoteDownloadState.running
-        ? task.message
-        : _statusText(s);
-
+  /// Aggregate speed header: shows the sum of every active task's current
+  /// download rate (e.g. "1.23 MB/s") so the user sees total throughput at a
+  /// glance. Only built while at least one task is in the network download
+  /// phase.
+  Widget _buildSpeedHeader(List<RemoteDownloadTask> active) {
+    final totalSpeed = _manager.totalSpeed;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
       child: Row(
         children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: color.withAlpha(20),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(icon, size: 24, color: color),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  task.file.name ?? 'Download'.tl,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 14),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: context.colorScheme.outline,
-                  ),
-                ),
-              ],
+          const Icon(LucideIcons.gauge, size: 16),
+          const SizedBox(width: 6),
+          Text(
+            totalSpeed > 0
+                ? '${'Download speed'.tl}: ${bytesToReadableString(totalSpeed)}/s'
+                : 'Importing'.tl,
+            style: TextStyle(
+              fontSize: 12,
+              color: context.colorScheme.outline,
             ),
           ),
-          const SizedBox(width: 8),
-          // Trailing controls: Start/Resume/Retry while idle·paused·error,
-          // Pause while running, and Cancel unless already finished.
-          if (s == RemoteDownloadState.running)
-            _miniButton('Pause'.tl, task.pause)
-          else if (s != RemoteDownloadState.completed &&
-              s != RemoteDownloadState.canceled)
-            _miniButton(
-              s == RemoteDownloadState.paused
-                  ? 'Resume'.tl
-                  : s == RemoteDownloadState.error
-                      ? 'Retry'.tl
-                      : 'Start'.tl,
-              task.start,
-            ),
-          if (s != RemoteDownloadState.completed &&
-              s != RemoteDownloadState.canceled) ...[
-            const SizedBox(width: 4),
-            _miniButton('Cancel'.tl, () => task.cancel()),
-          ],
         ],
       ),
     );
+  }
+
+  /// Active task tile, mirroring the remote library's list tile: a leading
+  /// type icon, the file name, a status / progress subtitle, and trailing
+  /// Start / Pause / Cancel controls.
+  Widget _buildActiveTaskTile(RemoteDownloadTask task, int index, int total) {
+    final s = task.state;
+    final (IconData icon, Color color) = _typeIcon(task.type);
+    // Show "Downloading 40% · 1.2 MB/s" while downloading; fall back to the
+    // plain status text for importing / paused / error states.
+    final subtitle = s == RemoteDownloadState.running
+        ? _taskLabel(task)
+        : _statusText(s);
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: color.withAlpha(20),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, size: 24, color: color),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      task.file.name ?? 'Download'.tl,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: context.colorScheme.outline,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Trailing controls: Pause while running, Resume/Retry while
+              // paused/error, and Cancel unless already finished.
+              if (s == RemoteDownloadState.running)
+                _iconButton(
+                  LucideIcons.circle_pause,
+                  'Pause'.tl,
+                  task.pause,
+                )
+              else if (s != RemoteDownloadState.completed &&
+                  s != RemoteDownloadState.canceled)
+                _iconButton(
+                  s == RemoteDownloadState.paused
+                      ? LucideIcons.circle_play
+                      : LucideIcons.rotate_ccw,
+                  s == RemoteDownloadState.paused ? 'Resume'.tl : 'Retry'.tl,
+                  task.start,
+                ),
+              if (s != RemoteDownloadState.completed &&
+                  s != RemoteDownloadState.canceled) ...[
+                const SizedBox(width: 4),
+                _iconButton(LucideIcons.x, 'Cancel'.tl, () => task.cancel()),
+              ],
+            ],
+          ),
+        ),
+        // Divider between tasks (not after the last one).
+        if (index < total - 1)
+          Divider(
+            height: 1,
+            thickness: 0.5,
+            indent: 16,
+            endIndent: 16,
+            color: context.colorScheme.outlineVariant.withAlpha(80),
+          ),
+      ],
+    );
+  }
+
+  /// Per-task status line shown beneath the file name. Combines the phase +
+  /// percentage from [RemoteDownloadTask.message] with the current download
+  /// rate (e.g. "Downloading 40% · 1.2 MB/s"). The rate is shown only while
+  /// there is a meaningful throughput to display.
+  String _taskLabel(RemoteDownloadTask task) {
+    final base = task.message;
+    if (task.speed <= 0) return base;
+    return '$base · ${bytesToReadableString(task.speed)}/s';
   }
 
   Widget _miniButton(String label, VoidCallback onPressed) {
@@ -184,6 +249,25 @@ class _RemoteDownloadsPageState extends State<RemoteDownloadsPage> {
         ),
         onPressed: onPressed,
         child: Text(label),
+      ),
+    );
+  }
+
+  /// Compact icon button for task controls (pause/resume/retry/cancel).
+  Widget _iconButton(IconData icon, String tooltip, VoidCallback onPressed) {
+    return SizedBox(
+      width: 36,
+      height: 36,
+      child: IconButton(
+        icon: Icon(icon, size: 20),
+        tooltip: tooltip,
+        onPressed: onPressed,
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints(
+          minWidth: 36,
+          minHeight: 36,
+        ),
+        color: context.colorScheme.onSurface,
       ),
     );
   }

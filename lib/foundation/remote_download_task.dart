@@ -5,6 +5,7 @@ import 'package:webdav_client/webdav_client.dart' as wd;
 import 'package:venera/foundation/comic_type.dart';
 import 'package:venera/foundation/history.dart';
 import 'package:venera/foundation/local.dart';
+import 'package:venera/foundation/log.dart';
 import 'package:venera/foundation/remote_downloads.dart';
 import 'package:venera/foundation/remote_import.dart';
 import 'package:venera/utils/io.dart';
@@ -67,10 +68,22 @@ class RemoteDownloadTask extends ChangeNotifier {
   String _message = '';
   String get message => _message;
 
+  /// Current download speed in bytes/sec while in the download phase, `0` when
+  /// importing or not running. Sampled from the delta between progress calls so
+  /// it reflects recent throughput rather than a lifetime average.
+  int _speed = 0;
+  int get speed => _speed;
+
   /// Error description when [state] is [RemoteDownloadState.error].
   String? error;
 
   CancelToken? _cancel;
+
+  /// Timestamp of the last progress sample, for speed calculation.
+  DateTime? _lastProgressTime;
+
+  /// Bytes downloaded at the last progress sample, for speed calculation.
+  int _lastProgressBytes = 0;
 
   String get _name => file.name ?? 'Comic'.tl;
 
@@ -97,6 +110,11 @@ class RemoteDownloadTask extends ChangeNotifier {
   void pause() {
     if (_state != RemoteDownloadState.running) return;
     _cancel?.cancel();
+    // Reset the rate so the UI doesn't keep showing the last sample while
+    // paused — there is no active throughput to report.
+    _setSpeed(0);
+    _lastProgressTime = null;
+    _lastProgressBytes = 0;
     _setState(RemoteDownloadState.paused);
   }
 
@@ -138,11 +156,18 @@ class RemoteDownloadTask extends ChangeNotifier {
       if (cancel.isCancelled) {
         if (_state == RemoteDownloadState.canceled) {
           _cleanupPartial();
+        } else if (_state != RemoteDownloadState.paused) {
+          // The cancel token was triggered but the user didn't pause/cancel —
+          // likely a network issue. Mark as error so the user can retry.
+          error = 'Download cancelled unexpectedly: $e';
+          _setState(RemoteDownloadState.error);
+          Log.warning("RemoteDownload", "Task cancelled unexpectedly: $e");
         }
         return;
       }
       error = e.toString();
       _setState(RemoteDownloadState.error);
+      Log.warning("RemoteDownload", "Task failed: $e");
     }
   }
 
@@ -214,6 +239,28 @@ class RemoteDownloadTask extends ChangeNotifier {
           ? 'Downloading'.tl
           : 'Importing'.tl;
       _setMessage('$phase $pct%');
+      // Sample download speed during the download phase. The import phase is
+      // local-only (no network), so speed is reset to 0 for a stable readout.
+      if (stage == ImportStage.download) {
+        final now = DateTime.now();
+        final elapsed = _lastProgressTime != null
+            ? now.difference(_lastProgressTime!).inMilliseconds
+            : 0;
+        if (elapsed > 0) {
+          // Guard against a backwards `current` (resume restart / reset) — a
+          // negative delta would otherwise produce a bogus huge speed.
+          final delta = current - _lastProgressBytes;
+          if (delta >= 0) {
+            _setSpeed((delta * 1000) ~/ elapsed);
+          }
+        }
+        _lastProgressTime = now;
+        _lastProgressBytes = current;
+      } else if (stage == ImportStage.import) {
+        _setSpeed(0);
+        _lastProgressTime = null;
+        _lastProgressBytes = 0;
+      }
       onProgress?.call(stage, current, total);
     };
   }
@@ -247,6 +294,11 @@ class RemoteDownloadTask extends ChangeNotifier {
 
   void _setMessage(String m) {
     _message = m;
+    notifyListeners();
+  }
+
+  void _setSpeed(int bytesPerSecond) {
+    _speed = bytesPerSecond.clamp(0, 1 << 62);
     notifyListeners();
   }
 

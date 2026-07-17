@@ -6,6 +6,7 @@ import 'package:venera/foundation/app.dart';
 import 'package:venera/foundation/comic_source/comic_source.dart';
 import 'package:venera/foundation/comic_type.dart';
 import 'package:venera/foundation/local.dart';
+import 'package:venera/foundation/log.dart';
 import 'package:venera/foundation/pdf/pdf_session.dart';
 import 'package:venera/foundation/remote_webdav.dart';
 import 'package:venera/utils/cbz.dart';
@@ -86,37 +87,55 @@ class RemoteImporter {
 
   /// Download a remote WebDAV folder (images, optionally organised into
   /// sub-folder chapters) and build a local image comic. [onProgress] reports
-  /// the number of images downloaded so far and the total. The download is
-  /// resumable: a `.rvdownload` status file tracks which images are already on
-  /// disk, so an interrupted import can be resumed image-by-image.
+  /// the download progress as `(bytesDownloaded, totalBytes)` so the UI can
+  /// show a meaningful bytes/sec rate. The download is resumable: a
+  /// `.rvdownload` status file tracks which images are already on disk, so an
+  /// interrupted import can be resumed image-by-image.
   static Future<LocalComic?> importWebDavFolder(
     String folderPath,
     String name, {
     ImportProgress? onProgress,
     CancelToken? cancel,
   }) async {
+    Log.info("RemoteImport", "Starting folder import: $folderPath");
+
+    // --- 第 1 步：获取章节结构 ---
     final chaptersMap = await RemoteWebDav.buildChapters(folderPath);
     if (chaptersMap.isEmpty) {
       throw Exception('No readable images in this folder');
     }
+    Log.info("RemoteImport", "Found ${chaptersMap.length} chapter(s)");
+
     final dirs = chaptersMap.keys.toList();
     final single = dirs.length == 1 && chaptersMap[dirs[0]] == 'All';
 
-    // Pre-fetch image keys and the total count for progress reporting.
-    final keysPerDir = <String, List<String>>{};
-    var total = 0;
+    // --- 第 2 步：获取所有图片及其大小 ---
+    final entriesPerDir = <String, List<ImageEntry>>{};
+    var totalBytes = 0;
+    var totalImages = 0;
     for (final dir in dirs) {
-      final keys = await RemoteWebDav.getImagesForChapter(dir);
-      keysPerDir[dir] = keys;
-      total += keys.length;
+      try {
+        final entries = await RemoteWebDav.listImageKeysWithSize(dir);
+        entriesPerDir[dir] = entries;
+        totalImages += entries.length;
+        for (final e in entries) {
+          totalBytes += e.size;
+        }
+      } catch (e) {
+        // Skip chapters that can't be accessed (404, permission denied, etc.)
+        // instead of failing the whole import.
+        Log.warning("RemoteImport", "Skipping inaccessible chapter: $dir ($e)");
+      }
     }
+    if (entriesPerDir.isEmpty) {
+      throw Exception('No accessible images in this folder');
+    }
+    Log.info("RemoteImport", "Found $totalImages image(s) in ${entriesPerDir.length} chapter(s), total size: ${bytesToReadableString(totalBytes)}");
 
     final dest = Directory(
       FilePath.join(LocalManager().path, sanitizeFileName(name)),
     );
-    // Resume bookkeeping: a status file lists the image keys already flushed
-    // to [dest]. If the comic already exists without a status file, the user
-    // is re-importing something that completed — refuse to clobber it.
+    // --- 第 3 步：断点续传检查 ---
     final statusFile = File('${dest.path}.rvdownload');
     final done = <String>{};
     if (dest.existsSync()) {
@@ -126,6 +145,7 @@ class RemoteImporter {
             if (line.isNotEmpty) done.add(line);
           }
         } catch (_) {}
+        Log.info("RemoteImport", "Resuming: ${done.length} image(s) already downloaded");
       } else {
         throw Exception('Comic with name $name already exists');
       }
@@ -135,24 +155,53 @@ class RemoteImporter {
 
     final downloaded = <File>[];
     Map<String, String>? cpMap;
-    var completed = done.length;
 
-    void report() => onProgress?.call(ImportStage.download, completed, total);
+    // Bytes downloaded so far. This is what [onProgress] reports as `current`,
+    // so the UI can compute a correct bytes/sec rate.
+    var downloadedBytes = 0;
+
+    // Images that failed to download (after retries). Logged at the end so a
+    // few bad images don't abort the whole folder import.
+    final failedKeys = <String>[];
+
+    // Throttle status-file writes: writing the full `done` set after every
+    // image is a huge I/O bottleneck for large folders (the file grows to
+    // MBs, each write takes longer). Write every 10 images instead.
+    var writesPending = 0;
+
+    void report() =>
+        onProgress?.call(ImportStage.download, downloadedBytes, totalBytes);
+
+    void markDone(String key) {
+      done.add(key);
+      writesPending++;
+      if (writesPending >= 10) {
+        _writeStatus(statusFile, done);
+        writesPending = 0;
+      }
+    }
 
     if (single) {
       // Flat comic: images sit directly in [dest], kept under their original
       // remote file names.
-      final keys = keysPerDir[dirs[0]]!;
-      for (final key in keys) {
+      final entries = entriesPerDir[dirs[0]]!;
+      for (final entry in entries) {
         if (cancel?.isCancelled == true) return Future.value(null);
+        final key = entry.key;
         if (done.contains(key) && _destFile(key, dest).existsSync()) {
+          // Already on disk from a previous run: count its bytes and move on.
+          downloadedBytes += entry.size;
           report();
           continue;
         }
-        downloaded.add(await _downloadOne(key, dest));
-        done.add(key);
-        await _writeStatus(statusFile, done);
-        completed++;
+        final file = await _downloadOne(key, dest, failedKeys, entry.size);
+        if (file != null) {
+          // Only keep the first image for the cover; discard the rest to
+          // avoid holding thousands of File objects in a large folder import.
+          if (downloaded.isEmpty) downloaded.add(file);
+          markDone(key);
+          downloadedBytes += file.lengthSync();
+        }
         report();
       }
     } else {
@@ -179,17 +228,23 @@ class RemoteImporter {
           FilePath.join(dest.path, chapterDirName),
         );
         chapterDest.createSync();
-        final keys = keysPerDir[dir]!;
-        for (final key in keys) {
+        final entries = entriesPerDir[dir]!;
+        for (final entry in entries) {
           if (cancel?.isCancelled == true) return Future.value(null);
+          final key = entry.key;
           if (done.contains(key) && _destFile(key, chapterDest).existsSync()) {
+            // Already on disk from a previous run: count its bytes and move on.
+            downloadedBytes += entry.size;
             report();
             continue;
           }
-          downloaded.add(await _downloadOne(key, chapterDest));
-          done.add(key);
-          await _writeStatus(statusFile, done);
-          completed++;
+          final file = await _downloadOne(key, chapterDest, failedKeys, entry.size);
+          if (file != null) {
+            // Only keep the first image for the cover; discard the rest.
+            if (downloaded.isEmpty) downloaded.add(file);
+            markDone(key);
+            downloadedBytes += file.lengthSync();
+          }
           report();
         }
         // Chapter id = the on-disk directory name; the reader resolves it back
@@ -202,6 +257,11 @@ class RemoteImporter {
     if (downloaded.isEmpty && done.isEmpty) {
       await dest.delete(recursive: true);
       throw Exception('No images found');
+    }
+
+    // Final status write to flush any remaining pending keys.
+    if (writesPending > 0) {
+      _writeStatus(statusFile, done);
     }
 
     // Drop the resume status file now that every image is on disk.
@@ -221,6 +281,16 @@ class RemoteImporter {
       );
     }
     onProgress?.call(ImportStage.import, 1, 1);
+
+    // Surface any per-image failures as a single warning instead of aborting
+    // the whole import — a few bad images in a large folder shouldn't discard
+    // the hundreds that succeeded.
+    if (failedKeys.isNotEmpty) {
+      Log.warning(
+        "RemoteImport",
+        "Failed to download ${failedKeys.length} image(s) in folder '$name'",
+      );
+    }
 
     return LocalComic(
       id: LocalManager().findValidId(ComicType.local),
@@ -337,14 +407,49 @@ class RemoteImporter {
     return collected.first;
   }
 
-  static Future<File> _downloadOne(
+  /// Download a single remote image to [dir]. Uses a streaming download
+  /// ([RemoteWebDav.downloadToFile]) instead of [RemoteWebDav.readFile] so the
+  /// whole file is never held in memory at once — important for large folders
+  /// where many multi-MB images would otherwise OOM the app.
+  ///
+  /// Retries up to 3 times on transient failures. Returns the downloaded [File]
+  /// on success, or `null` if all attempts fail — the key is appended to
+  /// [failedKeys] so the caller can log a summary instead of aborting the
+  /// whole import.
+  static Future<File?> _downloadOne(
     String webdavKey,
     Directory dir,
+    List<String> failedKeys,
+    int expectedSize,
   ) async {
     final path = RemoteWebDav.decodeKey(webdavKey);
-    final bytes = await RemoteWebDav.readFile(path);
     final f = _destFile(webdavKey, dir);
-    await f.writeAsBytes(bytes);
-    return f;
+    Log.info("RemoteImport", "Downloading: key=$webdavKey, decoded=$path, dest=${f.path}");
+    const maxAttempts = 3;
+    for (var attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        await RemoteWebDav.downloadToFile(path, f.path);
+        return f;
+      } catch (e) {
+        Log.warning(
+          "RemoteImport",
+          "Failed to download image (attempt $attempt/$maxAttempts): $path ($e)",
+        );
+        // Clean up the partial file before retrying.
+        try {
+          if (f.existsSync()) await f.delete();
+        } catch (_) {}
+        if (attempt == maxAttempts) {
+          failedKeys.add(webdavKey);
+          return null;
+        }
+        // Exponential backoff before retrying — also helps if the server is
+        // throttling us (HTTP 429): wait longer on each attempt rather than
+        // immediately re-firing into the rate limit.
+        final backoffMs = 500 * (1 << (attempt - 1)); // 500, 1000, 2000 ms
+        await Future.delayed(Duration(milliseconds: backoffMs));
+      }
+    }
+    return null; // Unreachable, but keeps the analyzer happy.
   }
 }

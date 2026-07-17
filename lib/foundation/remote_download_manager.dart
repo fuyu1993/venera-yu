@@ -31,6 +31,11 @@ class RemoteDownloadManager extends ChangeNotifier {
   List<RemoteDownloadTask> get activeTasks =>
       _tasks.where((t) => !t.isTerminal).toList();
 
+  /// Sum of every active task's current download speed, in bytes/sec. Drives
+  /// the aggregate speed readout at the top of the downloads page.
+  int get totalSpeed =>
+      activeTasks.fold(0, (sum, t) => sum + t.speed);
+
   RemoteDownloadTask? taskFor(String? remotePath) {
     if (remotePath == null) return null;
     for (final t in _tasks) {

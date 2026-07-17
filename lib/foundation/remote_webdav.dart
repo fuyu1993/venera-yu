@@ -5,6 +5,7 @@ import 'dart:typed_data';
 
 import 'package:webdav_client/webdav_client.dart';
 import 'package:venera/foundation/appdata.dart';
+import 'package:venera/foundation/log.dart';
 import 'package:venera/network/app_dio.dart';
 
 /// Remote library WebDAV manager.
@@ -486,6 +487,25 @@ class RemoteWebDav {
   static Future<List<String>> getImagesForChapter(String chapterPath) async {
     return await listImageKeys(chapterPath);
   }
+
+  /// Return the image keys for a given chapter (directory path), along with
+  /// each image's byte size. The size comes from the WebDAV PROPFIND (no
+  /// extra round-trips) and lets the importer report progress in bytes rather
+  /// than image count — so the UI can show a meaningful bytes/sec rate.
+  static Future<List<ImageEntry>> listImageKeysWithSize(String dirPath) async {
+    // Encode each path segment to handle special characters (?, &, #, etc.)
+    // while keeping '/' as the path separator. Without this, a chapter name
+    // like "第4话你愿意上我吗?" would break the request because '?' is the
+    // URL query-string separator.
+    final encodedPath = dirPath.split('/').map((s) => Uri.encodeComponent(s)).join('/');
+    Log.info("RemoteWebDav", "listImageKeysWithSize: original=$dirPath, encoded=$encodedPath");
+    var files = await readDir(encodedPath);
+    var imgs = files
+        .where((e) => e.isDir != true && isImageName(e.name))
+        .toList();
+    imgs.sort((a, b) => naturalCompare(a.name ?? '', b.name ?? ''));
+    return imgs.map((e) => ImageEntry(encodeKey(e.path!), e.size ?? 0)).toList();
+  }
 }
 
 /// Persistent marks for folders that the user has explicitly flagged as a
@@ -526,4 +546,15 @@ class WebDavComicMarks {
     setMarked(path, next);
     return next;
   }
+}
+
+/// Image key plus its byte size, returned by [RemoteWebDav.listImageKeysWithSize].
+class ImageEntry {
+  ImageEntry(this.key, this.size);
+
+  /// WebDAV-encoded key (e.g. `webdav://path/to/image.jpg`).
+  final String key;
+
+  /// Byte size from the WebDAV PROPFIND, or 0 if unknown.
+  final int size;
 }
