@@ -638,6 +638,12 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
           SliverGridComics(
             comics: searchMode ? searchResults : filterComics(comics),
             selections: selectedComics,
+            timeBuilder: (c) {
+              final item = c as FavoriteItem;
+              return HistoryManager.formatBrowseTime(
+                HistoryManager().find(item.id, item.type)?.time,
+              );
+            },
             menuBuilder: (c) {
               return [
                 if (!isAllFolder)

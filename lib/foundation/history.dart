@@ -181,6 +181,15 @@ class History implements Comic {
 class HistoryManager with ChangeNotifier {
   static HistoryManager? cache;
 
+  /// Formats a last-browsed timestamp for display, e.g.
+  /// "最近浏览  2026-07-17 14:05:30". Returns null when [time] is null.
+  static String? formatBrowseTime(DateTime? time) {
+    if (time == null) return null;
+    String two(int n) => n.toString().padLeft(2, '0');
+    return "最近浏览  ${time.year}-${two(time.month)}-${two(time.day)} "
+        "${two(time.hour)}:${two(time.minute)}:${two(time.second)}";
+  }
+
   HistoryManager.create();
 
   factory HistoryManager() =>

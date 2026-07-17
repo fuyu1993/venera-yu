@@ -373,6 +373,8 @@ class _HistoryPageState extends State<HistoryPage> {
               badgeBuilder: (c) {
                 return _sourceLabel(c);
               },
+              timeBuilder: (c) =>
+                  HistoryManager.formatBrowseTime((c as History).time),
               menuBuilder: (c) {
                 return [
                   MenuEntry(

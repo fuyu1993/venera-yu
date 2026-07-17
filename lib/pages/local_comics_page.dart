@@ -3,6 +3,7 @@ import 'package:venera/components/components.dart';
 import 'package:venera/foundation/app.dart';
 import 'package:venera/foundation/appdata.dart';
 import 'package:venera/foundation/comic_type.dart';
+import 'package:venera/foundation/history.dart';
 import 'package:venera/foundation/local.dart';
 import 'package:venera/foundation/log.dart';
 import 'package:venera/pages/comic_details_page/comic_page.dart';
@@ -302,6 +303,14 @@ class _LocalComicsPageState extends State<LocalComicsPage> {
             badgeBuilder: (c) {
               if (c is LocalComic) {
                 return DateFormat('yyyy-MM-dd HH:mm:ss').format(c.createdAt);
+              }
+              return null;
+            },
+            timeBuilder: (c) {
+              if (c is LocalComic) {
+                return HistoryManager.formatBrowseTime(
+                  HistoryManager().find(c.id, ComicType.local)?.time,
+                );
               }
               return null;
             },

@@ -314,6 +314,7 @@ class ComicTile extends StatelessWidget {
                       ComicSource.find(comic.sourceKey)?.enableTagsTranslate ??
                           false,
                   rating: comic.stars,
+                  time: time,
                 ),
               ),
             ],
@@ -458,6 +459,19 @@ class ComicTile extends StatelessWidget {
                   ),
                 ),
               ),
+              if (time != null)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(4, 0, 4, 0),
+                  child: Text(
+                    time!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 10.0,
+                      color: context.colorScheme.outline,
+                    ),
+                  ),
+                ),
             ],
           ).paddingHorizontal(6).paddingVertical(8),
         );
@@ -590,6 +604,7 @@ class _ComicDescription extends StatelessWidget {
     this.maxLines = 2,
     this.tags,
     this.rating,
+    this.time,
   });
 
   final String title;
@@ -601,6 +616,9 @@ class _ComicDescription extends StatelessWidget {
   final int maxLines;
   final bool enableTranslate;
   final double? rating;
+
+  /// Optional last-browsed timestamp text. Used by the history page.
+  final String? time;
 
   @override
   Widget build(BuildContext context) {
@@ -634,6 +652,19 @@ class _ComicDescription extends StatelessWidget {
             maxLines: 1,
             softWrap: true,
             overflow: TextOverflow.ellipsis,
+          ),
+        if (time != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Text(
+              time!,
+              style: TextStyle(
+                fontSize: 10.0,
+                color: context.colorScheme.outline,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
         const SizedBox(height: 4),
         if (tags != null && tags!.isNotEmpty)
@@ -827,7 +858,8 @@ class SliverGridComics extends StatefulWidget {
       this.menuBuilder,
       this.onTap,
       this.onLongPressed,
-      this.selections});
+      this.selections,
+      this.timeBuilder});
 
   final List<Comic> comics;
 
@@ -840,6 +872,10 @@ class SliverGridComics extends StatefulWidget {
   /// Place the [badgeBuilder] badge at the bottom-left instead of the default
   /// bottom-right.
   final bool badgeAtLeft;
+
+  /// Builds the last-browsed timestamp text for a comic (history page only).
+  /// When provided, shown beneath the title on each tile.
+  final String? Function(Comic)? timeBuilder;
 
   final List<MenuEntry> Function(Comic)? menuBuilder;
 
@@ -917,6 +953,7 @@ class _SliverGridComicsState extends State<SliverGridComics> {
       badgeBuilder: widget.badgeBuilder,
       badgeAtLeft: widget.badgeAtLeft,
       menuBuilder: widget.menuBuilder,
+      timeBuilder: widget.timeBuilder,
       onTap: widget.onTap,
       onLongPressed: widget.onLongPressed,
     );
@@ -931,6 +968,7 @@ class _SliverGridComics extends StatelessWidget {
     this.badgeBuilder,
     this.badgeAtLeft = false,
     this.menuBuilder,
+    this.timeBuilder,
     this.onTap,
     this.onLongPressed,
     this.selection,
@@ -950,6 +988,9 @@ class _SliverGridComics extends StatelessWidget {
 
   final List<MenuEntry> Function(Comic)? menuBuilder;
 
+  /// Builds the last-browsed timestamp text for a comic (history page only).
+  final String? Function(Comic)? timeBuilder;
+
   final void Function(Comic, int heroID)? onTap;
 
   final void Function(Comic, int heroID)? onLongPressed;
@@ -962,6 +1003,7 @@ class _SliverGridComics extends StatelessWidget {
           onLastItemBuild?.call();
         }
         var badge = badgeBuilder?.call(comics[index]);
+        var time = timeBuilder?.call(comics[index]);
         var isSelected = selection == null
             ? false
             : selection![comics[index]] ?? false;
@@ -970,6 +1012,7 @@ class _SliverGridComics extends StatelessWidget {
           badge: badge,
           badgeAtLeft: badgeAtLeft,
           menuOptions: menuBuilder?.call(comics[index]),
+          time: time,
           onTap: onTap != null
               ? () => onTap!(comics[index], heroIDs[index])
               : null,
