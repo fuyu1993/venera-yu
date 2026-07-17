@@ -15,6 +15,7 @@ import 'package:venera/utils/pdf.dart';
 import 'package:venera/utils/translations.dart';
 import 'package:zip_flutter/zip_flutter.dart';
 import 'package:url_launcher/url_launcher_string.dart';
+import 'package:intl/intl.dart';
 
 class LocalComicsPage extends StatefulWidget {
   const LocalComicsPage({super.key});
@@ -297,6 +298,13 @@ class _LocalComicsPageState extends State<LocalComicsPage> {
           SliverGridComics(
             comics: comics,
             selections: selectedComics,
+            badgeAtLeft: true,
+            badgeBuilder: (c) {
+              if (c is LocalComic) {
+                return DateFormat('yyyy-MM-dd HH:mm:ss').format(c.createdAt);
+              }
+              return null;
+            },
             onLongPressed: (c, heroID) {
               setState(() {
                 multiSelectMode = true;

@@ -140,42 +140,62 @@ class RemoteImporter {
     void report() => onProgress?.call(ImportStage.download, completed, total);
 
     if (single) {
+      // Flat comic: images sit directly in [dest], kept under their original
+      // remote file names.
       final keys = keysPerDir[dirs[0]]!;
-      for (var i = 0; i < keys.length; i++) {
+      for (final key in keys) {
         if (cancel?.isCancelled == true) return Future.value(null);
-        final key = keys[i];
-        if (done.contains(key) && _findImage(dest, i + 1) != null) {
+        if (done.contains(key) && _destFile(key, dest).existsSync()) {
           report();
           continue;
         }
-        downloaded.add(await _downloadOne(keys[i], dest, '${i + 1}'));
+        downloaded.add(await _downloadOne(key, dest));
         done.add(key);
         await _writeStatus(statusFile, done);
         completed++;
         report();
       }
     } else {
+      // Multi-chapter: each sub-folder becomes a chapter directory that keeps
+      // its original name (sanitized for the file system); images inside keep
+      // their original file names too.
       cpMap = {};
-      for (var ci = 0; ci < dirs.length; ci++) {
-        final dir = dirs[ci];
-        final chapterDest =
-            Directory(FilePath.join(dest.path, ci.toString()));
+      final usedDirNames = <String>{};
+      for (final dir in dirs) {
+        final chapterName = chaptersMap[dir]!;
+        var chapterDirName = LocalManager.getChapterDirectoryName(chapterName);
+        // Avoid two distinct chapters collapsing onto the same directory if
+        // their names only differ in characters sanitized away (e.g. "a/b" vs
+        // "a:b"). Append a counter until the name is unique.
+        if (usedDirNames.contains(chapterDirName)) {
+          var n = 2;
+          while (usedDirNames.contains('$chapterDirName$n')) {
+            n++;
+          }
+          chapterDirName = '$chapterDirName$n';
+        }
+        usedDirNames.add(chapterDirName);
+        final chapterDest = Directory(
+          FilePath.join(dest.path, chapterDirName),
+        );
         chapterDest.createSync();
         final keys = keysPerDir[dir]!;
-        for (var i = 0; i < keys.length; i++) {
+        for (final key in keys) {
           if (cancel?.isCancelled == true) return Future.value(null);
-          final key = keys[i];
-          if (done.contains(key) && _findImage(chapterDest, i + 1) != null) {
+          if (done.contains(key) && _destFile(key, chapterDest).existsSync()) {
             report();
             continue;
           }
-          downloaded.add(await _downloadOne(keys[i], chapterDest, '${i + 1}'));
+          downloaded.add(await _downloadOne(key, chapterDest));
           done.add(key);
           await _writeStatus(statusFile, done);
           completed++;
           report();
         }
-        cpMap[ci.toString()] = chaptersMap[dir]!;
+        // Chapter id = the on-disk directory name; the reader resolves it back
+        // through [LocalManager.getChapterDirectoryName] (idempotent on an
+        // already-sanitized name), which yields [chapterDest].
+        cpMap[chapterDirName] = chapterName;
       }
     }
 
@@ -189,13 +209,13 @@ class RemoteImporter {
       if (statusFile.existsSync()) await statusFile.delete();
     } catch (_) {}
 
-    // Import phase: pick a cover from the first available image and build the
-    // [LocalComic]. The actual files are already in [dest].
+    // Import phase: copy the first available image to a `cover.<ext>` so the
+    // comic shows up in the library grid.
     onProgress?.call(ImportStage.import, 0, 1);
     final coverFile = downloaded.isNotEmpty
         ? downloaded.first
         : _firstImageIn(dest);
-    if (coverFile != null && !coverFile.path.startsWith(dest.path)) {
+    if (coverFile != null) {
       await coverFile.copyMem(
         FilePath.join(dest.path, 'cover.${coverFile.extension}'),
       );
@@ -289,14 +309,12 @@ class RemoteImporter {
     } catch (_) {}
   }
 
-  /// Find the on-disk image for 1-based index [i] in [dir] (the file named
-  /// `i.<ext>`), or `null` if it is missing.
-  static File? _findImage(Directory dir, int i) {
-    if (!dir.existsSync()) return null;
-    for (final f in dir.listSync()) {
-      if (f is File && f.name.startsWith('$i.')) return f;
-    }
-    return null;
+  /// Compute the destination file for [webdavKey] inside [dir], preserving the
+  /// original remote file name (sanitized for the local file system).
+  static File _destFile(String webdavKey, Directory dir) {
+    final path = RemoteWebDav.decodeKey(webdavKey);
+    final name = sanitizeFileName(path.split('/').last);
+    return File(FilePath.join(dir.path, name));
   }
 
   /// First image file anywhere under [dir] (used as a fallback cover when the
@@ -322,12 +340,10 @@ class RemoteImporter {
   static Future<File> _downloadOne(
     String webdavKey,
     Directory dir,
-    String index,
   ) async {
     final path = RemoteWebDav.decodeKey(webdavKey);
     final bytes = await RemoteWebDav.readFile(path);
-    final ext = RemoteWebDav.getFileExtension(path.split('/').last);
-    final f = File(FilePath.join(dir.path, '$index.$ext'));
+    final f = _destFile(webdavKey, dir);
     await f.writeAsBytes(bytes);
     return f;
   }

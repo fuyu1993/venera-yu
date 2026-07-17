@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:venera/foundation/appdata.dart';
 
 /// A record of a remote-library item that has been downloaded/imported to the
@@ -52,6 +53,10 @@ class RemoteDownloadEntry {
 class RemoteDownloads {
   static const String _key = 'remoteDownloads';
 
+  /// Notified (with the current count) whenever the registry changes, so the
+  /// remote-library badge can update live.
+  static final ValueNotifier<int> countNotifier = ValueNotifier(0);
+
   static List<Map<String, dynamic>> _read() {
     final v = appdata.settings[_key];
     if (v is List) return List<Map<String, dynamic>>.from(v, growable: true);
@@ -61,7 +66,15 @@ class RemoteDownloads {
   static void _write(List<Map<String, dynamic>> list) {
     appdata.settings[_key] = list;
     appdata.saveData();
+    countNotifier.value = list.length;
   }
+
+  /// All download records, newest last.
+  static List<RemoteDownloadEntry> all() {
+    return _read().map(RemoteDownloadEntry.fromJson).toList();
+  }
+
+  static int get count => _read().length;
 
   /// Look up the import/download record for [remotePath], or `null`.
   static RemoteDownloadEntry? get(String remotePath) {

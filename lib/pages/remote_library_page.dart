@@ -19,7 +19,7 @@ import 'package:venera/foundation/zip/zip_session.dart';
 import 'package:venera/foundation/remote_import.dart';
 import 'package:venera/foundation/remote_downloads.dart';
 import 'package:venera/pages/comic_details_page/comic_page.dart';
-import 'package:venera/pages/remote_download_dialog.dart';
+import 'package:venera/pages/remote_downloads_page.dart';
 import 'package:venera/foundation/local.dart';
 
 String _formatFileSize(int? bytes) {
@@ -44,6 +44,57 @@ class _FolderInfo {
   final int itemCount;
   final int totalSize;
   const _FolderInfo(this.itemCount, this.totalSize);
+}
+
+/// Appbar button that opens the remote downloads page, with a live badge
+/// showing how many items have been downloaded.
+class _DownloadBadgeButton extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<int>(
+      valueListenable: RemoteDownloads.countNotifier,
+      builder: (context, count, _) {
+        return Stack(
+          alignment: Alignment.center,
+          children: [
+            IconButton(
+              icon: const Icon(LucideIcons.download),
+              tooltip: 'Downloads'.tl,
+              onPressed: () {
+                context.to(() => const RemoteDownloadsPage());
+              },
+            ),
+            if (count > 0)
+              Positioned(
+                right: 2,
+                top: 2,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: context.colorScheme.error,
+                    shape: BoxShape.circle,
+                  ),
+                  constraints: const BoxConstraints(
+                    minWidth: 18,
+                    minHeight: 18,
+                  ),
+                  child: Center(
+                    child: Text(
+                      count > 99 ? '99+' : '$count',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
 }
 
 class RemoteLibraryPage extends StatefulWidget {
@@ -79,6 +130,10 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
   void initState() {
     super.initState();
     _isGridView = appdata.settings['remoteLibraryViewMode'] != 'list';
+    // Sync the badge notifier with whatever was persisted before this page.
+    if (RemoteDownloads.countNotifier.value != RemoteDownloads.count) {
+      RemoteDownloads.countNotifier.value = RemoteDownloads.count;
+    }
     _load();
   }
 
@@ -428,10 +483,12 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
         ));
   }
 
-  /// Open a remote item's download dialog. The dialog runs a
-  /// [RemoteDownloadTask] that downloads first (resumable) then imports, with
-  /// Start / Pause / Cancel controls and a live progress bar. On success it
-  /// closes and opens the imported comic's page.
+  /// Open the downloads page for [file]. A global [RemoteDownloadTask] is
+  /// created for it and started immediately; progress shows inline on the page
+  /// (the former download dialog, now embedded in the downloads page) with
+  /// Start / Pause / Cancel controls. The task keeps running in the background
+  /// after the page is closed, and is still there with live progress when you
+  /// return.
   Future<void> _importItem(wd.File file) async {
     final type = getFileType(file);
     if (type != RemoteFileType.folder &&
@@ -439,7 +496,7 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
         type != RemoteFileType.pdf) {
       return;
     }
-    await showRemoteDownloadDialog(context, file: file);
+    await context.to(() => RemoteDownloadsPage(initialFile: file));
     if (mounted) setState(() {});
   }
 
@@ -570,6 +627,7 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
                 )
               : null,
           actions: [
+            _DownloadBadgeButton(),
             IconButton(
               icon: Icon(
                   _isGridView ? LucideIcons.list : LucideIcons.grid_2x2),

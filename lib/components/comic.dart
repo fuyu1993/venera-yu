@@ -51,17 +51,28 @@ class ComicTile extends StatelessWidget {
     required this.comic,
     this.enableLongPressed = true,
     this.badge,
+    this.badgeAtLeft = false,
     this.menuOptions,
     this.onTap,
     this.onLongPressed,
     this.heroID,
+    this.time,
   });
 
   final Comic comic;
 
+  /// Optional last-browsed timestamp text (e.g. "2026-07-17 14:05:30"). Used by
+  /// the history page. When non-null it is shown beneath the title/subtitle.
+  final String? time;
+
   final bool enableLongPressed;
 
   final String? badge;
+
+  /// When true, the [badge] is placed at the bottom-left instead of the
+  /// default bottom-right. Used by the local library to show the import-time
+  /// label, while other grids keep their source/language badge at bottom-right.
+  final bool badgeAtLeft;
 
   final List<MenuEntry>? menuOptions;
 
@@ -289,13 +300,14 @@ class ComicTile extends StatelessWidget {
                 size: const Size(16, 5),
               ),
               Expanded(
-                child: _ComicDescription(
+                child:                 _ComicDescription(
                   title: comic.maxPage == null
                       ? comic.title.replaceAll("\n", "")
                       : "[${comic.maxPage}P]${comic.title.replaceAll("\n", "")}",
                   subtitle: comic.subtitle ?? '',
                   description: comic.description,
                   badge: badge ?? comic.language,
+                  badgeAtLeft: badgeAtLeft,
                   tags: comic.tags,
                   maxLines: 2,
                   enableTranslate:
@@ -350,6 +362,29 @@ class ComicTile extends StatelessWidget {
                     Positioned.fill(
                       child: image,
                     ),
+                    if (badge != null)
+                      Align(
+                        alignment:
+                            badgeAtLeft ? Alignment.bottomLeft : Alignment.bottomRight,
+                        child: Container(
+                          margin: const EdgeInsets.all(4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 3, vertical: 1),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            color: context.colorScheme.secondaryContainer,
+                          ),
+                          child: Text(
+                            badge!,
+                            style: TextStyle(
+                              fontSize:
+                                  constraints.maxWidth < 80 ? 8.0 : 10.0,
+                              color: context.colorScheme.onSecondaryContainer,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ),
                     Align(
                       alignment: Alignment.bottomRight,
                       child: (() {
@@ -551,6 +586,7 @@ class _ComicDescription extends StatelessWidget {
     required this.description,
     required this.enableTranslate,
     this.badge,
+    this.badgeAtLeft = false,
     this.maxLines = 2,
     this.tags,
     this.rating,
@@ -560,6 +596,7 @@ class _ComicDescription extends StatelessWidget {
   final String subtitle;
   final String description;
   final String? badge;
+  final bool badgeAtLeft;
   final List<String>? tags;
   final int maxLines;
   final bool enableTranslate;
@@ -654,6 +691,20 @@ class _ComicDescription extends StatelessWidget {
         Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
+            if (badgeAtLeft && badge != null)
+              Container(
+                padding: const EdgeInsets.fromLTRB(5, 3, 5, 3),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.secondaryContainer,
+                  borderRadius: const BorderRadius.all(Radius.circular(8)),
+                ),
+                child: Center(
+                  child: Text(
+                    badge!,
+                    style: const TextStyle(fontSize: 11),
+                  ),
+                ),
+              ),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -670,17 +721,17 @@ class _ComicDescription extends StatelessWidget {
                 ],
               ),
             ),
-            if (badge != null)
+            if (!badgeAtLeft && badge != null)
               Container(
-                padding: const EdgeInsets.fromLTRB(6, 4, 6, 4),
+                padding: const EdgeInsets.fromLTRB(5, 3, 5, 3),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.tertiaryContainer,
+                  color: Theme.of(context).colorScheme.secondaryContainer,
                   borderRadius: const BorderRadius.all(Radius.circular(8)),
                 ),
                 child: Center(
                   child: Text(
-                    "${badge![0].toUpperCase()}${badge!.substring(1).toLowerCase()}",
-                    style: const TextStyle(fontSize: 12),
+                    badge!,
+                    style: const TextStyle(fontSize: 11),
                   ),
                 ),
               ),
@@ -772,6 +823,7 @@ class SliverGridComics extends StatefulWidget {
       required this.comics,
       this.onLastItemBuild,
       this.badgeBuilder,
+      this.badgeAtLeft = false,
       this.menuBuilder,
       this.onTap,
       this.onLongPressed,
@@ -784,6 +836,10 @@ class SliverGridComics extends StatefulWidget {
   final void Function()? onLastItemBuild;
 
   final String? Function(Comic)? badgeBuilder;
+
+  /// Place the [badgeBuilder] badge at the bottom-left instead of the default
+  /// bottom-right.
+  final bool badgeAtLeft;
 
   final List<MenuEntry> Function(Comic)? menuBuilder;
 
@@ -859,6 +915,7 @@ class _SliverGridComicsState extends State<SliverGridComics> {
       selection: widget.selections,
       onLastItemBuild: widget.onLastItemBuild,
       badgeBuilder: widget.badgeBuilder,
+      badgeAtLeft: widget.badgeAtLeft,
       menuBuilder: widget.menuBuilder,
       onTap: widget.onTap,
       onLongPressed: widget.onLongPressed,
@@ -872,6 +929,7 @@ class _SliverGridComics extends StatelessWidget {
     required this.heroIDs,
     this.onLastItemBuild,
     this.badgeBuilder,
+    this.badgeAtLeft = false,
     this.menuBuilder,
     this.onTap,
     this.onLongPressed,
@@ -887,6 +945,8 @@ class _SliverGridComics extends StatelessWidget {
   final void Function()? onLastItemBuild;
 
   final String? Function(Comic)? badgeBuilder;
+
+  final bool badgeAtLeft;
 
   final List<MenuEntry> Function(Comic)? menuBuilder;
 
@@ -908,6 +968,7 @@ class _SliverGridComics extends StatelessWidget {
         var comic = ComicTile(
           comic: comics[index],
           badge: badge,
+          badgeAtLeft: badgeAtLeft,
           menuOptions: menuBuilder?.call(comics[index]),
           onTap: onTap != null
               ? () => onTap!(comics[index], heroIDs[index])

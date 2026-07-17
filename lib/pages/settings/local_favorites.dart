@@ -55,7 +55,10 @@ class _LocalFavoritesSettingsState extends State<LocalFavoritesSettings> {
             var count = await LocalFavoritesManager().removeInvalid();
             controller.close();
             context.showMessage(
-                message: "Deleted @a favorite items".tlParams({'a': count}));
+              message: count == 0
+                  ? "No unavailable local favorites.".tl
+                  : "Deleted @a favorite items.".tlParams({'a': count}),
+            );
           },
           actionTitle: 'Delete'.tl,
         ).toSliver(),
