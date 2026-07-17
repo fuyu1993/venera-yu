@@ -424,7 +424,7 @@ class RemoteImporter {
   ) async {
     final path = RemoteWebDav.decodeKey(webdavKey);
     final f = _destFile(webdavKey, dir);
-    Log.info("RemoteImport", "Downloading: key=$webdavKey, decoded=$path, dest=${f.path}");
+    // Log.info("RemoteImport", "Downloading: key=$webdavKey, decoded=$path, dest=${f.path}");
     const maxAttempts = 3;
     for (var attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
