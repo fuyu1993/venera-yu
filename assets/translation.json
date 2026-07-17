@@ -22,6 +22,7 @@
     "Downloading": "下载中",
     "Preparing": "准备中",
     "Back": "后退",
+    "Go up": "返回上一级",
     "Delete": "删除",
     "Full Screen": "全屏",
     "Auto Page Turning": "自动翻页",
@@ -603,6 +604,7 @@
     "Downloading": "下載中",
     "Preparing": "準備中",
     "Back": "後退",
+    "Go up": "返回上一級",
     "Delete": "刪除",
     "Full Screen": "全螢幕",
     "Auto Page Turning": "自動翻頁",
@@ -1219,6 +1221,7 @@
     "No downloads yet": "No downloads yet",
     "Archives": "Archives",
     "Running": "Running",
-    "Ready": "Ready"
+    "Ready": "Ready",
+    "Go up": "Go up"
   }
 }

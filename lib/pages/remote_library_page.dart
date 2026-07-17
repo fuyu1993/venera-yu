@@ -620,12 +620,6 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
       slivers: [
         SliverAppbar(
           title: const SizedBox.shrink(),
-          leading: _pathStack.length > 1
-              ? IconButton(
-                  icon: const Icon(LucideIcons.arrow_left),
-                  onPressed: _navigateBack,
-                )
-              : null,
           actions: [
             _DownloadBadgeButton(),
             IconButton(
@@ -704,35 +698,51 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
     return Container(
       height: 40,
       padding: const EdgeInsets.symmetric(horizontal: 12),
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: segments.length,
-        separatorBuilder: (_, __) => Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 2),
-          child: Icon(LucideIcons.chevron_right,
-              size: 14, color: context.colorScheme.outline),
-        ),
-        itemBuilder: (context, index) {
-          var isLast = index == segments.length - 1;
-          return Center(
-            child: InkWell(
-              borderRadius: BorderRadius.circular(4),
-              onTap: isLast ? null : () => _navigateToIndex(index),
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                child: Text(
-                  segments[index],
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: isLast ? null : context.colorScheme.primary,
-                    fontWeight: isLast ? FontWeight.w600 : null,
-                  ),
-                ),
+      child: Row(
+        children: [
+          Expanded(
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: segments.length,
+              separatorBuilder: (_, __) => Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 2),
+                child: Icon(LucideIcons.chevron_right,
+                    size: 14, color: context.colorScheme.outline),
               ),
+              itemBuilder: (context, index) {
+                var isLast = index == segments.length - 1;
+                return Center(
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(4),
+                    onTap: isLast ? null : () => _navigateToIndex(index),
+                    child: Padding(
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                      child: Text(
+                        segments[index],
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: isLast ? null : context.colorScheme.primary,
+                          fontWeight: isLast ? FontWeight.w600 : null,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
-          );
-        },
+          ),
+          SizedBox(
+            width: 32,
+            height: 32,
+            child: IconButton(
+              icon: const Icon(LucideIcons.undo_2, size: 16),
+              padding: EdgeInsets.zero,
+              tooltip: 'Go up'.tl,
+              onPressed: _navigateBack,
+            ),
+          ),
+        ],
       ),
     );
   }
