@@ -5,7 +5,6 @@ import 'dart:typed_data';
 
 import 'package:webdav_client/webdav_client.dart';
 import 'package:venera/foundation/appdata.dart';
-import 'package:venera/foundation/log.dart';
 import 'package:venera/network/app_dio.dart';
 
 /// Remote library WebDAV manager.
@@ -87,6 +86,32 @@ class RemoteWebDav {
     return key;
   }
 
+  /// Percent-encode a remote path for use in WebDAV requests, segment by
+  /// segment (so '/' stays the path separator).
+  ///
+  /// Encoding is *idempotent*: each segment is decoded first, then re-encoded
+  /// once. That way, even if a caller passes an already-encoded segment, the
+  /// result is correct single encoding and never a double-encoded URL (which
+  /// would 404 because the server would decode `%25` back into `%`).
+  ///
+  /// This handles reserved/special characters (`?` is the URL query separator,
+  /// `&`, `#`, spaces) and non-ASCII (Chinese/Korean) file names. The
+  /// underlying webdav_client builds the request URL with [Uri.parse] and does
+  /// NOT percent-encode the path itself, so we must do it here.
+  static String _encodePath(String path) {
+    var p = path;
+    if (p.startsWith('webdav://')) p = p.substring('webdav://'.length);
+    return p.split('/').map((s) {
+      String decoded;
+      try {
+        decoded = Uri.decodeComponent(s);
+      } catch (_) {
+        decoded = s;
+      }
+      return Uri.encodeComponent(decoded);
+    }).join('/');
+  }
+
   static const List<String> _imageExtensions = [
     'jpg',
     'jpeg',
@@ -141,7 +166,7 @@ class RemoteWebDav {
   static Future<List<File>> readDir(String path) async {
     var client = getClient();
     if (client == null) throw 'Remote WebDAV not configured';
-    var files = await client.readDir(path);
+    var files = await client.readDir(_encodePath(path));
     files.removeWhere((e) => e.name == null);
     return files;
   }
@@ -157,7 +182,7 @@ class RemoteWebDav {
     var client = getClient();
     if (client == null) throw 'Remote WebDAV not configured';
     return Uint8List.fromList(
-      await client.read(path, onProgress: onProgress),
+      await client.read(_encodePath(path), onProgress: onProgress),
     );
   }
 
@@ -186,7 +211,7 @@ class RemoteWebDav {
     final resp = await client.c.req<ResponseBody>(
       client,
       'GET',
-      path,
+      _encodePath(path),
       optionsHandler: (options) {
         options.responseType = ResponseType.stream;
         options.headers ??= {};
@@ -215,7 +240,7 @@ class RemoteWebDav {
   }) async {
     var client = getClient();
     if (client == null) throw 'Remote WebDAV not configured';
-    await client.read2File(path, savePath, onProgress: onProgress);
+    await client.read2File(_encodePath(path), savePath, onProgress: onProgress);
   }
 
   /// Download a remote file directly to a local path with resume (断点续传)
@@ -322,7 +347,7 @@ class RemoteWebDav {
   static Future<int> fileSize(String path) async {
     var client = getClient();
     if (client == null) throw 'Remote WebDAV not configured';
-    var file = await client.readProps(path);
+    var file = await client.readProps(_encodePath(path));
     return file.size ?? 0;
   }
 
@@ -356,7 +381,7 @@ class RemoteWebDav {
       resp = await client.c.req<ResponseBody>(
         client,
         'GET',
-        path,
+        _encodePath(path),
         optionsHandler: (options) {
           options.responseType = ResponseType.stream;
           options.headers ??= {};
@@ -493,13 +518,11 @@ class RemoteWebDav {
   /// extra round-trips) and lets the importer report progress in bytes rather
   /// than image count — so the UI can show a meaningful bytes/sec rate.
   static Future<List<ImageEntry>> listImageKeysWithSize(String dirPath) async {
-    // Encode each path segment to handle special characters (?, &, #, etc.)
-    // while keeping '/' as the path separator. Without this, a chapter name
-    // like "第4话你愿意上我吗?" would break the request because '?' is the
-    // URL query-string separator.
-    final encodedPath = dirPath.split('/').map((s) => Uri.encodeComponent(s)).join('/');
-    Log.info("RemoteWebDav", "listImageKeysWithSize: original=$dirPath, encoded=$encodedPath");
-    var files = await readDir(encodedPath);
+    // Path encoding is centralized in [readDir] (idempotent, per-segment), so
+    // the raw (decoded) directory path is passed here. A chapter name like
+    // "第4话你愿意上我吗?" is handled correctly because '?' (the URL query
+    // separator) gets percent-encoded there.
+    var files = await readDir(dirPath);
     var imgs = files
         .where((e) => e.isDir != true && isImageName(e.name))
         .toList();
