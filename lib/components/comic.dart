@@ -330,14 +330,36 @@ class ComicTile extends StatelessWidget {
         Widget image = Container(
           decoration: BoxDecoration(
             color: context.colorScheme.secondaryContainer,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(14),
+            // 拟物卡片阴影 - 模拟真实卡片悬浮效果
             boxShadow: [
+              // 主投影 - 模拟光源从上方照射
               BoxShadow(
                 color: Colors.black.toOpacity(0.2),
-                blurRadius: 2,
+                blurRadius: 12,
+                offset: const Offset(0, 6),
+                spreadRadius: 0,
+              ),
+              // 次投影 - 增加深度感
+              BoxShadow(
+                color: Colors.black.toOpacity(0.1),
+                blurRadius: 4,
                 offset: const Offset(0, 2),
+                spreadRadius: 0,
+              ),
+              // 边缘高光 - 模拟光线反射
+              BoxShadow(
+                color: Colors.white.toOpacity(0.1),
+                blurRadius: 1,
+                offset: const Offset(0, -1),
+                spreadRadius: 0,
               ),
             ],
+            // 边框 - 模拟卡片边缘厚度
+            border: Border.all(
+              color: context.colorScheme.outlineVariant.toOpacity(0.4),
+              width: 0.5,
+            ),
           ),
           clipBehavior: Clip.antiAlias,
           child: buildImage(context),
@@ -350,42 +372,74 @@ class ComicTile extends StatelessWidget {
           );
         }
 
-        return InkWell(
-          borderRadius: BorderRadius.circular(8),
-          onTap: _onTap,
-          onLongPress: enableLongPressed ? () => _onLongPressed(context) : null,
-          onSecondaryTapDown: (detail) => onSecondaryTap(detail, context),
-          child: Column(
-            children: [
-              Expanded(
-                child: Stack(
-                  children: [
-                    Positioned.fill(
-                      child: image,
-                    ),
-                    if (badge != null)
-                      Align(
-                        alignment:
-                            badgeAtLeft ? Alignment.bottomLeft : Alignment.bottomRight,
-                        child: Container(
-                          margin: const EdgeInsets.all(4),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 3, vertical: 1),
+        return Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(14),
+            onTap: _onTap,
+            onLongPress: enableLongPressed ? () => _onLongPressed(context) : null,
+            onSecondaryTapDown: (detail) => onSecondaryTap(detail, context),
+            child: Column(
+              children: [
+                Expanded(
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: image,
+                      ),
+                      // 顶部高光 - 模拟光线从上方照射
+                      Positioned(
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: 40,
+                        child: DecoratedBox(
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            color: context.colorScheme.secondaryContainer,
-                          ),
-                          child: Text(
-                            badge!,
-                            style: TextStyle(
-                              fontSize:
-                                  constraints.maxWidth < 80 ? 8.0 : 10.0,
-                              color: context.colorScheme.onSecondaryContainer,
-                              fontWeight: FontWeight.w500,
+                            borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(14),
+                            ),
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.white.toOpacity(0.15),
+                                Colors.transparent,
+                              ],
                             ),
                           ),
                         ),
                       ),
+                      if (badge != null)
+                        Align(
+                          alignment:
+                              badgeAtLeft ? Alignment.bottomLeft : Alignment.bottomRight,
+                          child: Container(
+                            margin: const EdgeInsets.all(8),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              color: context.colorScheme.secondaryContainer
+                                  .toOpacity(0.95),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.toOpacity(0.25),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Text(
+                              badge!,
+                              style: TextStyle(
+                                fontSize:
+                                    constraints.maxWidth < 80 ? 8.0 : 10.0,
+                                color: context.colorScheme.onSecondaryContainer,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
                     Align(
                       alignment: Alignment.bottomRight,
                       child: (() {
@@ -447,33 +501,59 @@ class ComicTile extends StatelessWidget {
                     ),
                   ],
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(4, 4, 4, 0),
-                child: Text(
-                  comic.title.replaceAll('\n', ''),
-                  maxLines: 1,
-                  overflow: TextOverflow.clip,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w500,
+              ), // Expanded 关闭
+              // 标题区域 - 拟物卡片信息区，与背景形成对比
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
+                decoration: BoxDecoration(
+                  // 使用 surfaceContainerHighest 与背景形成对比
+                  color: context.colorScheme.surfaceContainerHighest,
+                  borderRadius: const BorderRadius.vertical(
+                    bottom: Radius.circular(14),
                   ),
-                ),
-              ),
-              if (time != null)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(4, 0, 4, 0),
-                  child: Text(
-                    time!,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 10.0,
-                      color: context.colorScheme.outline,
+                  // 顶部内阴影 - 模拟卡片厚度
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.toOpacity(0.05),
+                      blurRadius: 2,
+                      offset: const Offset(0, -1),
+                      spreadRadius: 0,
                     ),
-                  ),
+                  ],
                 ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      comic.title.replaceAll('\n', ''),
+                      maxLines: 1,
+                      overflow: TextOverflow.clip,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: constraints.maxWidth < 100 ? 11 : 12,
+                        color: context.colorScheme.onSurface,
+                      ),
+                    ),
+                    if (time != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Text(
+                          time!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 10.0,
+                            color: context.colorScheme.outline,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
             ],
-          ).paddingHorizontal(6).paddingVertical(8),
+          ).paddingHorizontal(4).paddingVertical(6),
+          ),
         );
       },
     );
