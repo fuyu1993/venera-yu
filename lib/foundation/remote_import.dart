@@ -91,11 +91,16 @@ class RemoteImporter {
   /// show a meaningful bytes/sec rate. The download is resumable: a
   /// `.rvdownload` status file tracks which images are already on disk, so an
   /// interrupted import can be resumed image-by-image.
+  ///
+  /// If a comic with the same name already exists and is not a resume,
+  /// [onConflict] is called to let the user choose: `true` to delete and
+  /// re-download, `false` to cancel the import.
   static Future<LocalComic?> importWebDavFolder(
     String folderPath,
     String name, {
     ImportProgress? onProgress,
     CancelToken? cancel,
+    Future<bool> Function(String name)? onConflict,
   }) async {
     Log.info("RemoteImport", "Starting folder import: $folderPath");
 
@@ -130,12 +135,13 @@ class RemoteImporter {
     if (entriesPerDir.isEmpty) {
       throw Exception('No accessible images in this folder');
     }
-    Log.info("RemoteImport", "Found $totalImages image(s) in ${entriesPerDir.length} chapter(s), total size: ${bytesToReadableString(totalBytes)}");
+    Log.info("RemoteImport",
+        "Found $totalImages image(s) in ${entriesPerDir.length} chapter(s), total size: ${bytesToReadableString(totalBytes)}");
 
     final dest = Directory(
       FilePath.join(LocalManager().path, sanitizeFileName(name)),
     );
-    // --- 第 3 步：断点续传检查 ---
+    // --- 第 3 步：断点续传检查 / 冲突处理 ---
     final statusFile = File('${dest.path}.rvdownload');
     final done = <String>{};
     if (dest.existsSync()) {
@@ -147,11 +153,31 @@ class RemoteImporter {
         } catch (_) {}
         Log.info("RemoteImport", "Resuming: ${done.length} image(s) already downloaded");
       } else {
-        throw Exception('Comic with name $name already exists');
+        // Same name exists but no resume file — ask the user what to do.
+        if (onConflict != null) {
+          final shouldReplace = await onConflict(name);
+          if (!shouldReplace) {
+            return null;  // User chose to cancel
+          }
+          // User chose to replace — delete the old comic and its record.
+          Log.info("RemoteImport", "Replacing existing comic: $name");
+          try {
+            // Remove from local comics database if present.
+            final existing = LocalManager().findByName(name);
+            if (existing != null) {
+              LocalManager().remove(existing.id, ComicType.local);
+            }
+            // Delete the directory.
+            await dest.delete(recursive: true);
+          } catch (e) {
+            Log.warning("RemoteImport", "Failed to delete existing comic: $e");
+          }
+        } else {
+          throw Exception('Comic with name $name already exists');
+        }
       }
-    } else {
-      dest.createSync();
     }
+    dest.createSync();
 
     final downloaded = <File>[];
     Map<String, String>? cpMap;

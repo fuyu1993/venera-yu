@@ -2,6 +2,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:webdav_client/webdav_client.dart' as wd;
 
+import 'package:flutter/material.dart';
+import 'package:venera/components/components.dart';
 import 'package:venera/foundation/comic_type.dart';
 import 'package:venera/foundation/history.dart';
 import 'package:venera/foundation/local.dart';
@@ -10,6 +12,7 @@ import 'package:venera/foundation/remote_downloads.dart';
 import 'package:venera/foundation/remote_import.dart';
 import 'package:venera/utils/io.dart';
 import 'package:venera/utils/translations.dart';
+import 'package:venera/foundation/app.dart';
 
 /// Lifecycle state of a [RemoteDownloadTask].
 enum RemoteDownloadState {
@@ -179,6 +182,7 @@ class RemoteDownloadTask extends ChangeNotifier {
       _name,
       onProgress: _wrapProgress(),
       cancel: cancel,
+      onConflict: (name) => _showConflictDialog(name),
     );
     if (comic == null) {
       // Paused mid-download: importer returned null after a cancel. State is
@@ -186,6 +190,42 @@ class RemoteDownloadTask extends ChangeNotifier {
       return;
     }
     await _register(comic, null, 'folder');
+  }
+
+  /// Show a dialog when a comic with the same name already exists.
+  /// Returns `true` if the user chose to replace (delete + re-download),
+  /// `false` if they chose to cancel.
+  Future<bool> _showConflictDialog(String name) async {
+    final context = App.mainNavigatorKey?.currentContext;
+    if (context == null) return false;
+
+    var result = false;
+    await showDialog(
+      context: context,
+      builder: (context) => ContentDialog(
+        title: 'Comic Exists'.tl,
+        content: Text('A comic named "$name" already exists.\nDo you want to replace it?'.tl)
+            .paddingHorizontal(16)
+            .paddingVertical(8),
+        actions: [
+          FilledButton.tonal(
+            onPressed: () {
+              result = false;  // Cancel
+              context.pop();
+            },
+            child: Text('Cancel'.tl),
+          ),
+          FilledButton(
+            onPressed: () {
+              result = true;  // Replace
+              context.pop();
+            },
+            child: Text('Replace'.tl),
+          ),
+        ],
+      ),
+    );
+    return result;
   }
 
   Future<void> _importArchive(CancelToken cancel) async {
