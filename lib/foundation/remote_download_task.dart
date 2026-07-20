@@ -204,7 +204,8 @@ class RemoteDownloadTask extends ChangeNotifier {
       context: context,
       builder: (context) => ContentDialog(
         title: 'Comic Exists'.tl,
-        content: Text('A comic named "$name" already exists.\nDo you want to replace it?'.tl)
+        content: Text('A comic named "@name" already exists.\nDo you want to replace it?'
+                .tlParams({'name': name}))
             .paddingHorizontal(16)
             .paddingVertical(8),
         actions: [

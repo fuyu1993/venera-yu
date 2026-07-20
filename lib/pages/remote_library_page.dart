@@ -58,6 +58,7 @@ class _DownloadBadgeButton extends StatelessWidget {
           alignment: Alignment.center,
           children: [
             IconButton(
+              iconSize: 22,
               icon: const Icon(LucideIcons.download),
               tooltip: 'Downloads'.tl,
               onPressed: () {
@@ -625,6 +626,7 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
           actions: [
             _DownloadBadgeButton(),
             IconButton(
+              iconSize: 22,
               icon: Icon(
                   _isGridView ? LucideIcons.list : LucideIcons.grid_2x2),
               onPressed: _toggleViewMode,
@@ -632,15 +634,17 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
                   (_isGridView ? 'List View' : 'Grid View').tl,
             ),
             IconButton(
+              iconSize: 22,
               icon: const Icon(LucideIcons.refresh_cw),
               onPressed: _load,
             ),
           ],
         ),
-        // Breadcrumb path
+        // Breadcrumb path — pinned so it stays at the top while the list scrolls.
         if (_pathStack.length > 1)
-          SliverToBoxAdapter(
-            child: _buildBreadcrumb(),
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: _BreadcrumbHeaderDelegate(_buildBreadcrumb()),
           ),
         // Loading indicator
         if (_loading)
@@ -700,6 +704,15 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
     return Container(
       height: 40,
       padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: context.colorScheme.surface,
+        border: Border(
+          bottom: BorderSide(
+            color: context.colorScheme.outlineVariant.withAlpha(80),
+            width: 0.5,
+          ),
+        ),
+      ),
       child: Row(
         children: [
           Expanded(
@@ -1018,8 +1031,24 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
             return Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                if (index == 0)
+                  Divider(
+                    height: 1,
+                    thickness: 0.5,
+                    indent: 16,
+                    endIndent: 16,
+                    color: context.colorScheme.outlineVariant.withAlpha(80),
+                  ),
                 _buildListTile(_files[index]),
                 if (!isLast)
+                  Divider(
+                    height: 1,
+                    thickness: 0.5,
+                    indent: 16,
+                    endIndent: 16,
+                    color: context.colorScheme.outlineVariant.withAlpha(80),
+                  ),
+                if (isLast)
                   Divider(
                     height: 1,
                     thickness: 0.5,
@@ -1547,4 +1576,28 @@ class _RemoteZipReaderWithLoadingState
     }
     super.dispose();
   }
+}
+
+/// Keeps the remote-library breadcrumb path pinned at the top of the scroll
+/// view so it stays visible while the file/folder list scrolls underneath.
+class _BreadcrumbHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final Widget child;
+
+  const _BreadcrumbHeaderDelegate(this.child);
+
+  @override
+  double get minExtent => 40;
+
+  @override
+  double get maxExtent => 40;
+
+  @override
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return child;
+  }
+
+  @override
+  bool shouldRebuild(covariant _BreadcrumbHeaderDelegate old) =>
+      old.child != child;
 }
