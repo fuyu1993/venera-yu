@@ -641,7 +641,9 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
           ],
         ),
         // Breadcrumb path — pinned so it stays at the top while the list scrolls.
-        if (_pathStack.length > 1)
+        // Always show it (including the root) so the current location ("Root")
+        // is visible right after initialization.
+        if (_pathStack.isNotEmpty)
           SliverPersistentHeader(
             pinned: true,
             delegate: _BreadcrumbHeaderDelegate(_buildBreadcrumb()),
@@ -754,7 +756,7 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
               icon: const Icon(LucideIcons.undo_2, size: 16),
               padding: EdgeInsets.zero,
               tooltip: 'Go up'.tl,
-              onPressed: _navigateBack,
+              onPressed: _pathStack.length > 1 ? _navigateBack : null,
             ),
           ),
         ],
