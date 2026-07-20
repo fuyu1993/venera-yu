@@ -11,7 +11,7 @@ control:
   Priority: optional
   Depends: libwebkit2gtk-4.1-0, libgtk-3-0
   Maintainer: nyne
-  Description: venera-yu
+  Description: 漫匣
   
 #options:
 #  exec_out_dir: debian/packages

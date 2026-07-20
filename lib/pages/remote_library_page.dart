@@ -1013,7 +1013,23 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
       padding: const EdgeInsets.only(top: 4),
       sliver: SliverList(
         delegate: SliverChildBuilderDelegate(
-          (context, index) => _buildListTile(_files[index]),
+          (context, index) {
+            final isLast = index == _files.length - 1;
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildListTile(_files[index]),
+                if (!isLast)
+                  Divider(
+                    height: 1,
+                    thickness: 0.5,
+                    indent: 16,
+                    endIndent: 16,
+                    color: context.colorScheme.outlineVariant.withAlpha(80),
+                  ),
+              ],
+            );
+          },
           childCount: _files.length,
         ),
       ),

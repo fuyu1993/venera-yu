@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.github.yfu" "\0"
-            VALUE "FileDescription", "venera-yu" "\0"
+            VALUE "FileDescription", "漫匣" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "venera-yu" "\0"
+            VALUE "InternalName", "漫匣" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2024 com.github.yfu. All rights reserved." "\0"
             VALUE "OriginalFilename", "venera.exe" "\0"
-            VALUE "ProductName", "venera-yu" "\0"
+            VALUE "ProductName", "漫匣" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

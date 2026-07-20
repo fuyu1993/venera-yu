@@ -341,7 +341,8 @@ class _RemoteDownloadsPageState extends State<RemoteDownloadsPage> {
       slivers.add(SliverToBoxAdapter(child: _sectionHeader(title)));
       slivers.add(SliverList(
         delegate: SliverChildBuilderDelegate(
-          (context, i) => _buildCompletedTile(entries[i], icon),
+          (context, i) =>
+              _buildCompletedTile(entries[i], icon, i, entries.length),
           childCount: entries.length,
         ),
       ));
@@ -362,36 +363,54 @@ class _RemoteDownloadsPageState extends State<RemoteDownloadsPage> {
     return slivers;
   }
 
-  Widget _buildCompletedTile(RemoteDownloadEntry e, IconData icon) {
+  Widget _buildCompletedTile(
+      RemoteDownloadEntry e, IconData icon, int index, int total) {
     final color = e.type == 'pdf'
         ? Colors.red
         : e.type == 'zip'
             ? Colors.orange
             : context.colorScheme.primary;
-    return ListTile(
-      leading: Icon(icon, color: color),
-      title: Text(e.name, maxLines: 1, overflow: TextOverflow.ellipsis),
-      subtitle: Text(
-        e.type == 'pdf' ? 'PDF'.tl : e.type == 'zip' ? 'Archive'.tl : 'Folder'.tl,
-        style: TextStyle(color: context.colorScheme.outline, fontSize: 12),
-      ),
-      onTap: e.comicId != null ? () => _openImported(e) : null,
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (e.comicId != null)
-            IconButton(
-              icon: const Icon(LucideIcons.book_open, size: 20),
-              tooltip: 'Open'.tl,
-              onPressed: () => _openImported(e),
-            ),
-          IconButton(
-            icon: const Icon(LucideIcons.trash, size: 20),
-            tooltip: 'Remove download'.tl,
-            onPressed: () => _removeDownload(e),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ListTile(
+          leading: Icon(icon, color: color),
+          title: Text(e.name, maxLines: 1, overflow: TextOverflow.ellipsis),
+          subtitle: Text(
+            e.type == 'pdf'
+                ? 'PDF'.tl
+                : e.type == 'zip'
+                    ? 'Archive'.tl
+                    : 'Folder'.tl,
+            style: TextStyle(color: context.colorScheme.outline, fontSize: 12),
           ),
-        ],
-      ),
+          onTap: e.comicId != null ? () => _openImported(e) : null,
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (e.comicId != null)
+                IconButton(
+                  icon: const Icon(LucideIcons.book_open, size: 20),
+                  tooltip: 'Open'.tl,
+                  onPressed: () => _openImported(e),
+                ),
+              IconButton(
+                icon: const Icon(LucideIcons.trash, size: 20),
+                tooltip: 'Remove download'.tl,
+                onPressed: () => _removeDownload(e),
+              ),
+            ],
+          ),
+        ),
+        if (index < total - 1)
+          Divider(
+            height: 1,
+            thickness: 0.5,
+            indent: 16,
+            endIndent: 16,
+            color: context.colorScheme.outlineVariant.withAlpha(80),
+          ),
+      ],
     );
   }
 
