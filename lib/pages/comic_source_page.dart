@@ -139,7 +139,7 @@ class _BodyState extends State<_Body> {
       slivers: [
         if (canPop)
           SliverAppbar(
-            title: const SizedBox.shrink(),
+            title: Text("Add comic source".tl),
             style: AppbarStyle.shadow,
           )
         else
@@ -222,10 +222,6 @@ class _BodyState extends State<_Body> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            ListTile(
-              title: Text("Add comic source".tl),
-              leading: const Icon(LucideIcons.layout_dashboard),
-            ),
             TextField(
               decoration: InputDecoration(
                 hintText: "URL",

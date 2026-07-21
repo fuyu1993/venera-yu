@@ -54,17 +54,21 @@ class _DownloadBadgeButton extends StatelessWidget {
     return ValueListenableBuilder<int>(
       valueListenable: RemoteDownloads.countNotifier,
       builder: (context, count, _) {
-        return Stack(
-          alignment: Alignment.center,
-          children: [
-            IconButton(
-              iconSize: 22,
-              icon: const Icon(LucideIcons.download),
-              tooltip: 'Downloads'.tl,
-              onPressed: () {
-                context.to(() => const RemoteDownloadsPage());
-              },
-            ),
+        return SizedBox(
+          width: 32,
+          height: 32,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              IconButton(
+                iconSize: 16,
+                padding: EdgeInsets.zero,
+                icon: const Icon(LucideIcons.download),
+                tooltip: 'Downloads'.tl,
+                onPressed: () {
+                  context.to(() => const RemoteDownloadsPage());
+                },
+              ),
             if (count > 0)
               Positioned(
                 right: 2,
@@ -92,6 +96,7 @@ class _DownloadBadgeButton extends StatelessWidget {
                 ),
               ),
           ],
+          ),
         );
       },
     );
@@ -621,25 +626,6 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
     }
     return SmoothCustomScrollView(
       slivers: [
-        SliverAppbar(
-          title: const SizedBox.shrink(),
-          actions: [
-            _DownloadBadgeButton(),
-            IconButton(
-              iconSize: 22,
-              icon: Icon(
-                  _isGridView ? LucideIcons.list : LucideIcons.grid_2x2),
-              onPressed: _toggleViewMode,
-              tooltip:
-                  (_isGridView ? 'List View' : 'Grid View').tl,
-            ),
-            IconButton(
-              iconSize: 22,
-              icon: const Icon(LucideIcons.refresh_cw),
-              onPressed: _load,
-            ),
-          ],
-        ),
         // Breadcrumb path — pinned so it stays at the top while the list scrolls.
         // Always show it (including the root) so the current location ("Root")
         // is visible right after initialization.
@@ -705,7 +691,6 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
     var segments = _pathSegments();
     return Container(
       height: 40,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
         color: context.colorScheme.surface,
         border: Border(
@@ -717,46 +702,102 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
       ),
       child: Row(
         children: [
+          // Path (3/4)
           Expanded(
-            child: ListView.separated(
+            flex: 3,
+            child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
-              itemCount: segments.length,
-              separatorBuilder: (_, __) => Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 2),
-                child: Icon(LucideIcons.chevron_right,
-                    size: 14, color: context.colorScheme.outline),
-              ),
-              itemBuilder: (context, index) {
-                var isLast = index == segments.length - 1;
-                return Center(
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(4),
-                    onTap: isLast ? null : () => _navigateToIndex(index),
-                    child: Padding(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                      child: Text(
-                        segments[index],
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: isLast ? null : context.colorScheme.primary,
-                          fontWeight: isLast ? FontWeight.w600 : null,
+              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  for (int i = 0; i < segments.length; i++) ...[
+                    if (i > 0)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 2),
+                        child: Icon(LucideIcons.chevron_right,
+                            size: 14, color: context.colorScheme.outline),
+                      ),
+                    InkWell(
+                      borderRadius: BorderRadius.circular(4),
+                      onTap: i == segments.length - 1
+                          ? null
+                          : () => _navigateToIndex(i),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 4),
+                        child: Text(
+                          segments[i],
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: i == segments.length - 1
+                                ? null
+                                : context.colorScheme.primary,
+                            fontWeight: i == segments.length - 1
+                                ? FontWeight.w600
+                                : null,
+                          ),
                         ),
                       ),
                     ),
+                  ],
+                  const SizedBox(width: 4),
+                  SizedBox(
+                    width: 32,
+                    height: 32,
+                    child: IconButton(
+                      icon: const Icon(LucideIcons.undo_2, size: 16),
+                      padding: EdgeInsets.zero,
+                      tooltip: 'Go up'.tl,
+                      onPressed: _pathStack.length > 1 ? _navigateBack : null,
+                    ),
                   ),
-                );
-              },
+                ],
+              ),
             ),
           ),
-          SizedBox(
-            width: 32,
-            height: 32,
-            child: IconButton(
-              icon: const Icon(LucideIcons.undo_2, size: 16),
-              padding: EdgeInsets.zero,
-              tooltip: 'Go up'.tl,
-              onPressed: _pathStack.length > 1 ? _navigateBack : null,
+          // Actions (1/4): download, view toggle, refresh
+          Expanded(
+            flex: 1,
+            child: Container(
+              height: 40,
+              decoration: BoxDecoration(
+                border: Border(
+                  left: BorderSide(
+                    color: context.colorScheme.outlineVariant.withAlpha(80),
+                    width: 0.5,
+                  ),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  _DownloadBadgeButton(),
+                  SizedBox(
+                    width: 32,
+                    height: 32,
+                    child: IconButton(
+                      iconSize: 16,
+                      padding: EdgeInsets.zero,
+                      icon: Icon(_isGridView
+                          ? LucideIcons.list
+                          : LucideIcons.grid_2x2),
+                      onPressed: _toggleViewMode,
+                      tooltip: (_isGridView ? 'List View' : 'Grid View').tl,
+                    ),
+                  ),
+                  SizedBox(
+                    width: 32,
+                    height: 32,
+                    child: IconButton(
+                      iconSize: 16,
+                      padding: EdgeInsets.zero,
+                      icon: const Icon(LucideIcons.refresh_cw),
+                      onPressed: _load,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -1033,24 +1074,8 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
             return Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (index == 0)
-                  Divider(
-                    height: 1,
-                    thickness: 0.5,
-                    indent: 16,
-                    endIndent: 16,
-                    color: context.colorScheme.outlineVariant.withAlpha(80),
-                  ),
                 _buildListTile(_files[index]),
                 if (!isLast)
-                  Divider(
-                    height: 1,
-                    thickness: 0.5,
-                    indent: 16,
-                    endIndent: 16,
-                    color: context.colorScheme.outlineVariant.withAlpha(80),
-                  ),
-                if (isLast)
                   Divider(
                     height: 1,
                     thickness: 0.5,

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:venera/foundation/appdata.dart';
 import 'package:venera/pages/categories_page.dart';
-import 'package:venera/pages/comic_source_page.dart';
-import 'package:venera/pages/history_page.dart';
 import 'package:venera/pages/search_page.dart';
 import 'package:venera/pages/settings/settings_page.dart';
 import 'package:venera/utils/translations.dart';
@@ -43,10 +41,10 @@ class _MainPageState extends State<MainPage> {
     {'id': 'home', 'label': 'Home', 'icon': LucideIcons.house, 'activeIcon': LucideIcons.house},
     {'id': 'favorites', 'label': 'Favorites', 'icon': LucideIcons.user_star, 'activeIcon': LucideIcons.user_star},
     {'id': 'explore', 'label': 'Explore', 'icon': LucideIcons.compass, 'activeIcon': LucideIcons.compass},
+    {'id': 'search', 'label': 'Search', 'icon': LucideIcons.search, 'activeIcon': LucideIcons.search},
     {'id': 'categories', 'label': 'Categories', 'icon': LucideIcons.list, 'activeIcon': LucideIcons.list},
-    {'id': 'history', 'label': 'History', 'icon': LucideIcons.history, 'activeIcon': LucideIcons.history},
-    {'id': 'comic_sources', 'label': 'Comic Source', 'icon': LucideIcons.book_key, 'activeIcon': LucideIcons.book_key},
     {'id': 'remote_library', 'label': 'Remote Library', 'icon': LucideIcons.monitor_cloud, 'activeIcon': LucideIcons.monitor_cloud},
+    {'id': 'settings', 'label': 'Settings', 'icon': LucideIcons.settings, 'activeIcon': LucideIcons.settings},
   ];
 
   // Get all pages
@@ -54,10 +52,10 @@ class _MainPageState extends State<MainPage> {
     'home': HomePage(),
     'favorites': FavoritesPage(key: PageStorageKey('favorites')),
     'explore': ExplorePage(key: PageStorageKey('explore')),
+    'search': SearchPage(key: PageStorageKey('search')),
     'categories': CategoriesPage(key: PageStorageKey('categories')),
-    'history': HistoryPage(key: PageStorageKey('history')),
-    'comic_sources': ComicSourcePage(key: PageStorageKey('comic_sources')),
     'remote_library': RemoteLibraryPage(key: PageStorageKey('remote_library')),
+    'settings': SettingsPage(key: PageStorageKey('settings')),
   };
 
   List<Map<String, dynamic>> get _customTabs {
@@ -83,10 +81,23 @@ class _MainPageState extends State<MainPage> {
   }
 
   List<Map<String, dynamic>> get _visibleTabs {
-    var tabs = _customTabs.where((t) => t['visible'] == true).toList();
+    var knownIds = _allTabs.map((t) => t['id']).toSet();
+    var tabs = _customTabs
+        .where((t) => t['visible'] == true && knownIds.contains(t['id']))
+        .toList();
     // The remote library tab is gated behind the lab toggle.
     if (appdata.settings['enableRemoteLibrary'] != true) {
       tabs.removeWhere((t) => t['id'] == 'remote_library');
+    }
+    // Settings must always be visible and cannot be hidden.
+    if (!tabs.any((t) => t['id'] == 'settings')) {
+      tabs.add({
+        'id': 'settings',
+        'visible': true,
+        'order': tabs.isEmpty
+            ? 0
+            : tabs.map((t) => t['order'] as int).reduce((a, b) => a > b ? a : b) + 1,
+      });
     }
     _ensureMinTabs(tabs);
     tabs.sort((a, b) => (a['order'] as int).compareTo(b['order'] as int));
@@ -164,23 +175,7 @@ class _MainPageState extends State<MainPage> {
           index = i;
         });
       },
-      paneActions: [
-        if(index != 0)
-          PaneActionEntry(
-            icon: LucideIcons.search,
-            label: "Search".tl,
-            onTap: () {
-              to(() => const SearchPage(), preventDuplicate: true);
-            },
-          ),
-        PaneActionEntry(
-          icon: LucideIcons.settings,
-          label: "Settings".tl,
-          onTap: () {
-            to(() => const SettingsPage(), preventDuplicate: true);
-          },
-        )
-      ],
+      paneActions: [],
       pageBuilder: (index) {
         final pages = _pages;
         if (pages.isEmpty) return const SizedBox();

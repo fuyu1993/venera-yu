@@ -74,10 +74,10 @@ class _CustomTabsSettingState extends State<_CustomTabsSetting> {
     {'id': 'home', 'label': 'Home', 'icon': LucideIcons.house},
     {'id': 'favorites', 'label': 'Favorites', 'icon': LucideIcons.user_star},
     {'id': 'explore', 'label': 'Explore', 'icon': LucideIcons.compass},
+    {'id': 'search', 'label': 'Search', 'icon': LucideIcons.search},
     {'id': 'categories', 'label': 'Categories', 'icon': LucideIcons.list},
-    {'id': 'history', 'label': 'History', 'icon': LucideIcons.history},
-    {'id': 'comic_sources', 'label': 'Comic Source', 'icon': LucideIcons.book_key},
     {'id': 'remote_library', 'label': 'Remote Library', 'icon': LucideIcons.monitor_cloud},
+    {'id': 'settings', 'label': 'Settings', 'icon': LucideIcons.settings},
   ];
 
   List<Map<String, dynamic>> get _tabs {
@@ -99,6 +99,8 @@ class _CustomTabsSettingState extends State<_CustomTabsSetting> {
         result.add({'id': _allTabs[i]['id'], 'visible': true, 'order': result.length});
       }
     }
+    // Drop tabs that no longer exist (e.g. a feature moved out of the tab bar).
+    result.removeWhere((t) => !_allTabs.any((e) => e['id'] == t['id']));
     return result;
   }
 
@@ -172,25 +174,27 @@ class _CustomTabsSettingState extends State<_CustomTabsSetting> {
                       Icon(LucideIcons.grip_vertical, color: colors.onSurfaceVariant),
                       const SizedBox(width: 8),
                       Switch(
-                        value: tab['visible'] == true,
-                        onChanged: (value) {
-                          // At least 2 tabs must be visible
-                          if (!value) {
-                            var visibleCount = tabs.where((t) => t['visible'] == true).length;
-                            if (visibleCount <= 2) {
-                              showInfoDialog(
-                                context: context,
-                                title: "Tip".tl,
-                                content: "At least 2 tabs must be visible".tl,
-                              );
-                              return;
-                            }
-                          }
-                          var newTabs = List<Map<String, dynamic>>.from(tabs);
-                          var index = newTabs.indexWhere((t) => t['id'] == tab['id']);
-                          newTabs[index]['visible'] = value;
-                          _saveTabs(newTabs);
-                        },
+                        value: tab['id'] == 'settings' ? true : tab['visible'] == true,
+                        onChanged: tab['id'] == 'settings'
+                            ? null
+                            : (value) {
+                                // At least 2 tabs must be visible
+                                if (!value) {
+                                  var visibleCount = tabs.where((t) => t['visible'] == true).length;
+                                  if (visibleCount <= 2) {
+                                    showInfoDialog(
+                                      context: context,
+                                      title: "Tip".tl,
+                                      content: "At least 2 tabs must be visible".tl,
+                                    );
+                                    return;
+                                  }
+                                }
+                                var newTabs = List<Map<String, dynamic>>.from(tabs);
+                                var index = newTabs.indexWhere((t) => t['id'] == tab['id']);
+                                newTabs[index]['visible'] = value;
+                                _saveTabs(newTabs);
+                              },
                       ),
                     ],
                   ),

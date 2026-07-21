@@ -214,24 +214,8 @@ class _RemoteDownloadsPageState extends State<RemoteDownloadsPage> {
             ],
           ),
         ),
-        if (index == 0)
-          Divider(
-            height: 1,
-            thickness: 0.5,
-            indent: 16,
-            endIndent: 16,
-            color: context.colorScheme.outlineVariant.withAlpha(80),
-          ),
-        // Divider between tasks (not after the last one).
+        // Divider between tasks (not before the first or after the last one).
         if (index < total - 1)
-          Divider(
-            height: 1,
-            thickness: 0.5,
-            indent: 16,
-            endIndent: 16,
-            color: context.colorScheme.outlineVariant.withAlpha(80),
-          ),
-        if (index == total - 1)
           Divider(
             height: 1,
             thickness: 0.5,
@@ -418,23 +402,8 @@ class _RemoteDownloadsPageState extends State<RemoteDownloadsPage> {
             ],
           ),
         ),
-        if (index == 0)
-          Divider(
-            height: 1,
-            thickness: 0.5,
-            indent: 16,
-            endIndent: 16,
-            color: context.colorScheme.outlineVariant.withAlpha(80),
-          ),
+        // Divider between entries (not before the first or after the last one).
         if (index < total - 1)
-          Divider(
-            height: 1,
-            thickness: 0.5,
-            indent: 16,
-            endIndent: 16,
-            color: context.colorScheme.outlineVariant.withAlpha(80),
-          ),
-        if (index == total - 1)
           Divider(
             height: 1,
             thickness: 0.5,

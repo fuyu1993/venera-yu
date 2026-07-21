@@ -3,16 +3,18 @@ import 'package:sliver_tools/sliver_tools.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:venera/components/components.dart';
 import 'package:venera/foundation/app.dart';
+import 'package:venera/foundation/comic_source/comic_source.dart';
 import 'package:venera/foundation/consts.dart';
 import 'package:venera/foundation/favorites.dart';
 import 'package:venera/foundation/history.dart';
 import 'package:venera/foundation/local.dart';
 import 'package:venera/foundation/log.dart';
 import 'package:venera/pages/comic_details_page/comic_page.dart';
+import 'package:venera/pages/comic_source_page.dart';
 import 'package:venera/pages/downloading_page.dart';
 import 'package:venera/pages/follow_updates_page.dart';
+import 'package:venera/pages/history_page.dart';
 import 'package:venera/pages/image_favorites_page/image_favorites_page.dart';
-import 'package:venera/pages/search_page.dart';
 import 'package:venera/utils/data_sync.dart';
 import 'package:venera/utils/import_comic.dart';
 import 'package:venera/utils/tags_translation.dart';
@@ -28,49 +30,16 @@ class HomePage extends StatelessWidget {
     var widget = SmoothCustomScrollView(
       slivers: [
         SliverPadding(padding: EdgeInsets.only(top: context.padding.top)),
-        const _SearchBar(),
         const _SyncDataWidget(),
         const _Local(),
+        const _ComicSources(),
+        const _History(),
         const FollowUpdatesWidget(),
         const ImageFavorites(),
         SliverPadding(padding: EdgeInsets.only(top: context.padding.bottom)),
       ],
     );
     return context.width > changePoint ? widget.paddingHorizontal(8) : widget;
-  }
-}
-
-class _SearchBar extends StatelessWidget {
-  const _SearchBar();
-
-  @override
-  Widget build(BuildContext context) {
-    return SliverToBoxAdapter(
-      child: Container(
-        height: App.isMobile ? 52 : 46,
-        width: double.infinity,
-        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-        child: Material(
-          color: context.colorScheme.surfaceContainerHigh,
-          borderRadius: BorderRadius.circular(32),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(32),
-            onTap: () {
-              context.to(() => const SearchPage());
-            },
-            child: Row(
-              children: [
-                const SizedBox(width: 16),
-                const Icon(LucideIcons.search),
-                const SizedBox(width: 8),
-                Text('Search'.tl, style: ts.s16),
-                const Spacer(),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
   }
 }
 
@@ -357,6 +326,221 @@ class _LocalState extends State<_Local> {
       builder: (context) {
         return const _ImportComicsWidget();
       },
+    );
+  }
+}
+
+class _ComicSources extends StatefulWidget {
+  const _ComicSources();
+
+  @override
+  State<_ComicSources> createState() => _ComicSourcesState();
+}
+
+class _ComicSourcesState extends State<_ComicSources> {
+  late List<ComicSource> sources;
+
+  void onSourcesChange() {
+    setState(() {
+      sources = ComicSource.all();
+    });
+  }
+
+  @override
+  void initState() {
+    sources = ComicSource.all();
+    ComicSourceManager().addListener(onSourcesChange);
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    ComicSourceManager().removeListener(onSourcesChange);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverToBoxAdapter(
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: Theme.of(context).colorScheme.outlineVariant,
+            width: 0.6,
+          ),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(8),
+          onTap: () {
+            context.to(() => const ComicSourcePage());
+          },
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                height: 56,
+                child: Row(
+                  children: [
+                    Center(
+                      child: Text('Comic Source'.tl, style: ts.s18),
+                    ),
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.secondaryContainer,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(sources.length.toString(), style: ts.s12),
+                    ),
+                    const Spacer(),
+                    const Icon(LucideIcons.arrow_right),
+                  ],
+                ),
+              ).paddingHorizontal(16),
+              if (sources.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (var source in sources) _ComicSourceTag(source: source),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ComicSourceTag extends StatelessWidget {
+  const _ComicSourceTag({required this.source});
+
+  final ComicSource source;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: colorScheme.secondaryContainer,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Text(
+        source.name,
+        style: ts.s12,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
+  }
+}
+
+class _History extends StatefulWidget {
+  const _History();
+
+  @override
+  State<_History> createState() => _HistoryState();
+}
+
+class _HistoryState extends State<_History> {
+  late List<History> comics;
+
+  void onHistoryChange() {
+    setState(() {
+      comics = HistoryManager().getAll();
+    });
+  }
+
+  @override
+  void initState() {
+    comics = HistoryManager().getAll();
+    HistoryManager().addListener(onHistoryChange);
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    HistoryManager().removeListener(onHistoryChange);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverToBoxAdapter(
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: Theme.of(context).colorScheme.outlineVariant,
+            width: 0.6,
+          ),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(8),
+          onTap: () {
+            context.to(() => const HistoryPage());
+          },
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                height: 56,
+                child: Row(
+                  children: [
+                    Center(
+                      child: Text('History'.tl, style: ts.s18),
+                    ),
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.secondaryContainer,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(comics.length.toString(), style: ts.s12),
+                    ),
+                    const Spacer(),
+                    const Icon(LucideIcons.arrow_right),
+                  ],
+                ),
+              ).paddingHorizontal(16),
+              if (comics.isNotEmpty)
+                SizedBox(
+                  height: 136,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: comics.length,
+                    itemBuilder: (context, index) {
+                      final heroID = comics[index].id.hashCode;
+                      return SimpleComicTile(
+                        comic: comics[index],
+                        heroID: heroID,
+                        onTap: () {
+                          HistoryPage.openHistory(comics[index], heroID);
+                        },
+                      ).paddingHorizontal(8).paddingVertical(2);
+                    },
+                  ),
+                ).paddingHorizontal(8),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

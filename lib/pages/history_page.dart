@@ -12,6 +12,69 @@ import 'package:venera/utils/translations.dart';
 class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key});
 
+  /// Opens a history entry from anywhere (e.g. the home-page history module),
+  /// routing to the appropriate reader or detail page based on its type.
+  static void openHistory(History h, int heroID) {
+    // A comic that exists in the local library always opens via the local
+    // route. This covers freshly-imported comics (sourceKey == 'local') and
+    // any history entry whose id still matches a local comic.
+    // A locally-stored comic opens directly in the reader, skipping the
+    // detail page.
+    if (h.sourceKey == 'local') {
+      final comic = LocalManager().find(h.id, ComicType.local);
+      if (comic != null) {
+        comic.read();
+        return;
+      }
+    }
+    // Recovery for pre-fix history entries that were recorded with a remote
+    // type even though the comic was imported into the local library. The
+    // remote id/path no longer resolves to a local comic, so match by title.
+    // Stale pre-fix entries recorded with a remote type but imported locally
+    // are recovered by title and also open directly in the reader.
+    if (h.type == ComicType.webdav ||
+        h.type == ComicType.pdf ||
+        h.type == ComicType.zip) {
+      final comic = LocalManager().findByName(h.title);
+      if (comic != null) {
+        comic.read();
+        return;
+      }
+    }
+    if (h.type == ComicType.webdav) {
+      App.rootContext.to(() => RemoteReaderWithLoading(
+            folderPath: h.id,
+            name: h.title,
+            cover: h.cover,
+          ));
+      return;
+    }
+    if (h.type == ComicType.pdf) {
+      App.rootContext.to(() => RemotePdfReaderWithLoading(
+            remotePath: h.id,
+            name: h.title,
+            cover: h.cover,
+          ));
+      return;
+    }
+    if (h.type == ComicType.zip) {
+      App.rootContext.to(() => RemoteZipReaderWithLoading(
+            remotePath: h.id,
+            name: h.title,
+            cover: h.cover,
+          ));
+      return;
+    }
+    // Comic-source / local entries behave exactly as the default tile tap.
+    App.rootContext.to(() => ComicPage(
+          id: h.id,
+          sourceKey: h.sourceKey,
+          cover: h.cover,
+          title: h.title,
+          heroID: heroID,
+        ));
+  }
+
   @override
   State<HistoryPage> createState() => _HistoryPageState();
 }
@@ -79,67 +142,6 @@ class _HistoryPageState extends State<HistoryPage> {
   /// entries created before local import was unified under [ComicType.local]
   /// (see the earlier PDF-import fix). Such entries would otherwise be sent to
   /// the remote streaming reader and fail / re-fetch from the server.
-  void _openHistory(History h, int heroID) {
-    // A comic that exists in the local library always opens via the local
-    // route. This covers freshly-imported comics (sourceKey == 'local') and
-    // any history entry whose id still matches a local comic.
-    // A locally-stored comic opens directly in the reader, skipping the
-    // detail page.
-    if (h.sourceKey == 'local') {
-      final comic = LocalManager().find(h.id, ComicType.local);
-      if (comic != null) {
-        comic.read();
-        return;
-      }
-    }
-    // Recovery for pre-fix history entries that were recorded with a remote
-    // type even though the comic was imported into the local library. The
-    // remote id/path no longer resolves to a local comic, so match by title.
-    // Stale pre-fix entries recorded with a remote type but imported locally
-    // are recovered by title and also open directly in the reader.
-    if (h.type == ComicType.webdav ||
-        h.type == ComicType.pdf ||
-        h.type == ComicType.zip) {
-      final comic = LocalManager().findByName(h.title);
-      if (comic != null) {
-        comic.read();
-        return;
-      }
-    }
-    if (h.type == ComicType.webdav) {
-      App.rootContext.to(() => RemoteReaderWithLoading(
-            folderPath: h.id,
-            name: h.title,
-            cover: h.cover,
-          ));
-      return;
-    }
-    if (h.type == ComicType.pdf) {
-      App.rootContext.to(() => RemotePdfReaderWithLoading(
-            remotePath: h.id,
-            name: h.title,
-            cover: h.cover,
-          ));
-      return;
-    }
-    if (h.type == ComicType.zip) {
-      App.rootContext.to(() => RemoteZipReaderWithLoading(
-            remotePath: h.id,
-            name: h.title,
-            cover: h.cover,
-          ));
-      return;
-    }
-    // Comic-source / local entries behave exactly as the default tile tap.
-    App.rootContext.to(() => ComicPage(
-          id: h.id,
-          sourceKey: h.sourceKey,
-          cover: h.cover,
-          title: h.title,
-          heroID: heroID,
-        ));
-  }
-
   /// Source label shown as the tile badge. Remote-library entries have no
   /// comic source, so we label them explicitly instead of leaving it blank.
   String? _sourceLabel(Comic c) {
@@ -368,7 +370,7 @@ class _HistoryPageState extends State<HistoryPage> {
                       });
                     }
                   : (c, heroID) {
-                      _openHistory(c as History, heroID);
+                      HistoryPage.openHistory(c as History, heroID);
                     },
               badgeBuilder: (c) {
                 return _sourceLabel(c);
