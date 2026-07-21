@@ -681,6 +681,7 @@ class SliverSearchBar extends StatefulWidget {
     this.onChanged,
     this.action,
     this.focusNode,
+    this.showBackButton = true,
   });
 
   final SearchBarController controller;
@@ -690,6 +691,8 @@ class SliverSearchBar extends StatefulWidget {
   final Widget? action;
 
   final FocusNode? focusNode;
+
+  final bool showBackButton;
 
   @override
   State<SliverSearchBar> createState() => _SliverSearchBarState();
@@ -730,6 +733,7 @@ class _SliverSearchBarState extends State<SliverSearchBar>
         onChanged: widget.onChanged,
         action: widget.action,
         focusNode: widget.focusNode,
+        showBackButton: widget.showBackButton,
       ),
     );
   }
@@ -748,6 +752,8 @@ class _SliverSearchBarDelegate extends SliverPersistentHeaderDelegate {
 
   final FocusNode? focusNode;
 
+  final bool showBackButton;
+
   const _SliverSearchBarDelegate({
     required this.editingController,
     required this.controller,
@@ -755,6 +761,7 @@ class _SliverSearchBarDelegate extends SliverPersistentHeaderDelegate {
     this.onChanged,
     this.action,
     this.focusNode,
+    this.showBackButton = true,
   });
 
   static const _kAppBarHeight = 52.0;
@@ -777,7 +784,7 @@ class _SliverSearchBarDelegate extends SliverPersistentHeaderDelegate {
       child: Row(
         children: [
           const SizedBox(width: 8),
-          const BackButton(),
+          if (showBackButton) const BackButton(),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8),

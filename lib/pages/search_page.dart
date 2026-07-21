@@ -241,6 +241,7 @@ class _SearchPageState extends State<SearchPage> {
         findSuggestions();
       },
       focusNode: focusNode,
+      showBackButton: false,
     );
     if (suggestions.isNotEmpty) {
       yield buildSuggestions(context);
