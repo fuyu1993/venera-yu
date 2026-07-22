@@ -46,32 +46,26 @@ class _MenuRoute<T> extends PopupRoute<T> {
           top: top,
           child: Container(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(4),
-              border: context.brightness == Brightness.dark
-                  ? Border.all(color: context.colorScheme.outlineVariant)
-                  : null,
+              borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: context.colorScheme.shadow.toOpacity(0.2),
-                  blurRadius: 8,
+                  color: context.colorScheme.shadow.withValues(alpha: 0.08),
+                  blurRadius: 16,
                   blurStyle: BlurStyle.outer,
                 ),
               ],
             ),
-            child: BlurEffect(
-              borderRadius: BorderRadius.circular(4),
-              child: Material(
-                color: context.colorScheme.surface.toOpacity(0.92),
-                borderRadius: BorderRadius.circular(4),
-                child: Container(
-                  width: width,
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 12, horizontal: 6),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children:
-                        entries.map((e) => buildEntry(e, context)).toList(),
-                  ),
+            child: Material(
+              color: context.colorScheme.surface,
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                width: width,
+                padding:
+                    const EdgeInsets.symmetric(vertical: 12, horizontal: 6),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children:
+                      entries.map((e) => buildEntry(e, context)).toList(),
                 ),
               ),
             ),
@@ -83,7 +77,7 @@ class _MenuRoute<T> extends PopupRoute<T> {
 
   Widget buildEntry(MenuEntry entry, BuildContext context) {
     return InkWell(
-      borderRadius: BorderRadius.circular(4),
+      borderRadius: BorderRadius.circular(8),
       onTap: () {
         Navigator.of(context).pop();
         entry.onClick();

@@ -79,8 +79,13 @@ class _AppbarState extends State<Appbar> {
   Widget build(BuildContext context) {
     var content = Container(
       decoration: BoxDecoration(
-        color: widget.backgroundColor ??
-            context.colorScheme.surface.toOpacity(0.86),
+        color: widget.backgroundColor ?? context.colorScheme.surface,
+        border: Border(
+          bottom: BorderSide(
+            color: context.colorScheme.outlineVariant.withValues(alpha: 0.5),
+            width: 0.5,
+          ),
+        ),
       ),
       height: _kAppBarHeight + context.padding.top,
       child: Row(
@@ -115,12 +120,13 @@ class _AppbarState extends State<Appbar> {
     if (widget.style == AppbarStyle.shadow) {
       return Material(
         color: context.colorScheme.surface,
-        elevation: _scrolledUnder ? 2 : 0,
+        elevation: _scrolledUnder ? 2 : 0.5,
         child: content,
       );
     } else {
-      return BlurEffect(
-        blur: _scrolledUnder ? 15 : 0,
+      return Material(
+        color: context.colorScheme.surface,
+        elevation: _scrolledUnder ? 1 : 0.5,
         child: content,
       );
     }
@@ -228,12 +234,19 @@ class _MySliverAppBarDelegate extends SliverPersistentHeaderDelegate {
 
     if (style == AppbarStyle.blur) {
       return SizedBox.expand(
-        child: BlurEffect(
-          blur: 15,
-          child: Material(
-            color: context.colorScheme.surface.toOpacity(0.86),
-            elevation: 0,
-            borderRadius: BorderRadius.circular(radius),
+        child: Material(
+          color: context.colorScheme.surface,
+          elevation: shrinkOffset == 0 ? 0.5 : 1,
+          borderRadius: BorderRadius.circular(radius),
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: context.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                  width: 0.5,
+                ),
+              ),
+            ),
             child: body,
           ),
         ),
@@ -242,7 +255,7 @@ class _MySliverAppBarDelegate extends SliverPersistentHeaderDelegate {
       return SizedBox.expand(
         child: Material(
           color: context.colorScheme.surface,
-          elevation: shrinkOffset == 0 ? 0 : 2,
+          elevation: shrinkOffset == 0 ? 0.5 : 2,
           borderRadius: BorderRadius.circular(radius),
           child: body,
         ),

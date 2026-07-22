@@ -303,6 +303,8 @@ class _AnimatedImageState extends State<AnimatedImage>
           filterQuality: widget.filterQuality,
         );
       }
+      // Isolate image repaints so they don't trigger repaints in ancestors.
+      result = RepaintBoundary(child: result);
     } else if (_lastException != null) {
       result = const Center(
         child: Icon(LucideIcons.circle_alert),

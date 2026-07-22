@@ -97,14 +97,23 @@ class _App {
     ]);
   }
 
+  final _rebuildNotifier = ValueNotifier<int>(0);
+
+  /// A notifier that increments every time the app needs a full rebuild
+  /// (e.g. theme/appearance change). The root [MyApp] listens to this and
+  /// calls [setState], guaranteeing the rebuild always takes effect.
+  ValueNotifier<int> get rebuildNotifier => _rebuildNotifier;
+
+  @Deprecated('Use rebuildNotifier instead')
   Function? _forceRebuildHandler;
 
+  @Deprecated('Use rebuildNotifier instead')
   void registerForceRebuild(Function handler) {
     _forceRebuildHandler = handler;
   }
 
   void forceRebuild() {
-    _forceRebuildHandler?.call();
+    _rebuildNotifier.value++;
   }
 }
 

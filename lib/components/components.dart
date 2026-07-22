@@ -6,6 +6,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
@@ -36,12 +37,16 @@ import 'package:venera/utils/ext.dart';
 import 'package:venera/utils/io.dart';
 import 'package:venera/utils/tags_translation.dart';
 import 'package:venera/utils/translations.dart';
+import 'package:venera/utils/animations.dart';
 
 part 'image.dart';
 part 'appbar.dart';
 part 'button.dart';
 part 'consts.dart';
 part 'flyout.dart';
+part 'ios_button.dart';
+part 'ios_list_tile.dart';
+part 'ios_navigation_bar.dart';
 part 'layout.dart';
 part 'loading.dart';
 part 'menu.dart';

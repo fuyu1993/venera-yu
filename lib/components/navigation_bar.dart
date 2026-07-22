@@ -311,12 +311,13 @@ class NaviPaneState extends State<NaviPane>
       child: Container(
         height: _kBottomBarHeight,
         decoration: BoxDecoration(
-          border: Border(
-            top: BorderSide(
-              color: Theme.of(context).colorScheme.outlineVariant,
-              width: 1,
+          boxShadow: [
+            BoxShadow(
+              color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.06),
+              blurRadius: 8,
+              offset: const Offset(0, -2),
             ),
-          ),
+          ],
         ),
         child: Row(
           children: List<Widget>.generate(widget.paneItems.length, (index) {

@@ -96,10 +96,19 @@ class _SyncDataWidgetState extends State<_SyncDataWidget>
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: Theme.of(context).colorScheme.primary,
+              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
+              width: 1,
             ),
-            borderRadius: BorderRadius.circular(8),
+            boxShadow: [
+              BoxShadow(
+                color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.08),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: ListTile(
             leading: const Icon(LucideIcons.refresh_ccw),
@@ -115,10 +124,19 @@ class _SyncDataWidgetState extends State<_SyncDataWidget>
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: Theme.of(context).colorScheme.outlineVariant,
+              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
+              width: 1,
             ),
-            borderRadius: BorderRadius.circular(8),
+            boxShadow: [
+              BoxShadow(
+                color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.08),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: ListTile(
             leading: const Icon(LucideIcons.refresh_ccw),
@@ -220,15 +238,9 @@ class _LocalState extends State<_Local> {
     return SliverToBoxAdapter(
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: Theme.of(context).colorScheme.outlineVariant,
-            width: 0.6,
-          ),
-          borderRadius: BorderRadius.circular(8),
-        ),
+        decoration: homeCardDecoration(context),
         child: InkWell(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(12),
           onTap: () {
             context.to(() => const LocalComicsPage());
           },
@@ -242,17 +254,13 @@ class _LocalState extends State<_Local> {
                     Center(
                       child: Text('Local'.tl, style: ts.s18),
                     ),
-                    Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 8),
+                    TagChip(
+                      label: count.toString(),
                       padding: const EdgeInsets.symmetric(
                         horizontal: 8,
                         vertical: 2,
                       ),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.secondaryContainer,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(count.toString(), style: ts.s12),
+                      radius: 8,
                     ),
                     const Spacer(),
                     const Icon(LucideIcons.arrow_right),
@@ -266,7 +274,7 @@ class _LocalState extends State<_Local> {
                     scrollDirection: Axis.horizontal,
                     itemCount: local.length,
                     itemBuilder: (context, index) {
-                      final heroID = local[index].id.hashCode;
+                      final heroID = generateUniqueHeroId();
                       return SimpleComicTile(
                         comic: local[index],
                         heroID: heroID,
@@ -364,15 +372,9 @@ class _ComicSourcesState extends State<_ComicSources> {
     return SliverToBoxAdapter(
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: Theme.of(context).colorScheme.outlineVariant,
-            width: 0.6,
-          ),
-          borderRadius: BorderRadius.circular(8),
-        ),
+        decoration: homeCardDecoration(context),
         child: InkWell(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(12),
           onTap: () {
             context.to(() => const ComicSourcePage());
           },
@@ -386,17 +388,13 @@ class _ComicSourcesState extends State<_ComicSources> {
                     Center(
                       child: Text('Comic Source'.tl, style: ts.s18),
                     ),
-                    Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 8),
+                    TagChip(
+                      label: sources.length.toString(),
                       padding: const EdgeInsets.symmetric(
                         horizontal: 8,
                         vertical: 2,
                       ),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.secondaryContainer,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(sources.length.toString(), style: ts.s12),
+                      radius: 8,
                     ),
                     const Spacer(),
                     const Icon(LucideIcons.arrow_right),
@@ -429,20 +427,7 @@ class _ComicSourceTag extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: colorScheme.secondaryContainer,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Text(
-        source.name,
-        style: ts.s12,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-    );
+    return TagChip(label: source.name, radius: 16);
   }
 }
 
@@ -480,15 +465,9 @@ class _HistoryState extends State<_History> {
     return SliverToBoxAdapter(
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: Theme.of(context).colorScheme.outlineVariant,
-            width: 0.6,
-          ),
-          borderRadius: BorderRadius.circular(8),
-        ),
+        decoration: homeCardDecoration(context),
         child: InkWell(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(12),
           onTap: () {
             context.to(() => const HistoryPage());
           },
@@ -502,17 +481,13 @@ class _HistoryState extends State<_History> {
                     Center(
                       child: Text('History'.tl, style: ts.s18),
                     ),
-                    Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 8),
+                    TagChip(
+                      label: comics.length.toString(),
                       padding: const EdgeInsets.symmetric(
                         horizontal: 8,
                         vertical: 2,
                       ),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.secondaryContainer,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(comics.length.toString(), style: ts.s12),
+                      radius: 8,
                     ),
                     const Spacer(),
                     const Icon(LucideIcons.arrow_right),
@@ -526,7 +501,7 @@ class _HistoryState extends State<_History> {
                     scrollDirection: Axis.horizontal,
                     itemCount: comics.length,
                     itemBuilder: (context, index) {
-                      final heroID = comics[index].id.hashCode;
+                      final heroID = generateUniqueHeroId();
                       return SimpleComicTile(
                         comic: comics[index],
                         heroID: heroID,
@@ -537,6 +512,7 @@ class _HistoryState extends State<_History> {
                     },
                   ),
                 ).paddingHorizontal(8),
+              const SizedBox(height: 8),
             ],
           ),
         ),
@@ -817,15 +793,9 @@ class _ImageFavoritesState extends State<ImageFavorites> {
     return SliverToBoxAdapter(
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: Theme.of(context).colorScheme.outlineVariant,
-            width: 0.6,
-          ),
-          borderRadius: BorderRadius.circular(8),
-        ),
+        decoration: homeCardDecoration(context),
         child: InkWell(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(12),
           onTap: () {
             context.to(
               () => const ImageFavoritesPage()
@@ -842,19 +812,13 @@ class _ImageFavoritesState extends State<ImageFavorites> {
                       child: Text('Image Favorites'.tl, style: ts.s18),
                     ),
                     if (hasData)
-                      Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 8),
+                      TagChip(
+                        label: imageFavoritesCompute!.count.toString(),
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color:
-                              Theme.of(context).colorScheme.secondaryContainer,
-                          borderRadius: BorderRadius.circular(8),
+                          horizontal: 8,
+                          vertical: 2,
                         ),
-                        child: Text(
-                          imageFavoritesCompute!.count.toString(),
-                          style: ts.s12,
-                        ),
+                        radius: 8,
                       ),
                     const Spacer(),
                     const Icon(LucideIcons.arrow_right),

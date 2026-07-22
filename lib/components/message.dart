@@ -40,7 +40,7 @@ class _ToastOverlay extends StatelessWidget {
         alignment: Alignment.bottomCenter,
         child: Material(
           color: Theme.of(context).colorScheme.inverseSurface,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(12),
           elevation: 2,
           textStyle:
               ts.withColor(Theme.of(context).colorScheme.onInverseSurface),
@@ -319,9 +319,9 @@ class ContentDialog extends StatelessWidget {
     );
     return Dialog(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(16),
         side: context.brightness == Brightness.dark
-            ? BorderSide(color: context.colorScheme.outlineVariant)
+            ? BorderSide(color: context.colorScheme.outlineVariant.withValues(alpha: 0.3))
             : BorderSide.none,
       ),
       insetPadding: context.width < 400

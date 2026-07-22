@@ -72,13 +72,13 @@ class _ComicPageState extends LoadingState<ComicPage, ComicDetails>
   @override
   History? history;
 
-  bool showAppbarTitle = false;
+  final showAppbarTitle = ValueNotifier<bool>(false);
 
   var scrollController = ScrollController();
 
   bool isDownloaded = false;
 
-  bool showFAB = false;
+  final showFAB = ValueNotifier<bool>(false);
 
   @override
   void onReadEnd() {
@@ -135,6 +135,8 @@ class _ComicPageState extends LoadingState<ComicPage, ComicDetails>
   @override
   void dispose() {
     scrollController.removeListener(onScroll);
+    showAppbarTitle.dispose();
+    showFAB.dispose();
     super.dispose();
   }
 
@@ -150,24 +152,13 @@ class _ComicPageState extends LoadingState<ComicPage, ComicDetails>
     var offset =
         scrollController.position.pixels -
         scrollController.position.minScrollExtent;
-    var showFAB = offset > 0;
-    if (showFAB != this.showFAB) {
-      setState(() {
-        this.showFAB = showFAB;
-      });
+    final newShowFAB = offset > 0;
+    if (newShowFAB != showFAB.value) {
+      showFAB.value = newShowFAB;
     }
-    if (offset > 100) {
-      if (!showAppbarTitle) {
-        setState(() {
-          showAppbarTitle = true;
-        });
-      }
-    } else {
-      if (showAppbarTitle) {
-        setState(() {
-          showAppbarTitle = false;
-        });
-      }
+    final newShowAppbarTitle = offset > 100;
+    if (newShowAppbarTitle != showAppbarTitle.value) {
+      showAppbarTitle.value = newShowAppbarTitle;
     }
   }
 
@@ -176,18 +167,23 @@ class _ComicPageState extends LoadingState<ComicPage, ComicDetails>
   @override
   Widget buildContent(BuildContext context, ComicDetails data) {
     return Scaffold(
-      floatingActionButton: showFAB
-          ? FloatingActionButton(
-              onPressed: () {
-                scrollController.animateTo(
-                  0,
-                  duration: const Duration(milliseconds: 200),
-                  curve: Curves.ease,
-                );
-              },
-              child: const Icon(LucideIcons.arrow_up),
-            )
-          : null,
+      floatingActionButton: ValueListenableBuilder<bool>(
+        valueListenable: showFAB,
+        builder: (context, showFAB, _) {
+          return showFAB
+              ? FloatingActionButton(
+                  onPressed: () {
+                    scrollController.animateTo(
+                      0,
+                      duration: const Duration(milliseconds: 200),
+                      curve: Curves.ease,
+                    );
+                  },
+                  child: const Icon(LucideIcons.arrow_up),
+                )
+              : const SizedBox.shrink();
+        },
+      ),
       body: SmoothCustomScrollView(
         controller: scrollController,
         slivers: [
@@ -280,10 +276,15 @@ class _ComicPageState extends LoadingState<ComicPage, ComicDetails>
 
   Iterable<Widget> buildTitle() sync* {
     yield SliverAppbar(
-      title: AnimatedOpacity(
-        opacity: showAppbarTitle ? 1.0 : 0.0,
-        duration: const Duration(milliseconds: 200),
-        child: Text(comic.title),
+      title: ValueListenableBuilder<bool>(
+        valueListenable: showAppbarTitle,
+        builder: (context, showTitle, _) {
+          return AnimatedOpacity(
+            opacity: showTitle ? 1.0 : 0.0,
+            duration: const Duration(milliseconds: 200),
+            child: Text(comic.title),
+          );
+        },
       ),
       actions: [
         IconButton(
@@ -540,23 +541,24 @@ class _ComicPageState extends LoadingState<ComicPage, ComicDetails>
       VoidCallback? onTap,
       bool isTitle = false,
     }) {
+      final colorScheme = context.colorScheme;
       Color color;
+      Color textColor;
       if (isTitle) {
-        const colors = [
-          Colors.blue,
-          Colors.cyan,
-          Colors.red,
-          Colors.pink,
-          Colors.purple,
-          Colors.indigo,
-          Colors.teal,
-          Colors.green,
-          Colors.lime,
-          Colors.yellow,
-        ];
-        color = context.useBackgroundColor(colors[(i++) % (colors.length)]);
+        // Derive title tag hues from the theme's primary color so they stay
+        // coordinated with the user-selected seed color.
+        final baseHsl = HSLColor.fromColor(colorScheme.primary);
+        final hueShift = (i * 36) % 360;
+        final tagHsl = baseHsl.withHue((baseHsl.hue + hueShift) % 360);
+        color = tagHsl
+            .withLightness(context.isDarkMode ? 0.80 : 0.40)
+            .withSaturation(0.6)
+            .toColor();
+        textColor = context.isDarkMode ? Colors.black : Colors.white;
+        i++;
       } else {
-        color = context.colorScheme.surfaceContainerLow;
+        color = colorScheme.primaryContainer;
+        textColor = colorScheme.onPrimaryContainer;
       }
 
       final borderRadius = BorderRadius.circular(12);
@@ -591,13 +593,13 @@ class _ComicPageState extends LoadingState<ComicPage, ComicDetails>
                 ),
               ]);
             },
-            child: Text(text).padding(padding),
+            child: Text(text, style: TextStyle(color: textColor)).padding(padding),
           ),
         );
       } else {
         return Container(
           decoration: BoxDecoration(color: color, borderRadius: borderRadius),
-          child: Text(text).padding(padding),
+          child: Text(text, style: TextStyle(color: textColor)).padding(padding),
         );
       }
     }

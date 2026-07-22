@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:venera/foundation/log.dart';
+import 'package:venera/foundation/theme.dart';
 import 'package:venera/pages/auth_page.dart';
 import 'package:venera/pages/main_page.dart';
 import 'package:venera/utils/io.dart';
@@ -67,11 +68,24 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   void initState() {
-    App.registerForceRebuild(forceRebuild);
+    App.rebuildNotifier.addListener(_onRebuildRequested);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     WidgetsBinding.instance.addObserver(this);
     checkUpdates();
     super.initState();
+  }
+
+  void _onRebuildRequested() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  @override
+  void dispose() {
+    App.rebuildNotifier.removeListener(_onRebuildRequested);
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
   }
 
   bool isAuthPageActive = false;
@@ -120,27 +134,18 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     }
   }
 
-  void forceRebuild() {
-    void rebuild(Element el) {
-      el.markNeedsBuild();
-      el.visitChildren(rebuild);
-    }
-
-    (context as Element).visitChildren(rebuild);
-    setState(() {});
-  }
-
   Color translateColorSetting() {
     return switch (appdata.settings['color']) {
-      'red' => Colors.red,
-      'pink' => Colors.pink,
-      'purple' => Colors.purple,
-      'green' => Colors.green,
-      'orange' => Colors.orange,
-      'blue' => Colors.blue,
-      'yellow' => Colors.yellow,
-      'cyan' => Colors.cyan,
-      _ => Colors.blue,
+      'red' => const Color(0xFFEF4444),
+      'pink' => const Color(0xFFEC4899),
+      'purple' => const Color(0xFF8B5CF6),
+      'green' => const Color(0xFF10B981),
+      'orange' => const Color(0xFFF59E0B),
+      'blue' => const Color(0xFF3B82F6),
+      'yellow' => const Color(0xFFEAB308),
+      'cyan' => const Color(0xFF14B8A6),
+      'indigo' => const Color(0xFF6366F1),
+      _ => const Color(0xFF3B82F6),
     };
   }
 
@@ -205,9 +210,15 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         title: "venera-yu",
         home: home,
         debugShowCheckedModeBanner: false,
-        theme: getTheme(primary, secondary, tertiary, Brightness.light),
+        theme: AppTheme.getThemeBySettings(
+          appdata.settings['color'] ?? 'blue',
+          Brightness.light,
+        ),
         navigatorKey: App.rootNavigatorKey,
-        darkTheme: getTheme(primary, secondary, tertiary, Brightness.dark),
+        darkTheme: AppTheme.getThemeBySettings(
+          appdata.settings['color'] ?? 'blue',
+          Brightness.dark,
+        ),
         themeMode: switch (appdata.settings['theme_mode']) {
           'light' => ThemeMode.light,
           'dark' => ThemeMode.dark,

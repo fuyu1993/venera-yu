@@ -90,23 +90,26 @@ class _FavoritesPageState extends State<FavoritesPage> {
   Widget build(BuildContext context) {
     return IconTheme(
       data: IconThemeData(color: Theme.of(context).colorScheme.secondary),
-      child: Stack(
-        children: [
-          AnimatedPositioned(
-            left: context.width <= _kTwoPanelChangeWidth ? -_kLeftBarWidth : 0,
-            top: 0,
-            bottom: 0,
-            duration: const Duration(milliseconds: 200),
-            child: (const _LeftBar()).fixWidth(_kLeftBarWidth),
-          ),
-          Positioned(
-            top: 0,
-            left: context.width <= _kTwoPanelChangeWidth ? 0 : _kLeftBarWidth,
-            right: 0,
-            bottom: 0,
-            child: buildBody(),
-          ),
-        ],
+      child: Container(
+        color: Theme.of(context).colorScheme.surface,
+        child: Stack(
+          children: [
+            AnimatedPositioned(
+              left: context.width <= _kTwoPanelChangeWidth ? -_kLeftBarWidth : 0,
+              top: 0,
+              bottom: 0,
+              duration: const Duration(milliseconds: 200),
+              child: (const _LeftBar()).fixWidth(_kLeftBarWidth),
+            ),
+            Positioned(
+              top: 0,
+              left: context.width <= _kTwoPanelChangeWidth ? 0 : _kLeftBarWidth,
+              right: 0,
+              bottom: 0,
+              child: buildBody(),
+            ),
+          ],
+        ),
       ),
     );
   }

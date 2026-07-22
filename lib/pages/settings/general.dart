@@ -49,9 +49,11 @@ class _GeneralSettingsState extends State<GeneralSettings> {
             "green": "Green".tl,
             "orange": "Orange".tl,
             "blue": "Blue".tl,
+            "yellow": "Yellow".tl,
+            "cyan": "Cyan".tl,
+            "indigo": "Indigo".tl,
           },
           onChanged: () async {
-            await App.init();
             App.forceRebuild();
           },
         ).toSliver(),

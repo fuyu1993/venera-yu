@@ -761,14 +761,6 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
             flex: 1,
             child: Container(
               height: 40,
-              decoration: BoxDecoration(
-                border: Border(
-                  left: BorderSide(
-                    color: context.colorScheme.outlineVariant.withAlpha(80),
-                    width: 0.5,
-                  ),
-                ),
-              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -1079,7 +1071,7 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
                   Divider(
                     height: 1,
                     thickness: 0.5,
-                    indent: 16,
+                    indent: 76,
                     endIndent: 16,
                     color: context.colorScheme.outlineVariant.withAlpha(80),
                   ),
