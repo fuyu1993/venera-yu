@@ -690,7 +690,7 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
   Widget _buildBreadcrumb() {
     var segments = _pathSegments();
     return Container(
-      height: 40,
+      height: 48,
       decoration: BoxDecoration(
         color: context.colorScheme.surface,
         border: Border(
@@ -707,7 +707,7 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
             flex: 3,
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
+              padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -725,7 +725,7 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
                           : () => _navigateToIndex(i),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 4),
+                            horizontal: 4, vertical: 6),
                         child: Text(
                           segments[i],
                           style: TextStyle(
@@ -741,12 +741,12 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
                       ),
                     ),
                   ],
-                  const SizedBox(width: 4),
+                  const SizedBox(width: 8),
                   SizedBox(
-                    width: 32,
-                    height: 32,
+                    width: 40,
+                    height: 40,
                     child: IconButton(
-                      icon: const Icon(LucideIcons.undo_2, size: 16),
+                      icon: const Icon(LucideIcons.undo_2, size: 18),
                       padding: EdgeInsets.zero,
                       tooltip: 'Go up'.tl,
                       onPressed: _pathStack.length > 1 ? _navigateBack : null,

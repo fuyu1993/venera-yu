@@ -299,22 +299,31 @@ class _ReaderState extends State<Reader>
   @override
   Widget build(BuildContext context) {
     _checkImagesPerPageChange();
-    return KeyboardListener(
-      focusNode: focusNode,
-      autofocus: true,
-      onKeyEvent: onKeyEvent,
-      child: Overlay(
-        initialEntries: [
-          OverlayEntry(
-            builder: (context) {
-              return _ReaderScaffold(
-                child: _ReaderGestureDetector(
-                  child: _ReaderImages(key: Key(chapter.toString())),
-                ),
-              );
-            },
-          ),
-        ],
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        // 禁用右滑返回，但允许系统返回键退出
+        if (!didPop && Navigator.of(context).canPop()) {
+          Navigator.of(context).pop();
+        }
+      },
+      child: KeyboardListener(
+        focusNode: focusNode,
+        autofocus: true,
+        onKeyEvent: onKeyEvent,
+        child: Overlay(
+          initialEntries: [
+            OverlayEntry(
+              builder: (context) {
+                return _ReaderScaffold(
+                  child: _ReaderGestureDetector(
+                    child: _ReaderImages(key: Key(chapter.toString())),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

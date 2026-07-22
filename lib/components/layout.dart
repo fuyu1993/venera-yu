@@ -74,11 +74,15 @@ class SliverGridDelegateWithFixedHeight extends SliverGridDelegate {
 }
 
 class SliverGridDelegateWithComics extends SliverGridDelegate {
-  SliverGridDelegateWithComics();
+  SliverGridDelegateWithComics({
+    this.spacing = 0,
+  });
 
   final bool useBriefMode = appdata.settings['comicDisplayMode'] == 'brief';
 
   final double scale = (appdata.settings['comicTileScale'] as num).toDouble();
+
+  final double spacing;
 
   @override
   SliverGridLayout getLayout(SliverConstraints constraints) {
@@ -104,7 +108,7 @@ class SliverGridDelegateWithComics extends SliverGridDelegate {
     crossItems = math.max(1, crossItems);
     return SliverGridRegularTileLayout(
         crossAxisCount: crossItems,
-        mainAxisStride: itemHeight,
+        mainAxisStride: itemHeight + spacing,
         crossAxisStride: width / crossItems,
         childMainAxisExtent: itemHeight,
         childCrossAxisExtent: width / crossItems,
@@ -130,7 +134,7 @@ class SliverGridDelegateWithComics extends SliverGridDelegate {
     final double childMainAxisExtent = childCrossAxisExtent / childAspectRatio;
     return SliverGridRegularTileLayout(
       crossAxisCount: crossAxisCount,
-      mainAxisStride: childMainAxisExtent,
+      mainAxisStride: childMainAxisExtent + spacing,
       crossAxisStride: childCrossAxisExtent + crossAxisSpacing,
       childMainAxisExtent: childMainAxisExtent,
       childCrossAxisExtent: childCrossAxisExtent,

@@ -335,7 +335,7 @@ class _HistoryPageState extends State<HistoryPage> {
             SliverAppbar(
               title: multiSelectMode
                   ? Text(selectedComics.length.toString())
-                  : const SizedBox.shrink(),
+                  : Text("History".tl),
               actions: multiSelectMode
                   ? [
                       IconButton(

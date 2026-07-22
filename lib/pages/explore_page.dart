@@ -304,6 +304,7 @@ class _SingleExplorePageState extends AutomaticGlobalState<_SingleExplorePage>
         refreshHandlerCallback: (c) {
           refreshHandler = c;
         },
+        spacing: 12,
       );
     } else if (data.loadMixed != null) {
       return _MixedExplorePage(
@@ -379,6 +380,7 @@ class _MixedExplorePageState
         if (cache.isNotEmpty) {
           yield SliverGridComics(
             comics: (cache),
+            spacing: 12,
           );
           yield const SliverToBoxAdapter(child: Divider());
           cache.clear();
@@ -392,6 +394,7 @@ class _MixedExplorePageState
     if (cache.isNotEmpty) {
       yield SliverGridComics(
         comics: (cache),
+        spacing: 12,
       );
     }
   }
@@ -454,7 +457,7 @@ Iterable<Widget> _buildExplorePagePart(
   }
 
   Widget buildComics(ExplorePagePart part) {
-    return SliverGridComics(comics: part.comics);
+    return SliverGridComics(comics: part.comics, spacing: 12);
   }
 
   yield buildTitle(part);

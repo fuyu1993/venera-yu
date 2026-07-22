@@ -305,6 +305,7 @@ class ContentDialog extends StatelessWidget {
             ),
             title: Text(title!),
             backgroundColor: Colors.transparent,
+            radius: 16,
           )
               : const SizedBox.shrink(),
           this.content,

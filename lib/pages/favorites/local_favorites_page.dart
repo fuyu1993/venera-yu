@@ -612,17 +612,23 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
                 },
               ),
             ),
-            title: TextField(
-              autofocus: true,
-              decoration: InputDecoration(
-                hintText: "Search".tl,
-                border: UnderlineInputBorder(),
+            title: SizedBox(
+              height: 48,
+              child: TextField(
+                autofocus: true,
+                decoration: InputDecoration(
+                  hintText: "Search".tl,
+                  border: UnderlineInputBorder(),
+                  isDense: true,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+                style: const TextStyle(fontSize: 16),
+                onChanged: (v) {
+                  keyword = v;
+                  searchHasUpper = keyword.contains(RegExp(r'[A-Z]'));
+                  updateSearchResult();
+                },
               ),
-              onChanged: (v) {
-                keyword = v;
-                searchHasUpper = keyword.contains(RegExp(r'[A-Z]'));
-                updateSearchResult();
-              },
             ).paddingBottom(8).paddingRight(8),
           ),
         if (isLoading)

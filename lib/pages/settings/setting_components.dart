@@ -212,9 +212,11 @@ class _DoubleLineSelectSettingsState extends State<_DoubleLineSelectSettings> {
         : appdata.settings[widget.settingKey];
 
     return ListTile(
+        minVerticalPadding: 12,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12),
         title: Row(
           children: [
-            Text(widget.title),
+            Text(widget.title, style: ts.s16),
             const SizedBox(width: 4),
             if (widget.help != null)
               Button.icon(
@@ -343,9 +345,11 @@ class _EndSelectorSelectSettingState extends State<_EndSelectorSelectSetting> {
         ? appdata.settings.getDeviceReaderSetting(widget.settingKey)
         : appdata.settings[widget.settingKey];
     return ListTile(
+        minVerticalPadding: 12,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12),
         title: Row(
           children: [
-            Text(widget.title),
+            Text(widget.title, style: ts.s16),
             const SizedBox(width: 4),
             if (widget.help != null)
               Button.icon(

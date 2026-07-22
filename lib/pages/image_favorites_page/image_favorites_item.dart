@@ -107,17 +107,32 @@ class _ImageFavoritesItemState extends State<_ImageFavoritesItem> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       decoration: BoxDecoration(
+        color: isDark ? colorScheme.surfaceContainerHigh : colorScheme.surface,
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: Theme.of(context).colorScheme.outlineVariant,
-          width: 0.6,
+          color: colorScheme.primary.withValues(alpha: isDark ? 0.2 : 0.05),
+          width: 1,
         ),
-        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.shadow.withValues(alpha: isDark ? 0.12 : 0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 6),
+          ),
+          BoxShadow(
+            color: colorScheme.shadow.withValues(alpha: isDark ? 0.06 : 0.03),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: InkWell(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(12),
         onSecondaryTapDown: onSecondaryTap,
         onLongPress: onLongPress,
         onTap: () {

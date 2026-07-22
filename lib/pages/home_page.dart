@@ -856,6 +856,7 @@ class _ImageFavoritesState extends State<ImageFavorites> {
 
   Widget buildTypeButton(int type, String text) {
     const radius = 24.0;
+    final isSelected = displayType == type;
     return InkWell(
       borderRadius: BorderRadius.circular(radius),
       onTap: () async {
@@ -872,21 +873,40 @@ class _ImageFavoritesState extends State<ImageFavorites> {
       },
       child: AnimatedContainer(
         width: 96,
-        padding: const EdgeInsets.symmetric(vertical: 4),
+        padding: const EdgeInsets.symmetric(vertical: 6),
         decoration: BoxDecoration(
-          color:
-              displayType == type ? context.colorScheme.primaryContainer : null,
+          color: isSelected
+              ? context.colorScheme.primary
+              : context.colorScheme.surface,
           border: Border.all(
-            color: Theme.of(context).colorScheme.outlineVariant,
-            width: 0.6,
+            color: isSelected
+                ? context.colorScheme.primary
+                : context.colorScheme.outlineVariant,
+            width: 1,
           ),
           borderRadius: BorderRadius.circular(radius),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: context.colorScheme.shadow.withValues(alpha: 0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
         ),
         duration: const Duration(milliseconds: 200),
         child: Center(
           child: Text(
             text,
-            style: ts.s16,
+            style: ts.s16.copyWith(
+              color: isSelected
+                  ? (context.brightness == Brightness.dark
+                      ? Colors.black
+                      : Colors.white)
+                  : null,
+              fontWeight: isSelected ? FontWeight.w600 : null,
+            ),
           ),
         ),
       ),
@@ -999,6 +1019,7 @@ class __ChartLineState extends State<_ChartLine>
         Expanded(
           child: LayoutBuilder(builder: (context, constrains) {
             var width = constrains.maxWidth * widget.count / widget.maxCount;
+            final colorScheme = Theme.of(context).colorScheme;
             return AnimatedBuilder(
               animation: _controller,
               builder: (context, child) {
@@ -1008,15 +1029,10 @@ class __ChartLineState extends State<_ChartLine>
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(2),
                     gradient: LinearGradient(
-                      colors: context.isDarkMode
-                          ? [
-                              Colors.blue.shade800,
-                              Colors.blue.shade500,
-                            ]
-                          : [
-                              Colors.blue.shade300,
-                              Colors.blue.shade600,
-                            ],
+                      colors: [
+                        colorScheme.primary.withValues(alpha: 0.7),
+                        colorScheme.primary,
+                      ],
                     ),
                   ),
                 ).toAlign(Alignment.centerLeft);

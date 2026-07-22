@@ -254,7 +254,7 @@ class _ButtonState extends State<Button> {
       }
     }
     if (widget.type == ButtonType.normal) {
-      var color = widget.color ?? context.colorScheme.surfaceContainer;
+      var color = widget.color ?? context.colorScheme.primary.withValues(alpha: 0.12);
       if (isHover) {
         return color.toOpacity(0.9);
       } else {
@@ -262,7 +262,7 @@ class _ButtonState extends State<Button> {
       }
     }
     if (isHover) {
-      return context.colorScheme.outline.toOpacity(0.2);
+      return context.colorScheme.primary.withValues(alpha: 0.1);
     }
     return Colors.transparent;
   }
@@ -274,8 +274,8 @@ class _ButtonState extends State<Button> {
     return widget.type == ButtonType.filled
         ? context.colorScheme.onPrimary
         : (widget.type == ButtonType.text
-            ? widget.color ?? context.colorScheme.primary
-            : context.colorScheme.onSurface);
+            ? widget.color ?? Colors.black
+            : widget.color ?? context.colorScheme.primary);
   }
 }
 

@@ -7,6 +7,7 @@ class Appbar extends StatefulWidget implements PreferredSizeWidget {
     this.actions,
     this.backgroundColor,
     this.style = AppbarStyle.blur,
+    this.radius = 0,
     super.key,
   });
 
@@ -19,6 +20,8 @@ class Appbar extends StatefulWidget implements PreferredSizeWidget {
   final Color? backgroundColor;
 
   final AppbarStyle style;
+
+  final double radius;
 
   @override
   State<Appbar> createState() => _AppbarState();
@@ -80,12 +83,17 @@ class _AppbarState extends State<Appbar> {
     var content = Container(
       decoration: BoxDecoration(
         color: widget.backgroundColor ?? context.colorScheme.surface,
-        border: Border(
-          bottom: BorderSide(
-            color: context.colorScheme.outlineVariant.withValues(alpha: 0.5),
-            width: 0.5,
-          ),
-        ),
+        border: widget.radius > 0
+            ? null
+            : Border(
+                bottom: BorderSide(
+                  color: context.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                  width: 0.5,
+                ),
+              ),
+        borderRadius: widget.radius > 0
+            ? BorderRadius.vertical(top: Radius.circular(widget.radius))
+            : null,
       ),
       height: _kAppBarHeight + context.padding.top,
       child: Row(
@@ -121,12 +129,18 @@ class _AppbarState extends State<Appbar> {
       return Material(
         color: context.colorScheme.surface,
         elevation: _scrolledUnder ? 2 : 0.5,
+        borderRadius: widget.radius > 0
+            ? BorderRadius.vertical(top: Radius.circular(widget.radius))
+            : null,
         child: content,
       );
     } else {
       return Material(
         color: context.colorScheme.surface,
         elevation: _scrolledUnder ? 1 : 0.5,
+        borderRadius: widget.radius > 0
+            ? BorderRadius.vertical(top: Radius.circular(widget.radius))
+            : null,
         child: content,
       );
     }

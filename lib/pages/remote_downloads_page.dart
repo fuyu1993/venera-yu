@@ -373,31 +373,78 @@ class _RemoteDownloadsPageState extends State<RemoteDownloadsPage> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        ListTile(
-          leading: Icon(icon, color: color),
-          title: Text(e.name, maxLines: 1, overflow: TextOverflow.ellipsis),
-          subtitle: Text(
-            e.type == 'pdf'
-                ? 'PDF'.tl
-                : e.type == 'zip'
-                    ? 'Archive'.tl
-                    : 'Folder'.tl,
-            style: TextStyle(color: context.colorScheme.outline, fontSize: 12),
-          ),
-          onTap: e.comicId != null ? () => _openImported(e) : null,
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          child: Row(
             children: [
-              if (e.comicId != null)
-                IconButton(
-                  icon: const Icon(LucideIcons.book_open, size: 20),
-                  tooltip: 'Open'.tl,
-                  onPressed: () => _openImported(e),
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: color.withAlpha(20),
+                  borderRadius: BorderRadius.circular(8),
                 ),
-              IconButton(
-                icon: const Icon(LucideIcons.trash, size: 20),
-                tooltip: 'Remove download'.tl,
-                onPressed: () => _removeDownload(e),
+                child: Icon(icon, size: 24, color: color),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      e.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      e.type == 'pdf'
+                          ? 'PDF'.tl
+                          : e.type == 'zip'
+                              ? 'Archive'.tl
+                              : 'Folder'.tl,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: context.colorScheme.outline,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              if (e.comicId != null)
+                SizedBox(
+                  width: 36,
+                  height: 36,
+                  child: IconButton(
+                    icon: const Icon(LucideIcons.book_open, size: 20),
+                    tooltip: 'Open'.tl,
+                    onPressed: () => _openImported(e),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(
+                      minWidth: 36,
+                      minHeight: 36,
+                    ),
+                    color: context.colorScheme.onSurface,
+                  ),
+                ),
+              SizedBox(
+                width: 36,
+                height: 36,
+                child: IconButton(
+                  icon: const Icon(LucideIcons.trash, size: 20),
+                  tooltip: 'Remove download'.tl,
+                  onPressed: () => _removeDownload(e),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(
+                    minWidth: 36,
+                    minHeight: 36,
+                  ),
+                  color: context.colorScheme.onSurface,
+                ),
               ),
             ],
           ),
@@ -407,7 +454,7 @@ class _RemoteDownloadsPageState extends State<RemoteDownloadsPage> {
           Divider(
             height: 1,
             thickness: 0.5,
-            indent: 16,
+            indent: 76,
             endIndent: 16,
             color: context.colorScheme.outlineVariant.withAlpha(80),
           ),
