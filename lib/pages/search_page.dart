@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sliver_tools/sliver_tools.dart';
+import 'package:venera/adaptive/adaptive_platform.dart';
 import 'package:venera/components/components.dart';
 import 'package:venera/foundation/app.dart';
 import 'package:venera/foundation/appdata.dart';
@@ -18,6 +19,7 @@ import 'package:venera/utils/translations.dart';
 
 import 'comic_details_page/comic_page.dart';
 import 'comic_source_page.dart';
+import 'search/ios_search_page.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -227,6 +229,9 @@ class _SearchPageState extends State<SearchPage> {
     if (searchSources.isEmpty) {
       return buildEmpty();
     }
+    if (isCupertinoStyle()) {
+      return const IosSearchPage(showNavigationBar: false);
+    }
     return Scaffold(
       body: SmoothCustomScrollView(
         slivers: buildSlivers().toList(),
@@ -357,16 +362,16 @@ class _SearchPageState extends State<SearchPage> {
   /// Quick category chips: tap to prepend "namespace:" to search text.
   Widget _buildQuickCategories() {
     final categories = [
-      ('female', 'Female'),
-      ('male', 'Male'),
-      ('parody', 'Parody'),
-      ('character', 'Character'),
-      ('artist', 'Artist'),
-      ('group', 'Group'),
-      ('cosplayer', 'Cosplayer'),
-      ('other', 'Other'),
-      ('language', 'Language'),
-      ('mixed', 'Mixed'),
+      ('female', 'Female'.tl),
+      ('male', 'Male'.tl),
+      ('parody', 'Parody'.tl),
+      ('character', 'Character'.tl),
+      ('artist', 'Artist'.tl),
+      ('group', 'Group'.tl),
+      ('cosplayer', 'Cosplayer'.tl),
+      ('other', 'Other'.tl),
+      ('language', 'Language'.tl),
+      ('mixed', 'Mixed'.tl),
     ];
 
     return SliverToBoxAdapter(

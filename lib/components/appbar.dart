@@ -103,7 +103,7 @@ class _AppbarState extends State<Appbar> {
               Tooltip(
                 message: "Back".tl,
                 child: IconButton(
-                  icon: const Icon(LucideIcons.chevron_left),
+                  icon: Icon(adaptiveIcon(LucideIcons.chevron_left, CupertinoIcons.back)),
                   onPressed: () => Navigator.maybePop(context),
                 ),
               ),
@@ -223,7 +223,7 @@ class _MySliverAppBarDelegate extends SliverPersistentHeaderDelegate {
                 ? Tooltip(
                     message: "Back".tl,
                     child: IconButton(
-                      icon: const Icon(LucideIcons.chevron_left),
+                      icon: Icon(adaptiveIcon(LucideIcons.chevron_left, CupertinoIcons.back)),
                       onPressed: () => Navigator.maybePop(context),
                     ),
                   )

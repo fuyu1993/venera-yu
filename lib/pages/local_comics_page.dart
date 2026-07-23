@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:venera/adaptive/adaptive_platform.dart';
 import 'package:venera/components/components.dart';
 import 'package:venera/components/comics_toolbar.dart';
 import 'package:venera/foundation/app.dart';
@@ -117,7 +119,7 @@ class _LocalComicsPageState extends State<LocalComicsPage> {
   Widget buildMultiSelectMenu() {
     return MenuButton(entries: [
       MenuEntry(
-        icon: LucideIcons.trash,
+        icon: adaptiveIcon(LucideIcons.trash, CupertinoIcons.trash),
         text: "Delete".tl,
         onClick: () {
           deleteComics(selectedComics.keys.toList()).then((value) {
@@ -131,7 +133,7 @@ class _LocalComicsPageState extends State<LocalComicsPage> {
         },
       ),
       MenuEntry(
-        icon: LucideIcons.star,
+        icon: adaptiveIcon(LucideIcons.star, CupertinoIcons.star),
         text: "Add to favorites".tl,
         onClick: () {
           addFavorite(selectedComics.keys.toList());
@@ -139,7 +141,7 @@ class _LocalComicsPageState extends State<LocalComicsPage> {
       ),
       if (selectedComics.length == 1)
         MenuEntry(
-          icon: LucideIcons.folder_open,
+          icon: adaptiveIcon(LucideIcons.folder_open, CupertinoIcons.folder_open),
           text: "Open Folder".tl,
           onClick: () {
             openComicFolder(selectedComics.keys.first);
@@ -147,7 +149,7 @@ class _LocalComicsPageState extends State<LocalComicsPage> {
         ),
       if (selectedComics.length == 1)
         MenuEntry(
-          icon: LucideIcons.list,
+          icon: adaptiveIcon(LucideIcons.list, CupertinoIcons.list_bullet),
           text: "View Detail".tl,
           onClick: () {
             context.to(() => ComicPage(
@@ -186,15 +188,15 @@ class _LocalComicsPageState extends State<LocalComicsPage> {
   Widget build(BuildContext context) {
     List<Widget> selectActions = [
       IconButton(
-          icon: const Icon(LucideIcons.square_check),
+          icon: Icon(adaptiveIcon(LucideIcons.square_check, CupertinoIcons.checkmark_square)),
           tooltip: "Select All".tl,
           onPressed: selectAll),
       IconButton(
-          icon: const Icon(LucideIcons.x),
+          icon: Icon(adaptiveIcon(LucideIcons.x, CupertinoIcons.xmark)),
           tooltip: "Deselect".tl,
           onPressed: deSelect),
       IconButton(
-          icon: const Icon(LucideIcons.flip_horizontal_2),
+          icon: Icon(adaptiveIcon(LucideIcons.flip_horizontal_2, CupertinoIcons.arrow_right_arrow_left)),
           tooltip: "Invert Selection".tl,
           onPressed: invertSelection),
       buildMultiSelectMenu(),
@@ -205,7 +207,7 @@ class _LocalComicsPageState extends State<LocalComicsPage> {
       Tooltip(
         message: "Downloading".tl,
         child: IconButton(
-          icon: const Icon(LucideIcons.download),
+          icon: Icon(adaptiveIcon(LucideIcons.download, CupertinoIcons.down_arrow)),
           onPressed: () {
             showPopUpWidget(context, const DownloadingPage());
           },
@@ -232,8 +234,8 @@ class _LocalComicsPageState extends State<LocalComicsPage> {
                     }
                   },
                   icon: multiSelectMode
-                      ? const Icon(LucideIcons.x)
-                      : const Icon(LucideIcons.chevron_left),
+                      ? Icon(adaptiveIcon(LucideIcons.x, CupertinoIcons.xmark))
+                      : Icon(adaptiveIcon(LucideIcons.chevron_left, CupertinoIcons.chevron_left)),
                 ),
               ),
               title: multiSelectMode
@@ -339,14 +341,14 @@ class _LocalComicsPageState extends State<LocalComicsPage> {
             menuBuilder: (c) {
               return [
                 MenuEntry(
-                  icon: LucideIcons.folder_open,
+                  icon: adaptiveIcon(LucideIcons.folder_open, CupertinoIcons.folder_open),
                   text: "Open Folder".tl,
                   onClick: () {
                     openComicFolder(c as LocalComic);
                   },
                 ),
                 MenuEntry(
-                  icon: LucideIcons.trash,
+                  icon: adaptiveIcon(LucideIcons.trash, CupertinoIcons.trash),
                   text: "Delete".tl,
                   onClick: () {
                     deleteComics([c as LocalComic]).then((value) {
@@ -452,21 +454,21 @@ class _LocalComicsPageState extends State<LocalComicsPage> {
   List<MenuEntry> exportActions(List<LocalComic> comics) {
     return [
       MenuEntry(
-        icon: LucideIcons.file_up,
+        icon: adaptiveIcon(LucideIcons.file_up, CupertinoIcons.arrow_up_doc),
         text: "Export as cbz".tl,
         onClick: () {
           exportComics(comics, CBZ.export, ".cbz");
         },
       ),
       MenuEntry(
-        icon: LucideIcons.file_text,
+        icon: adaptiveIcon(LucideIcons.file_text, CupertinoIcons.doc_text),
         text: "Export as pdf".tl,
         onClick: () async {
           exportComics(comics, createPdfFromComicIsolate, ".pdf");
         },
       ),
       MenuEntry(
-        icon: LucideIcons.contact,
+        icon: adaptiveIcon(LucideIcons.contact, CupertinoIcons.book),
         text: "Export as epub".tl,
         onClick: () async {
           exportComics(comics, createEpubWithLocalComic, ".epub");

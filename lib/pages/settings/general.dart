@@ -73,6 +73,16 @@ class _GeneralSettingsState extends State<GeneralSettings> {
           },
           onChanged: () => App.forceRebuild(),
         ).toSliver(),
+        SelectSetting(
+          title: "UI Style".tl,
+          settingKey: "uiStyle",
+          optionTranslation: {
+            "system": "System".tl,
+            "cupertino": "Native".tl,
+            "material": "Material".tl,
+          },
+          onChanged: () => App.forceRebuild(),
+        ).toSliver(),
         SliverToBoxAdapter(
           child: _CustomTabsSetting(),
         ),

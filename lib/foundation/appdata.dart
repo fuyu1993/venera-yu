@@ -14,7 +14,39 @@ class Appdata with Init {
 
   final Settings settings = Settings._create();
 
-  var searchHistory = <String>[];
+  /// Search history entries with source tracking.
+  /// Each entry stores both the search text and the comic source used.
+  List<Map<String, String>> _searchHistoryWithSource = [];
+
+  /// Legacy search history for backward compatibility.
+  List<String> get searchHistory => _searchHistoryWithSource
+      .map((e) => e['text'] ?? '')
+      .where((e) => e.isNotEmpty)
+      .toList();
+
+  set searchHistory(List<String> value) {
+    // Convert legacy format to new format with 'unknown' source
+    _searchHistoryWithSource = value
+        .map((text) => {'text': text, 'source': 'unknown'})
+        .toList();
+  }
+
+  /// Add a search keyword with its source.
+  void addSearchHistory(String keyword, {String source = 'unknown'}) {
+    if (keyword.trim().isEmpty) return;
+    // Remove duplicate
+    _searchHistoryWithSource.removeWhere((e) => e['text'] == keyword);
+    // Insert at beginning
+    _searchHistoryWithSource.insert(0, {'text': keyword, 'source': source});
+    // Limit to 50 entries
+    if (_searchHistoryWithSource.length > 50) {
+      _searchHistoryWithSource.removeLast();
+    }
+    saveData();
+  }
+
+  /// Get search history with source information.
+  List<Map<String, String>> get searchHistoryWithSource => _searchHistoryWithSource;
 
   bool _isSavingData = false;
 
@@ -51,29 +83,18 @@ class Appdata with Init {
     }
   }
 
-  void addSearchHistory(String keyword) {
-    if (searchHistory.contains(keyword)) {
-      searchHistory.remove(keyword);
-    }
-    searchHistory.insert(0, keyword);
-    if (searchHistory.length > 50) {
-      searchHistory.removeLast();
-    }
-    saveData();
-  }
-
   void removeSearchHistory(String keyword) {
-    searchHistory.remove(keyword);
+    _searchHistoryWithSource.removeWhere((e) => e['text'] == keyword);
     saveData();
   }
 
   void clearSearchHistory() {
-    searchHistory.clear();
+    _searchHistoryWithSource.clear();
     saveData();
   }
 
   Map<String, dynamic> toJson() {
-    return {'settings': settings._data, 'searchHistory': searchHistory};
+    return {'settings': settings._data, 'searchHistory': _searchHistoryWithSource};
   }
 
   List<String> splitField(String merged) {
@@ -109,7 +130,23 @@ class Appdata with Init {
         }
       }
     }
-    searchHistory = List.from(data['searchHistory'] ?? []);
+    // Handle search history with backward compatibility
+    final rawHistory = data['searchHistory'];
+    if (rawHistory is List) {
+      _searchHistoryWithSource = [];
+      for (final item in rawHistory) {
+        if (item is String) {
+          // Legacy format: just a string
+          _searchHistoryWithSource.add({'text': item, 'source': 'unknown'});
+        } else if (item is Map) {
+          // New format: map with text and source
+          _searchHistoryWithSource.add({
+            'text': item['text']?.toString() ?? '',
+            'source': item['source']?.toString() ?? 'unknown',
+          });
+        }
+      }
+    }
     saveData();
   }
 
@@ -142,7 +179,23 @@ class Appdata with Init {
           settings[key] = json['settings'][key];
         }
       }
-      searchHistory = List.from(json['searchHistory']);
+      // Handle search history with backward compatibility
+      final rawHistory = json['searchHistory'];
+      if (rawHistory is List) {
+        _searchHistoryWithSource = [];
+        for (final item in rawHistory) {
+          if (item is String) {
+            // Legacy format: just a string
+            _searchHistoryWithSource.add({'text': item, 'source': 'unknown'});
+          } else if (item is Map) {
+            // New format: map with text and source
+            _searchHistoryWithSource.add({
+              'text': item['text']?.toString() ?? '',
+              'source': item['source']?.toString() ?? 'unknown',
+            });
+          }
+        }
+      }
     } catch (e) {
       Log.error("Appdata", "Failed to load appdata", e);
       Log.info("Appdata", "Resetting appdata");
@@ -178,6 +231,7 @@ class Settings with ChangeNotifier {
     'theme_mode': 'system', // light, dark, system
     'amoledDark': false, // AMOLED pure black in dark mode
     'uiDensity': 'standard', // compact, standard, comfortable
+    'uiStyle': 'system', // system, cupertino, material
     'newFavoriteAddTo': 'end', // start, end
     'moveFavoriteAfterRead': 'none', // none, end, start
     'proxy': 'system', // direct, system, proxy string

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:venera/adaptive/adaptive_platform.dart';
 import 'package:venera/components/components.dart';
-
-import 'app_page_route.dart';
 
 /// Minimum interval between two page-push navigations. Rapid repeated taps
 /// (e.g. double-tapping a comic cover or a history item) would otherwise push
@@ -41,7 +40,7 @@ extension Navigation on BuildContext {
     if (!_canNavigate()) {
       return Future<T?>.value(null);
     }
-    return Navigator.of(this).push<T>(AppPageRoute(
+    return Navigator.of(this).push<T>(adaptivePageRoute<T>(
         builder: (context) => builder()));
   }
 
@@ -49,7 +48,7 @@ extension Navigation on BuildContext {
     if (!_canNavigate()) {
       return Future<void>.value();
     }
-    return Navigator.of(this).pushReplacement(AppPageRoute(
+    return Navigator.of(this).pushReplacement(adaptivePageRoute<T>(
         builder: (context) => builder()));
   }
 

@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:venera/adaptive/adaptive_platform.dart';
 import 'package:venera/foundation/appdata.dart';
 import 'package:venera/pages/categories_page.dart';
 import 'package:venera/pages/search_page.dart';
@@ -36,15 +37,15 @@ class _MainPageState extends State<MainPage> {
     _navigatorKey!.currentContext!.pop();
   }
 
-  // Get all available tabs
-  static const _allTabs = [
-    {'id': 'home', 'label': 'Home', 'icon': LucideIcons.house, 'activeIcon': LucideIcons.house},
-    {'id': 'favorites', 'label': 'Favorites', 'icon': LucideIcons.user_star, 'activeIcon': LucideIcons.user_star},
-    {'id': 'explore', 'label': 'Explore', 'icon': LucideIcons.compass, 'activeIcon': LucideIcons.compass},
-    {'id': 'search', 'label': 'Search', 'icon': LucideIcons.search, 'activeIcon': LucideIcons.search},
-    {'id': 'categories', 'label': 'Categories', 'icon': LucideIcons.list, 'activeIcon': LucideIcons.list},
-    {'id': 'remote_library', 'label': 'Remote Library', 'icon': LucideIcons.monitor_cloud, 'activeIcon': LucideIcons.monitor_cloud},
-    {'id': 'settings', 'label': 'Settings', 'icon': LucideIcons.settings, 'activeIcon': LucideIcons.settings},
+  // Get all available tabs. 图标按平台自动切换：iOS 风格使用 CupertinoIcons。
+  List<Map<String, dynamic>> get _allTabs => [
+    {'id': 'home', 'label': 'Home', 'icon': adaptiveIcon(LucideIcons.house, CupertinoIcons.house), 'activeIcon': adaptiveIcon(LucideIcons.house, CupertinoIcons.house_fill)},
+    {'id': 'favorites', 'label': 'Favorites', 'icon': adaptiveIcon(LucideIcons.user_star, CupertinoIcons.star), 'activeIcon': adaptiveIcon(LucideIcons.user_star, CupertinoIcons.star_fill)},
+    {'id': 'explore', 'label': 'Explore', 'icon': adaptiveIcon(LucideIcons.compass, CupertinoIcons.compass), 'activeIcon': adaptiveIcon(LucideIcons.compass, CupertinoIcons.compass_fill)},
+    {'id': 'search', 'label': 'Search', 'icon': adaptiveIcon(LucideIcons.search, CupertinoIcons.search), 'activeIcon': adaptiveIcon(LucideIcons.search, CupertinoIcons.search)},
+    {'id': 'categories', 'label': 'Categories', 'icon': adaptiveIcon(LucideIcons.list, CupertinoIcons.list_bullet), 'activeIcon': adaptiveIcon(LucideIcons.list, CupertinoIcons.list_bullet)},
+    {'id': 'remote_library', 'label': 'Remote Library', 'icon': adaptiveIcon(LucideIcons.monitor_cloud, CupertinoIcons.cloud), 'activeIcon': adaptiveIcon(LucideIcons.monitor_cloud, CupertinoIcons.cloud_fill)},
+    {'id': 'settings', 'label': 'Settings', 'icon': adaptiveIcon(LucideIcons.settings, CupertinoIcons.gear), 'activeIcon': adaptiveIcon(LucideIcons.settings, CupertinoIcons.gear_solid)},
   ];
 
   // Get all pages

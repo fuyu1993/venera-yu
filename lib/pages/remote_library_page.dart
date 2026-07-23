@@ -624,26 +624,28 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
         'Set the remote WebDAV info in Settings -> Lab -> "Remote Library WebDAV"'.tl,
       );
     }
-    return SmoothCustomScrollView(
-      slivers: [
-        // Breadcrumb path — pinned so it stays at the top while the list scrolls.
-        // Always show it (including the root) so the current location ("Root")
-        // is visible right after initialization.
-        if (_pathStack.isNotEmpty)
-          SliverPersistentHeader(
-            pinned: true,
-            delegate: _BreadcrumbHeaderDelegate(_buildBreadcrumb()),
-          ),
-        // Loading indicator
-        if (_loading)
-          const SliverFillRemaining(
-            child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
-          )
-        // Error state
-        else if (_error != null)
-          SliverFillRemaining(
-            child: Center(
-              child: Column(
+    return Container(
+      color: Theme.of(context).colorScheme.surface,
+      child: SmoothCustomScrollView(
+        slivers: [
+          // Breadcrumb path — pinned so it stays at the top while the list scrolls.
+          // Always show it (including the root) so the current location ("Root")
+          // is visible right after initialization.
+          if (_pathStack.isNotEmpty)
+            SliverPersistentHeader(
+              pinned: true,
+              delegate: _BreadcrumbHeaderDelegate(_buildBreadcrumb()),
+            ),
+          // Loading indicator
+          if (_loading)
+            const SliverFillRemaining(
+              child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+            )
+          // Error state
+          else if (_error != null)
+            SliverFillRemaining(
+              child: Center(
+                child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(LucideIcons.circle_alert,
@@ -682,6 +684,7 @@ class _RemoteLibraryPageState extends State<RemoteLibraryPage> {
         else
           _buildListView(),
       ],
+    ),
     );
   }
 

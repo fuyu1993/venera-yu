@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:desktop_webview_window/desktop_webview_window.dart';
 import 'package:dynamic_color/dynamic_color.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -8,6 +9,7 @@ import 'package:venera/foundation/log.dart';
 import 'package:venera/foundation/theme.dart';
 import 'package:venera/pages/auth_page.dart';
 import 'package:venera/pages/main_page.dart';
+import 'package:venera/adaptive/adaptive_platform.dart';
 import 'package:venera/utils/io.dart';
 import 'package:window_manager/window_manager.dart';
 import 'components/components.dart';
@@ -226,6 +228,14 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
             }
 
             widget = OverlayWidget(widget);
+            // Cupertino 主题：为 iOS 风格页面提供一致的 Cupertino 默认值。
+            if (isCupertinoStyle()) {
+              final theme = Theme.of(context);
+              widget = CupertinoTheme(
+                data: buildCupertinoTheme(theme.colorScheme, theme.brightness),
+                child: widget,
+              );
+            }
             // UI 密度：按设置缩放文字（紧凑 0.9 / 标准 1.0 / 宽松 1.1）。
             // visualDensity 已在 ThemeData 中设置，此处仅覆盖 textScaler。
             final density = UiDensity.fromKey(

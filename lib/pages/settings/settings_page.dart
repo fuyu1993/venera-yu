@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_reorderable_grid_view/widgets/reorderable_builder.dart';
+import 'package:venera/adaptive/adaptive_platform.dart';
 import 'package:flutter_memory_info/flutter_memory_info.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:venera/components/components.dart';
@@ -64,16 +66,16 @@ class _SettingsPageState extends State<SettingsPage> {
     "Debug"
   ];
 
-  final icons = <IconData>[
-    LucideIcons.sliders_horizontal,
-    LucideIcons.compass,
-    LucideIcons.book_open,
-    LucideIcons.bookmark,
-    LucideIcons.app_window,
-    LucideIcons.globe,
-    LucideIcons.info,
-    LucideIcons.building,
-    LucideIcons.bug,
+  late final icons = <IconData>[
+    adaptiveIcon(LucideIcons.sliders_horizontal, CupertinoIcons.slider_horizontal_3),
+    adaptiveIcon(LucideIcons.compass, CupertinoIcons.compass),
+    adaptiveIcon(LucideIcons.book_open, CupertinoIcons.book),
+    adaptiveIcon(LucideIcons.bookmark, CupertinoIcons.bookmark),
+    adaptiveIcon(LucideIcons.app_window, CupertinoIcons.app),
+    adaptiveIcon(LucideIcons.globe, CupertinoIcons.globe),
+    adaptiveIcon(LucideIcons.info, CupertinoIcons.info_circle),
+    adaptiveIcon(LucideIcons.building, CupertinoIcons.building_2_fill),
+    adaptiveIcon(LucideIcons.bug, CupertinoIcons.ant),
   ];
 
   @override
@@ -149,6 +151,8 @@ class _SettingsPageState extends State<SettingsPage> {
           )
         ],
       );
+    } else if (isCupertinoStyle()) {
+      return buildCategoriesCupertino();
     } else {
       return buildLeft();
     }
@@ -221,6 +225,53 @@ class _SettingsPageState extends State<SettingsPage> {
       padding: EdgeInsets.zero,
       itemCount: categories.length,
       itemBuilder: (context, index) => buildItem(categories[index].tl, index),
+    );
+  }
+
+  /// iOS 风格设置分类列表，使用 Cupertino 分组列表。
+  Widget buildCategoriesCupertino() {
+    final tiles = List<Widget>.generate(categories.length, (index) {
+      final name = categories[index];
+      final selected = index == currentPage;
+      return CupertinoListTile(
+        leading: Icon(
+          icons[index],
+          color: selected ? colors.primary : null,
+        ),
+        title: Text(
+          name.tl,
+          style: TextStyle(
+            color: selected ? colors.primary : null,
+            fontWeight: selected ? FontWeight.w600 : null,
+          ),
+        ),
+        trailing: selected
+            ? Icon(CupertinoIcons.check_mark, color: colors.primary)
+            : Icon(
+                CupertinoIcons.chevron_right,
+                color: CupertinoColors.tertiaryLabel.resolveFrom(context),
+              ),
+        onTap: () {
+          context.to(() => _SettingsDetailPage(pageIndex: index));
+        },
+      );
+    });
+
+    return Container(
+      color: CupertinoColors.systemGroupedBackground.resolveFrom(context),
+      child: SafeArea(
+        // NaviPane 顶栏/底栏已处理安全区，页面自身不重复添加。
+        top: false,
+        bottom: false,
+        child: ListView(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          children: [
+            CupertinoListSection.insetGrouped(
+              children: tiles,
+            ),
+          ],
+        ),
+      ),
     );
   }
 

@@ -1,15 +1,20 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:venera/adaptive/adaptive_platform.dart';
 import 'package:venera/components/components.dart';
-import 'package:venera/foundation/app.dart';
 import 'package:venera/foundation/appdata.dart';
 import 'package:venera/foundation/comic_source/comic_source.dart';
+import 'package:venera/pages/aggregated_search_page.dart';
 import 'package:venera/pages/search_result_page.dart';
 import 'package:venera/utils/translations.dart';
 
 /// iOS 风格搜索页面
 class IosSearchPage extends StatefulWidget {
-  const IosSearchPage({super.key});
+  const IosSearchPage({super.key, this.showNavigationBar = true});
+
+  /// 是否显示顶部 [CupertinoNavigationBar]。作为底部 Tab 页嵌入时应设为 false，
+  /// 避免与 [NaviPane] 的顶部栏重复。
+  final bool showNavigationBar;
 
   @override
   State<IosSearchPage> createState() => _IosSearchPageState();
@@ -23,6 +28,9 @@ class _IosSearchPageState extends State<IosSearchPage> {
   bool _aggregatedSearch = false;
   List<String> _suggestions = [];
   List<String> _searchHistory = [];
+
+  /// Search history with source information (text + source).
+  List<Map<String, String>> _searchHistoryWithSource = [];
 
   @override
   void initState() {
@@ -58,19 +66,19 @@ class _IosSearchPageState extends State<IosSearchPage> {
   }
 
   void _loadSearchHistory() {
-    var history = appdata.settings['searchHistory'] as List?;
-    _searchHistory = history?.cast<String>() ?? [];
+    _searchHistoryWithSource = appdata.searchHistoryWithSource;
+    _searchHistory = _searchHistoryWithSource
+        .map((e) => e['text'] ?? '')
+        .where((e) => e.isNotEmpty)
+        .toList();
   }
 
   void _saveSearchHistory(String text) {
     if (text.trim().isEmpty) return;
-    _searchHistory.remove(text);
-    _searchHistory.insert(0, text);
-    if (_searchHistory.length > 20) {
-      _searchHistory = _searchHistory.sublist(0, 20);
-    }
-    appdata.settings['searchHistory'] = _searchHistory;
-    appdata.saveData();
+    // Save with source information
+    final source = _aggregatedSearch ? 'aggregated' : _searchTarget;
+    appdata.addSearchHistory(text, source: source);
+    _loadSearchHistory();
   }
 
   void _findSuggestions() {
@@ -97,16 +105,23 @@ class _IosSearchPageState extends State<IosSearchPage> {
 
     _saveSearchHistory(searchText);
 
-    Navigator.push(
-      context,
-      CupertinoPageRoute(
-        builder: (_) => SearchResultPage(
-          text: searchText,
-          sourceKey: _searchTarget,
-          options: [],
+    if (_aggregatedSearch) {
+      Navigator.of(context).push(
+        adaptivePageRoute(
+          builder: (_) => AggregatedSearchPage(keyword: searchText),
         ),
-      ),
-    );
+      );
+    } else {
+      Navigator.of(context).push(
+        adaptivePageRoute(
+          builder: (_) => SearchResultPage(
+            text: searchText,
+            sourceKey: _searchTarget,
+            options: [],
+          ),
+        ),
+      );
+    }
   }
 
   void _clearSearch() {
@@ -118,25 +133,43 @@ class _IosSearchPageState extends State<IosSearchPage> {
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoPageScaffold(
-      navigationBar: CupertinoNavigationBar(
-        middle: Text('Search'.tl),
-        backgroundColor: CupertinoColors.systemBackground.resolveFrom(context).withOpacity(0.9),
+    final body = SafeArea(
+      // 嵌入 NaviPane 时，顶部/底部安全区已由 NaviPane 的顶栏和底栏处理，
+      // 页面自身不再重复添加；独立 push 时由 CupertinoPageScaffold 负责。
+      top: widget.showNavigationBar,
+      bottom: widget.showNavigationBar,
+      child: Column(
+        children: [
+          // 搜索栏
+          _buildSearchBar(),
+          // 内容区域
+          Expanded(
+            child: _controller.text.isNotEmpty
+                ? _buildSuggestions()
+                : _buildSearchContent(),
+          ),
+        ],
       ),
-      child: SafeArea(
-        child: Column(
-          children: [
-            // 搜索栏
-            _buildSearchBar(),
-            // 内容区域
-            Expanded(
-              child: _controller.text.isNotEmpty
-                  ? _buildSuggestions()
-                  : _buildSearchContent(),
-            ),
-          ],
+    );
+
+    if (widget.showNavigationBar) {
+      return CupertinoPageScaffold(
+        navigationBar: CupertinoNavigationBar(
+          middle: Text('Search'.tl),
+          backgroundColor: CupertinoColors.systemBackground
+              .resolveFrom(context)
+              .withValues(alpha: 0.9),
         ),
-      ),
+        child: body,
+      );
+    }
+
+    // 嵌入底部 Tab：CupertinoPageScaffold 会在 navigationBar 为 null 时自动加
+    // SafeArea，造成与 NaviPane 的安全区重复。改用普通 Scaffold 并让 body 的
+    // SafeArea 关闭 top/bottom。
+    return Scaffold(
+      backgroundColor: CupertinoColors.systemBackground.resolveFrom(context),
+      body: body,
     );
   }
 
@@ -183,8 +216,20 @@ class _IosSearchPageState extends State<IosSearchPage> {
   Widget _buildSearchContent() {
     return ListView(
       children: [
-        // 搜索源选择
+        // 聚合搜索开关（放在搜索源选择上方）
         if (_searchSources.isNotEmpty) ...[
+          CupertinoListTile(
+            title: Text('Aggregated Search'.tl),
+            leading: Checkbox(
+              value: _aggregatedSearch,
+              onChanged: (value) {
+                setState(() {
+                  _aggregatedSearch = value ?? false;
+                });
+              },
+            ),
+          ),
+          // 搜索源选择
           _buildSectionHeader('Search in'.tl),
           _buildSourceSelector(),
         ],
@@ -219,23 +264,38 @@ class _IosSearchPageState extends State<IosSearchPage> {
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
-        children: _searchSources.map((source) {
+        children: _searchSources.asMap().entries.map((entry) {
+          final index = entry.key;
+          final source = entry.value;
           final isSelected = _searchTarget == source && !_aggregatedSearch;
-          return CupertinoListTile(
-            title: Text(ComicSource.find(source)?.name ?? source),
-            trailing: isSelected
-                ? Icon(
-                    CupertinoIcons.check_mark,
-                    color: CupertinoColors.systemBlue.resolveFrom(context),
-                  )
-                : null,
-            onTap: () {
-              setState(() {
-                _searchTarget = source;
-                _aggregatedSearch = false;
-              });
-            },
-          );
+          final children = <Widget>[
+            CupertinoListTile(
+              title: Text(ComicSource.find(source)?.name ?? source),
+              trailing: isSelected
+                  ? Icon(
+                      CupertinoIcons.check_mark,
+                      color: CupertinoColors.systemBlue.resolveFrom(context),
+                    )
+                  : null,
+              onTap: () {
+                setState(() {
+                  _searchTarget = source;
+                  _aggregatedSearch = false;
+                });
+              },
+            ),
+          ];
+          // 在每一项之间添加分隔线（最后一项除外）
+          if (index < _searchSources.length - 1) {
+            children.add(
+              Container(
+                height: 0.5,
+                margin: const EdgeInsets.only(left: 16),
+                color: CupertinoColors.separator.resolveFrom(context),
+              ),
+            );
+          }
+          return Column(children: children);
         }).toList(),
       ),
     );
@@ -249,34 +309,55 @@ class _IosSearchPageState extends State<IosSearchPage> {
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
-        children: _searchHistory.take(5).map((text) {
-          return CupertinoListTile(
-            leading: Icon(
-              CupertinoIcons.clock,
-              size: 20,
-              color: CupertinoColors.secondaryLabel.resolveFrom(context),
-            ),
-            title: Text(text),
-            trailing: CupertinoButton(
-              padding: EdgeInsets.zero,
-              onPressed: () {
-                setState(() {
-                  _searchHistory.remove(text);
-                });
-                appdata.settings['searchHistory'] = _searchHistory;
-                appdata.saveData();
-              },
-              child: Icon(
-                CupertinoIcons.xmark_circle_fill,
+        children: _searchHistoryWithSource.take(5).toList().asMap().entries.map((entry) {
+          final index = entry.key;
+          final historyEntry = entry.value;
+          final text = historyEntry['text'] ?? '';
+          final source = historyEntry['source'] ?? 'unknown';
+          final sourceName = source == 'aggregated'
+              ? 'Aggregated'.tl
+              : source == 'unknown'
+                  ? ''
+                  : ComicSource.find(source)?.name ?? source;
+          final children = <Widget>[
+            CupertinoListTile(
+              leading: Icon(
+                CupertinoIcons.clock,
                 size: 20,
-                color: CupertinoColors.systemGrey.resolveFrom(context),
+                color: CupertinoColors.secondaryLabel.resolveFrom(context),
               ),
+              title: Text(text),
+              subtitle: sourceName.isNotEmpty ? Text(sourceName, style: const TextStyle(fontSize: 12)) : null,
+              trailing: CupertinoButton(
+                padding: EdgeInsets.zero,
+                onPressed: () {
+                  appdata.removeSearchHistory(text);
+                  _loadSearchHistory();
+                  setState(() {});
+                },
+                child: Icon(
+                  CupertinoIcons.xmark_circle_fill,
+                  size: 20,
+                  color: CupertinoColors.systemGrey.resolveFrom(context),
+                ),
+              ),
+              onTap: () {
+                _controller.text = text;
+                _search(text);
+              },
             ),
-            onTap: () {
-              _controller.text = text;
-              _search(text);
-            },
-          );
+          ];
+          // 在每一项之间添加分隔线（最后一项除外）
+          if (index < _searchHistoryWithSource.take(5).length - 1) {
+            children.add(
+              Container(
+                height: 0.5,
+                margin: const EdgeInsets.only(left: 52),
+                color: CupertinoColors.separator.resolveFrom(context),
+              ),
+            );
+          }
+          return Column(children: children);
         }).toList(),
       ),
     );

@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:venera/adaptive/adaptive_platform.dart';
 import 'package:venera/components/components.dart';
 import 'package:venera/foundation/app.dart';
 import 'package:venera/foundation/appdata.dart';
@@ -89,7 +91,7 @@ class _FollowUpdatesWidgetState
                       child: Text('Follow Updates'.tl, style: ts.s18),
                     ),
                     const Spacer(),
-                    const Icon(LucideIcons.arrow_right),
+                    Icon(adaptiveIcon(LucideIcons.arrow_right, CupertinoIcons.chevron_right)),
                   ],
                 ),
               ).paddingHorizontal(16),
@@ -201,7 +203,7 @@ class _FollowUpdatesPageState extends AutomaticGlobalState<FollowUpdatesPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ListTile(
-              leading: Icon(LucideIcons.info),
+              leading: Icon(adaptiveIcon(LucideIcons.info, CupertinoIcons.info_circle)),
               title: Text("Not Configured".tl),
             ),
             Text(
@@ -235,7 +237,7 @@ class _FollowUpdatesPageState extends AutomaticGlobalState<FollowUpdatesPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ListTile(
-              leading: Icon(LucideIcons.star),
+              leading: Icon(adaptiveIcon(LucideIcons.star, CupertinoIcons.star)),
               title: Text(folder!),
             ),
             Text(
@@ -285,7 +287,7 @@ class _FollowUpdatesPageState extends AutomaticGlobalState<FollowUpdatesPage> {
             ),
             child: Row(
               children: [
-                Icon(LucideIcons.refresh_ccw),
+                Icon(adaptiveIcon(LucideIcons.refresh_ccw, CupertinoIcons.arrow_counterclockwise)),
                 const SizedBox(width: 8),
                 Text(
                   "Updates".tl,
@@ -294,7 +296,7 @@ class _FollowUpdatesPageState extends AutomaticGlobalState<FollowUpdatesPage> {
                 const Spacer(),
                 if (updatedComics.isNotEmpty)
                   IconButton(
-                    icon: Icon(LucideIcons.x),
+                    icon: Icon(adaptiveIcon(LucideIcons.x, CupertinoIcons.xmark)),
                     onPressed: () {
                       showConfirmDialog(
                         context: App.rootContext,
@@ -374,7 +376,7 @@ class _FollowUpdatesPageState extends AutomaticGlobalState<FollowUpdatesPage> {
             ),
             child: Row(
               children: [
-                Icon(LucideIcons.list),
+                Icon(adaptiveIcon(LucideIcons.list, CupertinoIcons.list_bullet)),
                 const SizedBox(width: 8),
                 Text(
                   "All Comics".tl,

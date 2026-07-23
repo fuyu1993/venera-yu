@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
+import 'package:venera/adaptive/adaptive_platform.dart';
 import 'package:venera/foundation/app.dart';
 import 'package:venera/foundation/appdata.dart';
 import 'package:venera/utils/translations.dart';
@@ -62,7 +64,7 @@ class ComicsToolbar extends StatelessWidget {
           // Sort
           if (onSortTap != null)
             _ToolbarButton(
-              icon: LucideIcons.arrow_down_up,
+              icon: adaptiveIcon(LucideIcons.arrow_down_up, CupertinoIcons.arrow_up_arrow_down),
               tooltip: sortTooltip ?? 'Sort'.tl,
               isActive: sortActive,
               onTap: onSortTap!,
@@ -70,7 +72,7 @@ class ComicsToolbar extends StatelessWidget {
           // Filter
           if (onFilterTap != null)
             _ToolbarButton(
-              icon: LucideIcons.funnel,
+              icon: adaptiveIcon(LucideIcons.funnel, CupertinoIcons.line_horizontal_3_decrease),
               tooltip: filterTooltip ?? 'Filter'.tl,
               isActive: filterActive,
               onTap: onFilterTap!,
@@ -81,7 +83,7 @@ class ComicsToolbar extends StatelessWidget {
           // Search
           if (onSearchTap != null)
             _ToolbarButton(
-              icon: LucideIcons.search,
+              icon: adaptiveIcon(LucideIcons.search, CupertinoIcons.search),
               tooltip: 'Search'.tl,
               isActive: searchActive,
               onTap: onSearchTap!,
@@ -124,23 +126,28 @@ class _ToolbarButton extends StatelessWidget {
 class _ViewModeToggle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final isDetailed = appdata.settings['comicDisplayMode'] == 'detailed';
+    return ValueListenableBuilder<String>(
+      valueListenable: App.viewModeNotifier,
+      builder: (context, mode, _) {
+        final cs = Theme.of(context).colorScheme;
+        final isDetailed = mode == 'detailed';
 
-    return Tooltip(
-      message: 'View Mode'.tl,
-      child: IconButton(
-        icon: Icon(
-          isDetailed ? LucideIcons.layout_list : LucideIcons.layout_grid,
-        ),
-        color: cs.onSurfaceVariant,
-        onPressed: () {
-          final newMode = isDetailed ? 'brief' : 'detailed';
-          appdata.settings['comicDisplayMode'] = newMode;
-          appdata.saveData();
-          App.setViewMode(newMode);
-        },
-      ),
+        return Tooltip(
+          message: 'View Mode'.tl,
+          child: IconButton(
+            icon: Icon(
+              isDetailed ? LucideIcons.layout_list : LucideIcons.layout_grid,
+            ),
+            color: cs.onSurfaceVariant,
+            onPressed: () {
+              final newMode = isDetailed ? 'brief' : 'detailed';
+              appdata.settings['comicDisplayMode'] = newMode;
+              appdata.saveData();
+              App.setViewMode(newMode);
+            },
+          ),
+        );
+      },
     );
   }
 }

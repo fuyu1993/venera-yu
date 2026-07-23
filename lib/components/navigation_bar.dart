@@ -194,16 +194,17 @@ class NaviPaneState extends State<NaviPane>
             right: math.max(mq.viewPadding.right, mq.systemGestureInsets.right),
           )
         : EdgeInsets.zero;
-    return _NaviPopScope(
-      action: () {
-        if (App.mainNavigatorKey!.currentState!.canPop()) {
-          App.mainNavigatorKey!.currentState!.maybePop();
-        } else {
-          SystemNavigator.pop();
-        }
-      },
-      popGesture: App.isIOS && context.width >= changePoint,
-      child: AnimatedBuilder(
+    return SafeArea(
+      child: _NaviPopScope(
+        action: () {
+          if (App.mainNavigatorKey!.currentState!.canPop()) {
+            App.mainNavigatorKey!.currentState!.maybePop();
+          } else {
+            SystemNavigator.pop();
+          }
+        },
+        popGesture: App.isIOS && context.width >= changePoint,
+        child: AnimatedBuilder(
         animation: controller,
         builder: (context, child) {
           final value = controller.value;
@@ -233,6 +234,7 @@ class NaviPaneState extends State<NaviPane>
           return content;
         },
       ),
+    ),
     );
   }
 
@@ -260,8 +262,7 @@ class NaviPaneState extends State<NaviPane>
           child: Navigator(
             observers: [widget.observer],
             key: widget.navigatorKey,
-            onGenerateRoute: (settings) => AppPageRoute(
-              preventRebuild: false,
+            onGenerateRoute: (settings) => adaptivePageRoute(
               builder: (context) {
                 return _NaviMainView(state: this);
               },
@@ -311,6 +312,7 @@ class NaviPaneState extends State<NaviPane>
       child: Container(
         height: _kBottomBarHeight,
         decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
           boxShadow: [
             BoxShadow(
               color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.06),
@@ -582,7 +584,7 @@ class NaviObserver extends NavigatorObserver implements Listenable {
   int get pageCount {
     int count = 0;
     for (var route in routes) {
-      if (route is AppPageRoute) {
+      if (route is AppPageRoute || route is CupertinoPageRoute) {
         count++;
       }
     }

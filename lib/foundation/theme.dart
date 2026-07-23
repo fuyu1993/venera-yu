@@ -183,6 +183,17 @@ class AppTheme {
       brightness: brightness,
       tones: FlexTones.vividBackground(brightness),
     );
+    // 浅色模式下将 surface 设为纯白，避免灰色背景
+    if (!isDark) {
+      scheme = scheme.copyWith(
+        surface: Colors.white,
+        surfaceContainerLowest: const Color(0xFFF5F5F5),
+        surfaceContainerLow: const Color(0xFFF0F0F0),
+        surfaceContainer: const Color(0xFFEBEBEB),
+        surfaceContainerHigh: const Color(0xFFE0E0E0),
+        surfaceContainerHighest: const Color(0xFFD6D6D6),
+      );
+    }
     if (amoled) {
       scheme = scheme.copyWith(
         surface: Colors.black,
@@ -196,7 +207,7 @@ class AppTheme {
     final cardColor = isDark
         ? (amoled ? const Color(0xFF0A0A0A) : const Color(0xFF1C1C1E))
         : iosCardBackground;
-    final scaffoldBg = isDark ? Colors.black : iosGroupedBackground;
+    final scaffoldBg = isDark ? Colors.black : Colors.white;
     final onColor = isDark ? Colors.white : iosLabel;
     final dividerColor = isDark ? const Color(0xFF38383A) : iosSeparator;
 

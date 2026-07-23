@@ -106,7 +106,9 @@ class _App {
 
   /// A notifier for comic display mode changes (brief/detailed).
   /// Comic list pages listen to this to rebuild immediately.
-  final _viewModeNotifier = ValueNotifier<String>('detailed');
+  late final _viewModeNotifier = ValueNotifier<String>(
+    appdata.settings['comicDisplayMode'] ?? 'detailed',
+  );
 
   ValueNotifier<String> get viewModeNotifier => _viewModeNotifier;
 

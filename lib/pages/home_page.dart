@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 import 'package:url_launcher/url_launcher_string.dart';
+import 'package:venera/adaptive/adaptive_platform.dart';
 import 'package:venera/components/components.dart';
 import 'package:venera/foundation/app.dart';
 import 'package:venera/foundation/comic_source/comic_source.dart';
@@ -27,17 +29,20 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var widget = SmoothCustomScrollView(
-      slivers: [
-        SliverPadding(padding: EdgeInsets.only(top: context.padding.top)),
-        const _SyncDataWidget(),
-        const _Local(),
-        const _ComicSources(),
-        const _History(),
-        const FollowUpdatesWidget(),
-        const ImageFavorites(),
-        SliverPadding(padding: EdgeInsets.only(top: context.padding.bottom)),
-      ],
+    var widget = Container(
+      color: Theme.of(context).colorScheme.surface,
+      child: SmoothCustomScrollView(
+        slivers: [
+          SliverPadding(padding: EdgeInsets.only(top: context.padding.top)),
+          const _SyncDataWidget(),
+          const _Local(),
+          const _ComicSources(),
+          const _History(),
+          const FollowUpdatesWidget(),
+          const ImageFavorites(),
+          SliverPadding(padding: EdgeInsets.only(top: context.padding.bottom)),
+        ],
+      ),
     );
     return context.width > changePoint ? widget.paddingHorizontal(8) : widget;
   }
@@ -111,7 +116,7 @@ class _SyncDataWidgetState extends State<_SyncDataWidget>
             ],
           ),
           child: ListTile(
-            leading: const Icon(LucideIcons.refresh_ccw),
+            leading: Icon(adaptiveIcon(LucideIcons.refresh_ccw, CupertinoIcons.arrow_counterclockwise)),
             title: Text('Syncing Data'.tl),
             trailing: const CircularProgressIndicator(strokeWidth: 2)
                 .fixWidth(18)
@@ -139,7 +144,7 @@ class _SyncDataWidgetState extends State<_SyncDataWidget>
             ],
           ),
           child: ListTile(
-            leading: const Icon(LucideIcons.refresh_ccw),
+            leading: Icon(adaptiveIcon(LucideIcons.refresh_ccw, CupertinoIcons.arrow_counterclockwise)),
             title: Text('Sync Data'.tl),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
@@ -166,7 +171,7 @@ class _SyncDataWidgetState extends State<_SyncDataWidget>
                       child: Row(
                         children: [
                           Icon(
-                            LucideIcons.circle_alert,
+                            adaptiveIcon(LucideIcons.circle_alert, CupertinoIcons.exclamationmark_circle),
                             color: Colors.red,
                             size: 18,
                           ),
@@ -177,13 +182,13 @@ class _SyncDataWidgetState extends State<_SyncDataWidget>
                     ),
                   ).paddingRight(4),
                 IconButton(
-                  icon: const Icon(LucideIcons.cloud_upload),
+                  icon: Icon(adaptiveIcon(LucideIcons.cloud_upload, CupertinoIcons.cloud_upload)),
                   onPressed: () async {
                     DataSync().uploadData();
                   },
                 ),
                 IconButton(
-                  icon: const Icon(LucideIcons.cloud_download),
+                  icon: Icon(adaptiveIcon(LucideIcons.cloud_download, CupertinoIcons.cloud_download)),
                   onPressed: () async {
                     DataSync().downloadData();
                   },
@@ -263,7 +268,7 @@ class _LocalState extends State<_Local> {
                       radius: 8,
                     ),
                     const Spacer(),
-                    const Icon(LucideIcons.arrow_right),
+                    Icon(adaptiveIcon(LucideIcons.arrow_right, CupertinoIcons.chevron_right)),
                   ],
                 ),
               ).paddingHorizontal(16),
@@ -300,7 +305,7 @@ class _LocalState extends State<_Local> {
                       child: Row(
                         children: [
                           if (LocalManager().downloadingTasks.first.isPaused)
-                            const Icon(LucideIcons.circle_pause, size: 18)
+                            Icon(adaptiveIcon(LucideIcons.circle_pause, CupertinoIcons.pause_circle), size: 18)
                           else
                             const _AnimatedDownloadingIcon(),
                           const SizedBox(width: 8),
@@ -397,7 +402,7 @@ class _ComicSourcesState extends State<_ComicSources> {
                       radius: 8,
                     ),
                     const Spacer(),
-                    const Icon(LucideIcons.arrow_right),
+                    Icon(adaptiveIcon(LucideIcons.arrow_right, CupertinoIcons.chevron_right)),
                   ],
                 ),
               ).paddingHorizontal(16),
@@ -490,7 +495,7 @@ class _HistoryState extends State<_History> {
                       radius: 8,
                     ),
                     const Spacer(),
-                    const Icon(LucideIcons.arrow_right),
+                    Icon(adaptiveIcon(LucideIcons.arrow_right, CupertinoIcons.chevron_right)),
                   ],
                 ),
               ).paddingHorizontal(16),
@@ -640,7 +645,7 @@ class _ImportComicsWidgetState extends State<_ImportComicsWidget> {
           child: Row(
             children: [
               Icon(
-                LucideIcons.circle_question_mark,
+                adaptiveIcon(LucideIcons.circle_question_mark, CupertinoIcons.question_circle),
                 size: 18,
                 color: context.colorScheme.primary,
               ),
@@ -738,7 +743,7 @@ class __AnimatedDownloadingIconState extends State<_AnimatedDownloadingIcon>
           child: Transform.translate(
             offset: Offset(0, 18 * _controller.value),
             child: Icon(
-              LucideIcons.arrow_down,
+              adaptiveIcon(LucideIcons.arrow_down, CupertinoIcons.arrow_down),
               size: 16,
               color: Theme.of(context).colorScheme.primary,
             ),
@@ -821,7 +826,7 @@ class _ImageFavoritesState extends State<ImageFavorites> {
                         radius: 8,
                       ),
                     const Spacer(),
-                    const Icon(LucideIcons.arrow_right),
+                    Icon(adaptiveIcon(LucideIcons.arrow_right, CupertinoIcons.chevron_right)),
                   ],
                 ),
               ).paddingHorizontal(16),
