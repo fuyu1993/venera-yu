@@ -296,7 +296,7 @@ class _SingleExplorePageState extends AutomaticGlobalState<_SingleExplorePage>
       );
     } else if (data.loadPage != null || data.loadNext != null) {
       return ComicList(
-        enablePageStorage: true,
+        enablePageStorage: false,
         loadPage: data.loadPage,
         loadNext: data.loadNext,
         key: const PageStorageKey("comic_list"),

@@ -189,7 +189,7 @@ class _NormalFavoritePageState extends State<_NormalFavoritePage> {
           ),
         ];
       },
-      enablePageStorage: true,
+      enablePageStorage: false,
     );
   }
 }
@@ -562,7 +562,7 @@ class _FavoriteFolder extends StatelessWidget {
   Widget build(BuildContext context) {
     return ComicList(
       key: comicListKey,
-      enablePageStorage: true,
+      enablePageStorage: false,
       leadingSliver: SliverAppbar(
         title: Text(title),
         actions: [

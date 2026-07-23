@@ -14,7 +14,7 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
 
   static const kTopBarHeight = 56.0;
 
-  static const kBottomBarHeight = 105.0;
+  static const kBottomBarHeight = 96.0;
 
   bool get isOpen => _isOpen;
 
@@ -168,18 +168,18 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
 
   Widget buildTop() {
     final epName =
-      context.reader.widget.chapters?.titles.elementAtOrNull(
-        context.reader.chapter - 1,
-      );
+        context.reader.widget.chapters?.titles.elementAtOrNull(
+          context.reader.chapter - 1,
+        );
 
     return BlurEffect(
       child: Container(
         padding: EdgeInsets.only(top: context.padding.top),
         decoration: BoxDecoration(
-          color: context.colorScheme.surface.toOpacity(0.92),
+          color: context.colorScheme.surface.withValues(alpha: 0.85),
           border: Border(
             bottom: BorderSide(
-              color: Colors.grey.toOpacity(0.5),
+              color: context.colorScheme.outlineVariant,
               width: 0.5,
             ),
           ),
@@ -228,12 +228,68 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
                     onPressed: openChapterComments,
                   ),
                 ),
-              Tooltip(
-                message: "Settings".tl,
-                child: IconButton(
-                  icon: const Icon(LucideIcons.settings),
-                  onPressed: openSetting,
-                ),
+              // More actions popup menu
+              PopupMenuButton<String>(
+                tooltip: "More".tl,
+                icon: const Icon(LucideIcons.ellipsis_vertical),
+                onSelected: (value) {
+                  switch (value) {
+                    case 'collect':
+                      addImageFavorite();
+                      break;
+                    case 'save':
+                      saveCurrentImage();
+                      break;
+                    case 'share':
+                      share();
+                      break;
+                    case 'rotation':
+                      _toggleRotation();
+                      break;
+                  }
+                },
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: 'collect',
+                    child: Row(children: [
+                      Icon(isLiked() ? LucideIcons.star : LucideIcons.star, size: 18),
+                      const SizedBox(width: 12),
+                      Text("Collect the image".tl),
+                    ]),
+                  ),
+                  PopupMenuItem(
+                    value: 'save',
+                    child: Row(children: [
+                      const Icon(LucideIcons.download, size: 18),
+                      const SizedBox(width: 12),
+                      Text("Save Image".tl),
+                    ]),
+                  ),
+                  PopupMenuItem(
+                    value: 'share',
+                    child: Row(children: [
+                      const Icon(LucideIcons.share, size: 18),
+                      const SizedBox(width: 12),
+                      Text("Share".tl),
+                    ]),
+                  ),
+                  if (App.isAndroid)
+                    PopupMenuItem(
+                      value: 'rotation',
+                      child: Row(children: [
+                        Icon(
+                          rotation == null
+                              ? LucideIcons.rotate_cw
+                              : (rotation == false
+                                  ? LucideIcons.smartphone
+                                  : LucideIcons.rotate_cw),
+                          size: 18,
+                        ),
+                        const SizedBox(width: 12),
+                        Text("Screen Rotation".tl),
+                      ]),
+                    ),
+                ],
               ),
               const SizedBox(width: 8),
             ],
@@ -241,6 +297,26 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
         ),
       ),
     );
+  }
+
+  /// Toggle screen rotation (Android only).
+  void _toggleRotation() {
+    if (rotation == null) {
+      setState(() => rotation = false);
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+      ]);
+    } else if (rotation == false) {
+      setState(() => rotation = true);
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ]);
+    } else {
+      setState(() => rotation = null);
+      SystemChrome.setPreferredOrientations(DeviceOrientation.values);
+    }
   }
 
   bool isLiked() {
@@ -389,9 +465,6 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
   }
 
   Widget buildBottom() {
-    // Use maxPage for display (excluding chapter comments page)
-    // maxPage can be 0 when images are not loaded yet, which would make
-    // clamp(1, 0) throw. Guard the upper bound to be at least 1.
     final maxPage =
         context.reader.maxPage < 1 ? 1 : context.reader.maxPage;
     final displayPage = context.reader.page.clamp(1, maxPage);
@@ -400,157 +473,120 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
       text = "P$displayPage";
     }
 
-    final buttons = [
-      Tooltip(
-        message: "Collect the image".tl,
-        child: IconButton(
-          icon: Icon(isLiked() ? LucideIcons.star : LucideIcons.star),
-          onPressed: addImageFavorite,
-        ),
-      ),
-      if (App.isDesktop)
-        Tooltip(
-          message: "${"Full Screen".tl}(F12)",
-          child: IconButton(
-            icon: const Icon(LucideIcons.fullscreen),
-            onPressed: () {
-              context.reader.fullscreen();
-            },
-          ),
-        ),
-      if (App.isAndroid)
-        Tooltip(
-          message: "Screen Rotation".tl,
-          child: IconButton(
-            icon: () {
-              if (rotation == null) {
-                return const Icon(LucideIcons.rotate_cw);
-              } else if (rotation == false) {
-                return const Icon(LucideIcons.smartphone);
-              } else {
-                return const Icon(LucideIcons.rotate_cw);
-              }
-            }.call(),
-            onPressed: () {
-              if (rotation == null) {
-                setState(() {
-                  rotation = false;
-                });
-                SystemChrome.setPreferredOrientations([
-                  DeviceOrientation.portraitUp,
-                  DeviceOrientation.portraitDown,
-                ]);
-              } else if (rotation == false) {
-                setState(() {
-                  rotation = true;
-                });
-                SystemChrome.setPreferredOrientations([
-                  DeviceOrientation.landscapeLeft,
-                  DeviceOrientation.landscapeRight,
-                ]);
-              } else {
-                setState(() {
-                  rotation = null;
-                });
-                SystemChrome.setPreferredOrientations(DeviceOrientation.values);
-              }
-            },
-          ),
-        ),
-      Tooltip(
-        message: "Auto Page Turning".tl,
-        child: IconButton(
-          icon: context.reader.autoPageTurningTimer != null
-              ? const Icon(LucideIcons.alarm_clock)
-              : const Icon(LucideIcons.alarm_clock),
-          onPressed: () {
-            context.reader.autoPageTurning(
-              context.reader.cid,
-              context.reader.type,
-            );
-            update();
-          },
-        ),
-      ),
-      if (context.reader.widget.chapters != null)
-        Tooltip(
-          message: "Chapters".tl,
-          child: IconButton(
-            icon: const Icon(LucideIcons.book),
-            onPressed: openChapterDrawer,
-          ),
-        ),
-      Tooltip(
-        message: "Save Image".tl,
-        child: IconButton(
-          icon: const Icon(LucideIcons.download),
-          onPressed: saveCurrentImage,
-        ),
-      ),
-      Tooltip(
-        message: "Share".tl,
-        child: IconButton(icon: const Icon(LucideIcons.share), onPressed: share),
-      ),
-    ];
-
     Widget child = SizedBox(
       height: kBottomBarHeight,
       child: Column(
         children: [
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
+          // Progress row: page info + prev chapter + slider + next chapter
           Row(
             children: [
               const SizedBox(width: 8),
-              IconButton.filledTonal(
-                onPressed: () => !isReversed
-                    ? context.reader.chapter > 1
-                          ? context.reader.toPrevChapter()
-                          : context.reader.toPage(1)
-                    : context.reader.chapter < context.reader.maxChapter
-                    ? context.reader.toNextChapter()
-                    : context.reader.toPage(context.reader.maxPage),
-                icon: const Icon(LucideIcons.chevron_first),
+              // Page info pill
+              Container(
+                height: 28,
+                padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                decoration: BoxDecoration(
+                  color: context.colorScheme.tertiaryContainer,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Center(
+                  child: Text(text, style: ts.s12),
+                ),
               ),
-              Expanded(child: buildSlider()),
+              const SizedBox(width: 8),
+              // Previous chapter
               IconButton.filledTonal(
-                onPressed: () => !isReversed
-                    ? context.reader.chapter < context.reader.maxChapter
-                          ? context.reader.toNextChapter()
-                          : context.reader.toPage(context.reader.maxPage)
-                    : context.reader.chapter > 1
-                    ? context.reader.toPrevChapter()
-                    : context.reader.toPage(1),
+                onPressed: () {
+                  // 根据章节排序方向决定上一章是 chapter+1 还是 chapter-1
+                  final reverseOrder = appdata.settings["reverseChapterOrder"] ?? false;
+                  if (reverseOrder) {
+                    // 升序：上一章是 chapter - 1
+                    if (context.reader.chapter > 1) {
+                      context.reader.toPrevChapter();
+                    } else {
+                      context.reader.toPage(1);
+                    }
+                  } else {
+                    // 降序：上一章是 chapter + 1
+                    if (context.reader.chapter < context.reader.maxChapter) {
+                      context.reader.toNextChapter();
+                    } else {
+                      context.reader.toPage(1);
+                    }
+                  }
+                },
+                icon: const Icon(LucideIcons.chevron_first),
+                tooltip: "Previous Chapter".tl,
+              ),
+              // Slider
+              Expanded(child: buildSlider()),
+              // Next chapter
+              IconButton.filledTonal(
+                onPressed: () {
+                  // 根据章节排序方向决定下一章是 chapter+1 还是 chapter-1
+                  final reverseOrder = appdata.settings["reverseChapterOrder"] ?? false;
+                  if (reverseOrder) {
+                    // 升序：下一章是 chapter + 1
+                    if (context.reader.chapter < context.reader.maxChapter) {
+                      context.reader.toNextChapter();
+                    } else {
+                      context.reader.toPage(context.reader.maxPage);
+                    }
+                  } else {
+                    // 降序：下一章是 chapter - 1
+                    if (context.reader.chapter > 1) {
+                      context.reader.toPrevChapter();
+                    } else {
+                      context.reader.toPage(context.reader.maxPage);
+                    }
+                  }
+                },
                 icon: const Icon(LucideIcons.chevron_last),
+                tooltip: "Next Chapter".tl,
               ),
               const SizedBox(width: 8),
             ],
           ),
-          LayoutBuilder(
-            builder: (context, constrains) {
-              final small = (constrains.maxWidth - buttons.length * 50) < 120;
-              return Row(
-                children: [
-                  if (!small)
-                    Container(
-                      height: 24,
-                      padding: const EdgeInsets.fromLTRB(6, 2, 6, 0),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.tertiaryContainer,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Center(child: Text(text)),
-                    ).paddingLeft(16),
-                  const Spacer(),
-                  for (var button in buttons)
-                    if (!small)
-                      button.paddingHorizontal(4)
-                    else
-                      ...[button, const Spacer()],
-                  if (!small)
-                    const SizedBox(width: 4),
-                ],
-              );
-            },
+          const SizedBox(height: 2),
+          // Action row: chapters list + settings
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (context.reader.widget.chapters != null)
+                TextButton.icon(
+                  onPressed: openChapterDrawer,
+                  icon: const Icon(LucideIcons.book, size: 18),
+                  label: Text("Chapters".tl),
+                ),
+              if (App.isDesktop)
+                TextButton.icon(
+                  onPressed: () => context.reader.fullscreen(),
+                  icon: const Icon(LucideIcons.fullscreen, size: 18),
+                  label: Text("Full Screen".tl),
+                ),
+              TextButton.icon(
+                onPressed: () {
+                  context.reader.autoPageTurning(
+                    context.reader.cid,
+                    context.reader.type,
+                  );
+                  update();
+                },
+                icon: Icon(
+                  context.reader.autoPageTurningTimer != null
+                      ? LucideIcons.alarm_clock_check
+                      : LucideIcons.alarm_clock,
+                  size: 18,
+                ),
+                label: Text("Auto Page Turning".tl),
+              ),
+              TextButton.icon(
+                onPressed: openSetting,
+                icon: const Icon(LucideIcons.settings, size: 18),
+                label: Text("Settings".tl),
+              ),
+            ],
           ),
         ],
       ),
@@ -559,11 +595,11 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
     return BlurEffect(
       child: Container(
         decoration: BoxDecoration(
-          color: context.colorScheme.surface.toOpacity(0.92),
+          color: context.colorScheme.surface.withValues(alpha: 0.85),
           border: isOpen
               ? Border(
                   top: BorderSide(
-                    color: Colors.grey.toOpacity(0.5),
+                    color: context.colorScheme.outlineVariant,
                     width: 0.5,
                   ),
                 )

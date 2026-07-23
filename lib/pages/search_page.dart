@@ -251,6 +251,8 @@ class _SearchPageState extends State<SearchPage> {
         duration: const Duration(milliseconds: 200),
         child: buildSearchOptions(),
       );
+      yield _buildQuickCategories();
+      yield _buildPopularTags();
       yield _SearchHistory(search);
     }
   }
@@ -347,6 +349,102 @@ class _SearchPageState extends State<SearchPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: children,
+        ),
+      ),
+    );
+  }
+
+  /// Quick category chips: tap to prepend "namespace:" to search text.
+  Widget _buildQuickCategories() {
+    final categories = [
+      ('female', 'Female'),
+      ('male', 'Male'),
+      ('parody', 'Parody'),
+      ('character', 'Character'),
+      ('artist', 'Artist'),
+      ('group', 'Group'),
+      ('cosplayer', 'Cosplayer'),
+      ('other', 'Other'),
+      ('language', 'Language'),
+      ('mixed', 'Mixed'),
+    ];
+
+    return SliverToBoxAdapter(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(LucideIcons.tags),
+              title: Text("Categories".tl),
+            ),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: categories.map((e) {
+                return OptionChip(
+                  text: e.$2,
+                  isSelected: false,
+                  onTap: () {
+                    final prefix = "${e.$1}:";
+                    if (!controller.text.contains(prefix)) {
+                      controller.text = "$prefix ${controller.text}".trim();
+                    }
+                    focusNode.requestFocus();
+                    findSuggestions();
+                  },
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Popular tags: show commonly used tags as quick-search chips.
+  Widget _buildPopularTags() {
+    // Pick a sample of popular tags from otherTags (general tags)
+    final allTags = TagsTranslation.otherTags.keys.toList();
+    if (allTags.isEmpty) {
+      return const SliverToBoxAdapter(child: SizedBox());
+    }
+    // Show first 24 tags as popular chips
+    final popular = allTags.take(24).toList();
+
+    return SliverToBoxAdapter(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(LucideIcons.flame),
+              title: Text("Popular Tags".tl),
+            ),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: popular.map((tag) {
+                final translated = App.locale.languageCode == 'zh'
+                    ? TagsTranslation.translationTagWithNamespace(tag, 'other')
+                    : tag;
+                return OptionChip(
+                  text: translated,
+                  isSelected: false,
+                  onTap: () {
+                    controller.text = tag;
+                    search(tag);
+                  },
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 8),
+          ],
         ),
       ),
     );

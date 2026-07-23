@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:venera/components/components.dart';
+import 'package:venera/components/comics_toolbar.dart';
 import 'package:venera/foundation/app.dart';
 import 'package:venera/foundation/appdata.dart';
 import 'package:venera/foundation/comic_type.dart';
@@ -200,24 +201,7 @@ class _LocalComicsPageState extends State<LocalComicsPage> {
     ];
 
     List<Widget> normalActions = [
-      Tooltip(
-        message: "Search".tl,
-        child: IconButton(
-          icon: const Icon(LucideIcons.search),
-          onPressed: () {
-            setState(() {
-              searchMode = true;
-            });
-          },
-        ),
-      ),
-      Tooltip(
-        message: "Sort".tl,
-        child: IconButton(
-          icon: const Icon(LucideIcons.funnel),
-          onPressed: sort,
-        ),
-      ),
+      // Sort and Search moved to unified ComicsToolbar below
       Tooltip(
         message: "Downloading".tl,
         child: IconButton(
@@ -256,8 +240,21 @@ class _LocalComicsPageState extends State<LocalComicsPage> {
                   ? Text(selectedComics.length.toString())
                   : Text("Local".tl),
               actions: multiSelectMode ? selectActions : normalActions,
-            )
-          else if (searchMode)
+            ),
+          // Unified comics toolbar (Sort + View Mode + Search)
+          if (!searchMode && !multiSelectMode)
+            SliverToBoxAdapter(
+              child: ComicsToolbar(
+                onSortTap: sort,
+                sortActive: sortType != LocalSortType.name,
+                onSearchTap: () {
+                  setState(() {
+                    searchMode = true;
+                  });
+                },
+              ),
+            ),
+          if (searchMode)
             SliverAppbar(
               leading: Tooltip(
                 message: multiSelectMode ? "Cancel".tl : "Cancel".tl,

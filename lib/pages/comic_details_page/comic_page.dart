@@ -80,6 +80,8 @@ class _ComicPageState extends LoadingState<ComicPage, ComicDetails>
 
   final showFAB = ValueNotifier<bool>(false);
 
+  bool _tagsExpanded = false;
+
   @override
   void onReadEnd() {
     history ??= HistoryManager().find(
@@ -184,6 +186,7 @@ class _ComicPageState extends LoadingState<ComicPage, ComicDetails>
               : const SizedBox.shrink();
         },
       ),
+      bottomNavigationBar: _buildBottomActionBar(),
       body: SmoothCustomScrollView(
         controller: scrollController,
         slivers: [
@@ -199,6 +202,62 @@ class _ComicPageState extends LoadingState<ComicPage, ComicDetails>
             padding: EdgeInsets.only(
               bottom: context.padding.bottom + 80,
             ), // Add additional padding for FAB
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Fixed bottom action bar: Continue/Read + Favorite
+  Widget _buildBottomActionBar() {
+    final cs = context.colorScheme;
+    bool hasHistory = history != null && (history!.ep > 1 || history!.page > 1);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: cs.surface,
+        border: Border(
+          top: BorderSide(color: cs.outlineVariant, width: 0.6),
+        ),
+      ),
+      padding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: 8,
+        bottom: context.padding.bottom + 8,
+      ),
+      child: Row(
+        children: [
+          // Favorite icon button
+          IconButton(
+            onPressed: openFavPanel,
+            onLongPress: quickFavorite,
+            icon: Icon(
+              (isFavorite || isAddToLocalFav)
+                  ? LucideIcons.bookmark_check
+                  : LucideIcons.bookmark,
+              color: (isFavorite || isAddToLocalFav)
+                  ? cs.primary
+                  : cs.onSurfaceVariant,
+            ),
+            tooltip: 'Favorite'.tl,
+          ),
+          if (!isDownloaded && context.width < changePoint)
+            IconButton(
+              onPressed: download,
+              icon: Icon(LucideIcons.download, color: cs.onSurfaceVariant),
+              tooltip: 'Download'.tl,
+            ),
+          const SizedBox(width: 8),
+          // Primary read/continue button
+          Expanded(
+            child: FilledButton(
+              onPressed: hasHistory ? continueRead : read,
+              style: FilledButton.styleFrom(
+                minimumSize: const Size.fromHeight(44),
+              ),
+              child: Text(hasHistory ? 'Continue'.tl : 'Read'.tl),
+            ),
           ),
         ],
       ),
@@ -350,6 +409,22 @@ class _ComicPageState extends LoadingState<ComicPage, ComicDetails>
                   (ComicSource.find(comic.sourceKey)?.name) ?? '',
                   style: ts.s12,
                 ),
+                if (comic.stars != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Row(
+                      children: [
+                        StarRating(value: comic.stars!, size: 16, onTap: starRating),
+                        const SizedBox(width: 6),
+                        Text(
+                          comic.stars!.toStringAsFixed(2),
+                          style: ts.s12.copyWith(
+                            color: context.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
               ],
             ),
           ),
@@ -359,8 +434,6 @@ class _ComicPageState extends LoadingState<ComicPage, ComicDetails>
   }
 
   Widget buildActions() {
-    bool isMobile = context.width < changePoint;
-    bool hasHistory = history != null && (history!.ep > 1 || history!.page > 1);
     return SliverLazyToBoxAdapter(
       child: Column(
         children: [
@@ -368,27 +441,7 @@ class _ComicPageState extends LoadingState<ComicPage, ComicDetails>
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 8),
             children: [
-              if (hasHistory && !isMobile)
-                _ActionButton(
-                  icon: const Icon(LucideIcons.book_open),
-                  text: 'Continue'.tl,
-                  onPressed: continueRead,
-                  iconColor: context.useTextColor(Colors.yellow),
-                ),
-              if (!isMobile || hasHistory)
-                _ActionButton(
-                  icon: const Icon(LucideIcons.circle_play),
-                  text: 'Start'.tl,
-                  onPressed: read,
-                  iconColor: context.useTextColor(Colors.orange),
-                ),
-              if (!isMobile && !isDownloaded)
-                _ActionButton(
-                  icon: const Icon(LucideIcons.download),
-                  text: 'Download'.tl,
-                  onPressed: download,
-                  iconColor: context.useTextColor(Colors.cyan),
-                ),
+              // Continue/Read/Download moved to fixed bottom bar
               if (data!.isLiked != null)
                 _ActionButton(
                   icon: const Icon(LucideIcons.star),
@@ -425,28 +478,16 @@ class _ComicPageState extends LoadingState<ComicPage, ComicDetails>
                 onPressed: share,
                 iconColor: context.useTextColor(Colors.blue),
               ),
+              if (!isDownloaded)
+                _ActionButton(
+                  icon: const Icon(LucideIcons.download),
+                  text: 'Download'.tl,
+                  onPressed: download,
+                  iconColor: context.useTextColor(Colors.cyan),
+                ),
             ],
           ).fixHeight(48),
-          if (isMobile)
-            Row(
-              children: [
-                Expanded(
-                  child: FilledButton.tonal(
-                    onPressed: download,
-                    child: Text("Download".tl),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: hasHistory
-                      ? FilledButton(
-                          onPressed: continueRead,
-                          child: Text("Continue".tl),
-                        )
-                      : FilledButton(onPressed: read, child: Text("Read".tl)),
-                ),
-              ],
-            ).paddingHorizontal(16).paddingVertical(8),
+          // Mobile read/download Row moved to fixed bottom bar
           if (history != null)
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -523,6 +564,23 @@ class _ComicPageState extends LoadingState<ComicPage, ComicDetails>
         ],
       ),
     );
+  }
+
+  /// Format upload/update time strings to readable format.
+  String formatTime(String time) {
+    if (int.tryParse(time) != null) {
+      var t = int.tryParse(time);
+      if (t! > 1000000000000) {
+        return DateTime.fromMillisecondsSinceEpoch(t).toString().substring(0, 19);
+      } else {
+        return DateTime.fromMillisecondsSinceEpoch(t * 1000).toString().substring(0, 19);
+      }
+    }
+    if (time.contains('T') || time.contains('Z')) {
+      var t = DateTime.parse(time);
+      return t.toString().substring(0, 19);
+    }
+    return time;
   }
 
   Widget buildInfo() {
@@ -604,26 +662,6 @@ class _ComicPageState extends LoadingState<ComicPage, ComicDetails>
       }
     }
 
-    String formatTime(String time) {
-      if (int.tryParse(time) != null) {
-        var t = int.tryParse(time);
-        if (t! > 1000000000000) {
-          return DateTime.fromMillisecondsSinceEpoch(
-            t,
-          ).toString().substring(0, 19);
-        } else {
-          return DateTime.fromMillisecondsSinceEpoch(
-            t * 1000,
-          ).toString().substring(0, 19);
-        }
-      }
-      if (time.contains('T') || time.contains('Z')) {
-        var t = DateTime.parse(time);
-        return t.toString().substring(0, 19);
-      }
-      return time;
-    }
-
     Widget buildWrap({required List<Widget> children}) {
       return Wrap(
         runSpacing: 8,
@@ -640,64 +678,89 @@ class _ComicPageState extends LoadingState<ComicPage, ComicDetails>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ListTile(title: Text("Information".tl)),
-          if (comic.stars != null)
-            Row(
-              children: [
-                StarRating(value: comic.stars!, size: 24, onTap: starRating),
-                const SizedBox(width: 8),
-                Text(comic.stars!.toStringAsFixed(2)),
-              ],
-            ).paddingLeft(16).paddingVertical(8),
-          for (var e in comic.tags.entries)
-            buildWrap(
-              children: [
-                if (e.value.isNotEmpty)
-                  buildTag(text: e.key.ts(comicSource.key), isTitle: true),
-                for (var tag in e.value)
-                  buildTag(
-                    text: enableTranslation
-                        ? TagsTranslation.translationTagWithNamespace(
-                            tag,
-                            e.key.toLowerCase(),
-                          )
-                        : tag,
-                    onTap: () => onTapTag(tag, e.key),
-                  ),
-              ],
-            ),
-          if (comic.uploader != null)
-            buildWrap(
-              children: [
-                buildTag(text: 'Uploader'.tl, isTitle: true),
-                buildTag(text: comic.uploader!),
-              ],
-            ),
-          if (comic.uploadTime != null)
-            buildWrap(
-              children: [
-                buildTag(text: 'Upload Time'.tl, isTitle: true),
-                buildTag(text: formatTime(comic.uploadTime!)),
-              ],
-            ),
-          if (comic.updateTime != null)
-            buildWrap(
-              children: [
-                buildTag(text: 'Update Time'.tl, isTitle: true),
-                buildTag(text: formatTime(comic.updateTime!)),
-              ],
-            ),
-          if (comic.maxPage != null)
-            buildWrap(
-              children: [
-                buildTag(text: 'Pages'.tl, isTitle: true),
-                buildTag(text: comic.maxPage.toString()),
-              ],
+          // Rating now shown in title row; removed from here
+          ..._buildTagGroups(enableTranslation, buildTag, buildWrap),
+          if (comic.tags.isNotEmpty)
+            Center(
+              child: TextButton.icon(
+                onPressed: () => setState(() => _tagsExpanded = !_tagsExpanded),
+                icon: Icon(
+                  _tagsExpanded ? LucideIcons.chevron_up : LucideIcons.chevron_down,
+                  size: 16,
+                ),
+                label: Text(
+                  _tagsExpanded ? 'Collapse'.tl : 'Show All'.tl,
+                ),
+              ),
             ),
           const SizedBox(height: 12),
           const Divider(),
         ],
       ),
     );
+  }
+
+  /// Build tag groups, respecting collapse state.
+  /// When collapsed, only show the first 2 tag groups with limited tags.
+  List<Widget> _buildTagGroups(
+    bool enableTranslation,
+    Widget Function({required String text, VoidCallback? onTap, bool isTitle}) buildTag,
+    Widget Function({required List<Widget> children}) buildWrap,
+  ) {
+    final entries = comic.tags.entries.toList();
+    final visibleEntries = _tagsExpanded
+        ? entries
+        : entries.take(2).toList();
+
+    return [
+      for (var e in visibleEntries)
+        buildWrap(
+          children: [
+            if (e.value.isNotEmpty)
+              buildTag(text: e.key.ts(comicSource.key), isTitle: true),
+            for (var tag in (_tagsExpanded ? e.value : e.value.take(6)))
+              buildTag(
+                text: enableTranslation
+                    ? TagsTranslation.translationTagWithNamespace(
+                        tag,
+                        e.key.toLowerCase(),
+                      )
+                    : tag,
+                onTap: () => onTapTag(tag, e.key),
+              ),
+            if (!_tagsExpanded && e.value.length > 6)
+              buildTag(text: '+${e.value.length - 6}'),
+          ],
+        ),
+      if (comic.uploader != null)
+        buildWrap(
+          children: [
+            buildTag(text: 'Uploader'.tl, isTitle: true),
+            buildTag(text: comic.uploader!),
+          ],
+        ),
+      if (comic.uploadTime != null)
+        buildWrap(
+          children: [
+            buildTag(text: 'Upload Time'.tl, isTitle: true),
+            buildTag(text: formatTime(comic.uploadTime!)),
+          ],
+        ),
+      if (comic.updateTime != null)
+        buildWrap(
+          children: [
+            buildTag(text: 'Update Time'.tl, isTitle: true),
+            buildTag(text: formatTime(comic.updateTime!)),
+          ],
+        ),
+      if (comic.maxPage != null)
+        buildWrap(
+          children: [
+            buildTag(text: 'Pages'.tl, isTitle: true),
+            buildTag(text: comic.maxPage.toString()),
+          ],
+        ),
+    ];
   }
 
   Widget buildChapters() {

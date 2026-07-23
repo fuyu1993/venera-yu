@@ -104,6 +104,18 @@ class _App {
   /// calls [setState], guaranteeing the rebuild always takes effect.
   ValueNotifier<int> get rebuildNotifier => _rebuildNotifier;
 
+  /// A notifier for comic display mode changes (brief/detailed).
+  /// Comic list pages listen to this to rebuild immediately.
+  final _viewModeNotifier = ValueNotifier<String>('detailed');
+
+  ValueNotifier<String> get viewModeNotifier => _viewModeNotifier;
+
+  void setViewMode(String mode) {
+    if (_viewModeNotifier.value != mode) {
+      _viewModeNotifier.value = mode;
+    }
+  }
+
   @Deprecated('Use rebuildNotifier instead')
   Function? _forceRebuildHandler;
 

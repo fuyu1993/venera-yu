@@ -1109,13 +1109,21 @@ class _SliverGridComicsState extends State<SliverGridComics> {
     }
     generateHeroID();
     HistoryManager().addListener(update);
+    App.viewModeNotifier.addListener(_onViewModeChanged);
     super.initState();
   }
 
   @override
   void dispose() {
     HistoryManager().removeListener(update);
+    App.viewModeNotifier.removeListener(_onViewModeChanged);
     super.dispose();
+  }
+
+  void _onViewModeChanged() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   void update() {

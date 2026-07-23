@@ -192,6 +192,7 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
     comics = [];
     updateComics();
     LocalFavoritesManager().addListener(updateComics);
+    App.viewModeNotifier.addListener(_onViewModeChanged);
     super.initState();
   }
 
@@ -199,6 +200,13 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
   void dispose() {
     super.dispose();
     LocalFavoritesManager().removeListener(updateComics);
+    App.viewModeNotifier.removeListener(_onViewModeChanged);
+  }
+
+  void _onViewModeChanged() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   void selectAll() {
@@ -348,44 +356,7 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
                     }),
                   ),
                 ),
-              Tooltip(
-                message: "Filter".tl,
-                child: IconButton(
-                  icon: const Icon(LucideIcons.funnel),
-                  color: readFilterSelect != readFilterList[0]
-                      ? context.colorScheme.primaryContainer
-                      : null,
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) {
-                        return _LocalFavoritesFilterDialog(
-                          initReadFilterSelect: readFilterSelect,
-                          updateConfig: (readFilter) {
-                            setState(() {
-                              readFilterSelect = readFilter;
-                            });
-                            updateComics();
-                          },
-                        );
-                      },
-                    );
-                  },
-                ),
-              ),
-              Tooltip(
-                message: "Search".tl,
-                child: IconButton(
-                  icon: const Icon(LucideIcons.search),
-                  onPressed: () {
-                    setState(() {
-                      keyword = "";
-                      searchMode = true;
-                      updateSearchResult();
-                    });
-                  },
-                ),
-              ),
+              // Filter and Search moved to unified ComicsToolbar below
               if (!isAllFolder)
                 MenuButton(
                   entries: [
@@ -484,8 +455,38 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
                   ],
                 ),
             ],
-          )
-        else if (multiSelectMode)
+          ),
+        // Unified comics toolbar (Sort + Filter + View Mode + Search)
+        if (!searchMode && !multiSelectMode)
+          SliverToBoxAdapter(
+            child: ComicsToolbar(
+              onFilterTap: () {
+                showDialog(
+                  context: context,
+                  builder: (context) {
+                    return _LocalFavoritesFilterDialog(
+                      initReadFilterSelect: readFilterSelect,
+                      updateConfig: (readFilter) {
+                        setState(() {
+                          readFilterSelect = readFilter;
+                        });
+                        updateComics();
+                      },
+                    );
+                  },
+                );
+              },
+              filterActive: readFilterSelect != readFilterList[0],
+              onSearchTap: () {
+                setState(() {
+                  keyword = "";
+                  searchMode = true;
+                  updateSearchResult();
+                });
+              },
+            ),
+          ),
+        if (multiSelectMode)
           SliverAppbar(
             style: context.width < changePoint
                 ? AppbarStyle.shadow
