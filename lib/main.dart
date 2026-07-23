@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:desktop_webview_window/desktop_webview_window.dart';
 import 'package:dynamic_color/dynamic_color.dart';
-import 'package:flex_seed_scheme/flex_seed_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -15,6 +14,7 @@ import 'components/components.dart';
 import 'components/window_frame.dart';
 import 'foundation/app.dart';
 import 'foundation/appdata.dart';
+import 'foundation/design_tokens.dart';
 import 'headless.dart';
 import 'init.dart';
 
@@ -134,55 +134,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     }
   }
 
-  Color translateColorSetting() {
-    return switch (appdata.settings['color']) {
-      'red' => const Color(0xFFEF4444),
-      'pink' => const Color(0xFFEC4899),
-      'purple' => const Color(0xFF8B5CF6),
-      'green' => const Color(0xFF10B981),
-      'orange' => const Color(0xFFF59E0B),
-      'blue' => const Color(0xFF3B82F6),
-      'yellow' => const Color(0xFFEAB308),
-      'cyan' => const Color(0xFF14B8A6),
-      'indigo' => const Color(0xFF6366F1),
-      _ => const Color(0xFF3B82F6),
-    };
-  }
-
-  ThemeData getTheme(
-    Color primary,
-    Color? secondary,
-    Color? tertiary,
-    Brightness brightness,
-  ) {
-    String? font;
-    List<String>? fallback;
-    if (App.isLinux || App.isWindows) {
-      font = 'Noto Sans CJK';
-      fallback = [
-        'Segoe UI',
-        'Noto Sans SC',
-        'Noto Sans TC',
-        'Noto Sans',
-        'Microsoft YaHei',
-        'PingFang SC',
-        'Arial',
-        'sans-serif'
-      ];
-    }
-    return ThemeData(
-      colorScheme: SeedColorScheme.fromSeeds(
-        primaryKey: primary,
-        secondaryKey: secondary,
-        tertiaryKey: tertiary,
-        brightness: brightness,
-        tones: FlexTones.vividBackground(brightness),
-      ),
-      fontFamily: font,
-      fontFamilyFallback: fallback,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     Widget home;
@@ -196,16 +147,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       home = const MainPage();
     }
     return DynamicColorBuilder(builder: (light, dark) {
-      Color? primary, secondary, tertiary;
-      if (appdata.settings['color'] != 'system' ||
-          light == null ||
-          dark == null) {
-        primary = translateColorSetting();
-      } else {
-        primary = light.primary;
-        secondary = light.secondary;
-        tertiary = light.tertiary;
-      }
       return MaterialApp(
         title: "venera-yu",
         home: home,
@@ -213,11 +154,17 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         theme: AppTheme.getThemeBySettings(
           appdata.settings['color'] ?? 'blue',
           Brightness.light,
+          dynamicPrimary: light?.primary,
+          dynamicSecondary: light?.secondary,
+          dynamicTertiary: light?.tertiary,
         ),
         navigatorKey: App.rootNavigatorKey,
         darkTheme: AppTheme.getThemeBySettings(
           appdata.settings['color'] ?? 'blue',
           Brightness.dark,
+          dynamicPrimary: dark?.primary,
+          dynamicSecondary: dark?.secondary,
+          dynamicTertiary: dark?.tertiary,
         ),
         themeMode: switch (appdata.settings['theme_mode']) {
           'light' => ThemeMode.light,
@@ -279,6 +226,17 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
             }
 
             widget = OverlayWidget(widget);
+            // UI 密度：按设置缩放文字（紧凑 0.9 / 标准 1.0 / 宽松 1.1）。
+            // visualDensity 已在 ThemeData 中设置，此处仅覆盖 textScaler。
+            final density = UiDensity.fromKey(
+              appdata.settings['uiDensity'] as String?,
+            );
+            widget = MediaQuery(
+              data: MediaQuery.of(context).copyWith(
+                textScaler: TextScaler.linear(density.textScaleFactor),
+              ),
+              child: widget,
+            );
             if (App.isDesktop) {
               widget = Shortcuts(
                 shortcuts: {

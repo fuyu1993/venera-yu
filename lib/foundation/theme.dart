@@ -1,7 +1,14 @@
+import 'package:flex_seed_scheme/flex_seed_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:venera/foundation/app.dart';
+import 'package:venera/foundation/appdata.dart';
+import 'package:venera/foundation/design_tokens.dart';
 
-/// iOS 风格主题配置
+/// 主题配置。合并后的单一真源：
+/// - 颜色由 M3 seed（[SeedColorScheme.fromSeeds]）派生，支持 9 预设色与系统动态取色；
+/// - 组件样式（字体/卡片/按钮/输入/对话框/导航）保留 iOS 风格；
+/// - 暗色支持 AMOLED 纯黑档位；
+/// - UI 密度由 [UiDensity] 设置项驱动。
 class AppTheme {
   // ========== 主题色 ==========
   static const Color iosBlue = Color(0xFF3B82F6);
@@ -29,8 +36,8 @@ class AppTheme {
 
   // iOS 文字颜色（使用半透明色，更符合 iOS 风格）
   static const Color iosLabel = Color(0xFF000000);
-  static const Color iosSecondaryLabel = Color(0x993C3C43);  // 60% 不透明度
-  static const Color iosTertiaryLabel = Color(0x4D3C3C43);   // 30% 不透明度
+  static const Color iosSecondaryLabel = Color(0x993C3C43); // 60% 不透明度
+  static const Color iosTertiaryLabel = Color(0x4D3C3C43); // 30% 不透明度
   static const Color iosQuaternaryLabel = Color(0x2E3C3C43); // 18% 不透明度
 
   // iOS 分隔线
@@ -129,98 +136,143 @@ class AppTheme {
     'indigo': Color(0xFF6366F1),
   };
 
-  // ========== 根据设置获取主题 ==========
-  static ThemeData getThemeBySettings(String colorKey, Brightness brightness) {
+  // ========== 根据设置获取主题（合并后单一入口） ==========
+  /// 颜色由 M3 seed 派生；当 [colorKey]=='system' 且提供动态色时使用系统动态色。
+  /// [dynamicPrimary/Secondary/Tertiary] 来自 DynamicColorBuilder，仅 system 模式生效。
+  static ThemeData getThemeBySettings(
+    String colorKey,
+    Brightness brightness, {
+    Color? dynamicPrimary,
+    Color? dynamicSecondary,
+    Color? dynamicTertiary,
+  }) {
     final isDark = brightness == Brightness.dark;
-    final primaryColor = presetColors[colorKey] ?? iosBlue;
-
-    return isDark ? _buildDarkTheme(primaryColor) : _buildLightTheme(primaryColor);
+    final bool useDynamic = colorKey == 'system' && dynamicPrimary != null;
+    final Color primary =
+        useDynamic ? dynamicPrimary : (presetColors[colorKey] ?? iosBlue);
+    final Color secondary =
+        useDynamic && dynamicSecondary != null ? dynamicSecondary : primary;
+    final Color tertiary =
+        useDynamic && dynamicTertiary != null ? dynamicTertiary : iosPurple;
+    final amoled = isDark && appdata.settings['amoledDark'] == true;
+    final density =
+        UiDensity.fromKey(appdata.settings['uiDensity'] as String?);
+    return _buildTheme(
+      primary: primary,
+      secondary: secondary,
+      tertiary: tertiary,
+      brightness: brightness,
+      amoled: amoled,
+      density: density,
+    );
   }
 
-  // ========== iOS 风格主题数据 ==========
-  static ThemeData get lightTheme {
-    return _buildLightTheme(iosBlue);
-  }
+  static ThemeData _buildTheme({
+    required Color primary,
+    required Color secondary,
+    required Color tertiary,
+    required Brightness brightness,
+    required bool amoled,
+    required UiDensity density,
+  }) {
+    final isDark = brightness == Brightness.dark;
+    var scheme = SeedColorScheme.fromSeeds(
+      primaryKey: primary,
+      secondaryKey: secondary,
+      tertiaryKey: tertiary,
+      brightness: brightness,
+      tones: FlexTones.vividBackground(brightness),
+    );
+    if (amoled) {
+      scheme = scheme.copyWith(
+        surface: Colors.black,
+        surfaceContainerLowest: Colors.black,
+        surfaceContainerLow: const Color(0xFF050505),
+        surfaceContainer: const Color(0xFF0A0A0A),
+        surfaceContainerHigh: const Color(0xFF0F0F0F),
+        surfaceContainerHighest: const Color(0xFF141414),
+      );
+    }
+    final cardColor = isDark
+        ? (amoled ? const Color(0xFF0A0A0A) : const Color(0xFF1C1C1E))
+        : iosCardBackground;
+    final scaffoldBg = isDark ? Colors.black : iosGroupedBackground;
+    final onColor = isDark ? Colors.white : iosLabel;
+    final dividerColor = isDark ? const Color(0xFF38383A) : iosSeparator;
 
-  static ThemeData get darkTheme {
-    return _buildDarkTheme(iosBlue);
-  }
+    final textTheme = isDark
+        ? TextTheme(
+            displayLarge: iosLargeTitle.copyWith(color: Colors.white),
+            displayMedium: iosTitle1.copyWith(color: Colors.white),
+            displaySmall: iosTitle2.copyWith(color: Colors.white),
+            headlineLarge: iosTitle2.copyWith(color: Colors.white),
+            headlineMedium: iosTitle3.copyWith(color: Colors.white),
+            headlineSmall: iosHeadline.copyWith(color: Colors.white),
+            titleLarge: iosHeadline.copyWith(color: Colors.white),
+            titleMedium: iosSubheadline.copyWith(color: Colors.white),
+            titleSmall: iosFootnote.copyWith(color: Colors.white),
+            bodyLarge: iosBody.copyWith(color: Colors.white),
+            bodyMedium: iosCallout.copyWith(color: Colors.white),
+            bodySmall: iosFootnote.copyWith(color: Colors.white),
+            labelLarge: iosSubheadline.copyWith(color: Colors.white),
+            labelMedium: iosFootnote.copyWith(color: Colors.white),
+            labelSmall: iosCaption1.copyWith(color: Colors.white),
+          )
+        : const TextTheme(
+            displayLarge: iosLargeTitle,
+            displayMedium: iosTitle1,
+            displaySmall: iosTitle2,
+            headlineLarge: iosTitle2,
+            headlineMedium: iosTitle3,
+            headlineSmall: iosHeadline,
+            titleLarge: iosHeadline,
+            titleMedium: iosSubheadline,
+            titleSmall: iosFootnote,
+            bodyLarge: iosBody,
+            bodyMedium: iosCallout,
+            bodySmall: iosFootnote,
+            labelLarge: iosSubheadline,
+            labelMedium: iosFootnote,
+            labelSmall: iosCaption1,
+          );
 
-  static ThemeData _buildLightTheme(Color primary) {
     return ThemeData(
       useMaterial3: true,
-      brightness: Brightness.light,
-      primaryColor: primary,
-      scaffoldBackgroundColor: iosGroupedBackground,
-      cardColor: iosCardBackground,
-      dividerColor: iosSeparator,
-      // 字体配置
+      brightness: brightness,
+      visualDensity: density.visualDensity,
+      colorScheme: scheme,
+      scaffoldBackgroundColor: scaffoldBg,
+      cardColor: cardColor,
+      dividerColor: scheme.outlineVariant,
       fontFamily: _getFontFamily(),
       fontFamilyFallback: _getFontFallback(),
-      // 文本主题
-      textTheme: const TextTheme(
-        displayLarge: iosLargeTitle,
-        displayMedium: iosTitle1,
-        displaySmall: iosTitle2,
-        headlineLarge: iosTitle2,
-        headlineMedium: iosTitle3,
-        headlineSmall: iosHeadline,
-        titleLarge: iosHeadline,
-        titleMedium: iosSubheadline,
-        titleSmall: iosFootnote,
-        bodyLarge: iosBody,
-        bodyMedium: iosCallout,
-        bodySmall: iosFootnote,
-        labelLarge: iosSubheadline,
-        labelMedium: iosFootnote,
-        labelSmall: iosCaption1,
-      ),
-      // 颜色方案
-      colorScheme: ColorScheme.light(
-        primary: primary,
-        secondary: iosGray,
-        tertiary: iosPurple,
-        surface: iosCardBackground,
-        background: iosGroupedBackground,
-        error: iosRed,
-        onPrimary: Colors.white,
-        onSecondary: Colors.white,
-        onTertiary: Colors.white,
-        onSurface: iosLabel,
-        onBackground: iosLabel,
-        onError: Colors.white,
-        outline: iosSeparator,
-        shadow: Colors.black.withOpacity(0.1),
-      ),
-      // AppBar 主题
-      appBarTheme: const AppBarTheme(
-        backgroundColor: iosGroupedBackground,
-        foregroundColor: iosLabel,
+      textTheme: textTheme,
+      appBarTheme: AppBarTheme(
+        backgroundColor: scaffoldBg,
+        foregroundColor: onColor,
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: true,
-        titleTextStyle: iosHeadline,
+        titleTextStyle: iosHeadline.copyWith(color: onColor),
       ),
-      // 卡片主题
       cardTheme: CardThemeData(
-        color: iosCardBackground,
+        color: cardColor,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppRadius.md),
         ),
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       ),
-      // 列表瓦片主题
       listTileTheme: ListTileThemeData(
-        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        titleTextStyle: iosBody,
-        subtitleTextStyle: iosFootnote,
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        titleTextStyle: iosBody.copyWith(color: onColor),
+        subtitleTextStyle: iosFootnote.copyWith(color: onColor),
         iconColor: primary,
       ),
-      // 按钮主题
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: iosBlue,
+          backgroundColor: primary,
           foregroundColor: Colors.white,
           elevation: 0,
           shape: RoundedRectangleBorder(
@@ -235,7 +287,7 @@ class AppTheme {
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          backgroundColor: iosBlue,
+          backgroundColor: primary,
           foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
@@ -245,8 +297,8 @@ class AppTheme {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: iosBlue,
-          side: BorderSide(color: iosBlue.withOpacity(0.5)),
+          foregroundColor: primary,
+          side: BorderSide(color: primary.withValues(alpha: 0.5)),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
           ),
@@ -255,48 +307,46 @@ class AppTheme {
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: iosBlue,
+          foregroundColor: primary,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         ),
       ),
-      // 输入框主题
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: iosCardBackground,
+        fillColor: cardColor,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: iosSeparator),
+          borderSide: BorderSide(color: dividerColor),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: iosSeparator),
+          borderSide: BorderSide(color: dividerColor),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: iosBlue),
+          borderSide: BorderSide(color: primary),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
-      // 对话框主题
       dialogTheme: DialogThemeData(
-        backgroundColor: iosCardBackground,
+        backgroundColor: cardColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),
         ),
-        titleTextStyle: iosHeadline,
-        contentTextStyle: iosBody,
+        titleTextStyle: iosHeadline.copyWith(color: onColor),
+        contentTextStyle: iosBody.copyWith(color: onColor),
       ),
-      // 底部导航栏主题
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: iosCardBackground,
-        selectedItemColor: iosBlue,
+        backgroundColor: cardColor,
+        selectedItemColor: primary,
         unselectedItemColor: iosGray,
         type: BottomNavigationBarType.fixed,
         elevation: 0,
-        selectedLabelStyle: iosCaption1.copyWith(color: iosBlue),
+        selectedLabelStyle: iosCaption1.copyWith(color: primary),
         unselectedLabelStyle: iosCaption1.copyWith(color: iosGray),
       ),
     );
@@ -326,148 +376,8 @@ class AppTheme {
     return ['PingFang SC', 'Helvetica Neue', 'Arial'];
   }
 
-  static ThemeData _buildDarkTheme(Color primary) {
-    return ThemeData(
-      useMaterial3: true,
-      brightness: Brightness.dark,
-      primaryColor: primary,
-      scaffoldBackgroundColor: Colors.black,
-      cardColor: const Color(0xFF1C1C1E),
-      dividerColor: const Color(0xFF38383A),
-      fontFamily: _getFontFamily(),
-      fontFamilyFallback: _getFontFallback(),
-      textTheme: TextTheme(
-        displayLarge: iosLargeTitle.copyWith(color: Colors.white),
-        displayMedium: iosTitle1.copyWith(color: Colors.white),
-        displaySmall: iosTitle2.copyWith(color: Colors.white),
-        headlineLarge: iosTitle2.copyWith(color: Colors.white),
-        headlineMedium: iosTitle3.copyWith(color: Colors.white),
-        headlineSmall: iosHeadline.copyWith(color: Colors.white),
-        titleLarge: iosHeadline.copyWith(color: Colors.white),
-        titleMedium: iosSubheadline.copyWith(color: Colors.white),
-        titleSmall: iosFootnote.copyWith(color: Colors.white),
-        bodyLarge: iosBody.copyWith(color: Colors.white),
-        bodyMedium: iosCallout.copyWith(color: Colors.white),
-        bodySmall: iosFootnote.copyWith(color: Colors.white),
-        labelLarge: iosSubheadline.copyWith(color: Colors.white),
-        labelMedium: iosFootnote.copyWith(color: Colors.white),
-        labelSmall: iosCaption1.copyWith(color: Colors.white),
-      ),
-      colorScheme: ColorScheme.dark(
-        primary: primary,
-        secondary: iosGray,
-        tertiary: iosPurple,
-        surface: const Color(0xFF1C1C1E),
-        background: Colors.black,
-        error: iosRed,
-        onPrimary: Colors.white,
-        onSecondary: Colors.white,
-        onTertiary: Colors.white,
-        onSurface: Colors.white,
-        onBackground: Colors.white,
-        onError: Colors.white,
-        outline: const Color(0xFF38383A),
-        shadow: Colors.black.withOpacity(0.3),
-      ),
-      appBarTheme: AppBarTheme(
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        centerTitle: true,
-        titleTextStyle: iosHeadline.copyWith(color: Colors.white),
-      ),
-      cardTheme: CardThemeData(
-        color: const Color(0xFF1C1C1E),
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      ),
-      listTileTheme: ListTileThemeData(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        titleTextStyle: iosBody.copyWith(color: Colors.white),
-        subtitleTextStyle: iosFootnote.copyWith(color: Colors.white),
-      ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: primary,
-          foregroundColor: Colors.white,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          textStyle: iosSubheadline.copyWith(
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
-        ),
-      ),
-      filledButtonTheme: FilledButtonThemeData(
-        style: FilledButton.styleFrom(
-          backgroundColor: primary,
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        ),
-      ),
-      outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(
-          foregroundColor: primary,
-          side: BorderSide(color: primary.withOpacity(0.5)),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        ),
-      ),
-      textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(
-          foregroundColor: primary,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        ),
-      ),
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: const Color(0xFF1C1C1E),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: const Color(0xFF38383A)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: const Color(0xFF38383A)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: primary),
-        ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      ),
-      dialogTheme: DialogThemeData(
-        backgroundColor: const Color(0xFF1C1C1E),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-        ),
-        titleTextStyle: iosHeadline.copyWith(color: Colors.white),
-        contentTextStyle: iosBody.copyWith(color: Colors.white),
-      ),
-      bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: const Color(0xFF1C1C1E),
-        selectedItemColor: primary,
-        unselectedItemColor: iosGray,
-        type: BottomNavigationBarType.fixed,
-        elevation: 0,
-        selectedLabelStyle: iosCaption1.copyWith(color: primary),
-        unselectedLabelStyle: iosCaption1.copyWith(color: iosGray),
-      ),
-    );
-  }
+  // 兼容旧引用
+  static ThemeData get lightTheme =>
+      getThemeBySettings('blue', Brightness.light);
+  static ThemeData get darkTheme => getThemeBySettings('blue', Brightness.dark);
 }

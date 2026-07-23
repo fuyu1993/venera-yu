@@ -13,6 +13,7 @@ import 'package:flutter/services.dart';
 import 'package:syntax_highlight/syntax_highlight.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
 export 'package:flutter_lucide/flutter_lucide.dart';
+import 'package:shimmer_animation/shimmer_animation.dart';
 import 'package:venera/foundation/app.dart';
 import 'package:venera/foundation/app_page_route.dart';
 import 'package:venera/foundation/appdata.dart';

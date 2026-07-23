@@ -109,6 +109,71 @@ class ListLoadingIndicator extends StatelessWidget {
   }
 }
 
+/// 统一的空状态组件：图标 + 标题 + 可选说明 + 可选行动按钮。
+/// 用于替换各列表页空白/转圈的占位，提供一致且可操作的空态体验。
+class EmptyState extends StatelessWidget {
+  const EmptyState({
+    super.key,
+    this.icon = LucideIcons.inbox,
+    this.title,
+    this.message,
+    this.action,
+    this.actionText,
+  });
+
+  final IconData icon;
+
+  final String? title;
+
+  final String? message;
+
+  final VoidCallback? action;
+
+  final String? actionText;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 48,
+              color: cs.onSurfaceVariant.withValues(alpha: 0.4),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              title ?? "Nothing here".tl,
+              style: ts.s16.copyWith(color: cs.onSurfaceVariant),
+            ),
+            if (message != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                message!,
+                textAlign: TextAlign.center,
+                style: ts.s12.copyWith(
+                  color: cs.onSurfaceVariant.withValues(alpha: 0.7),
+                ),
+              ),
+            ],
+            if (action != null) ...[
+              const SizedBox(height: 20),
+              FilledButton(
+                onPressed: action,
+                child: Text(actionText ?? "Refresh".tl),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class SliverListLoadingIndicator extends StatelessWidget {
   const SliverListLoadingIndicator({super.key});
 

@@ -176,6 +176,8 @@ class Settings with ChangeNotifier {
     'comicTileScale': 1.00, // 0.75-1.25
     'color': 'system', // red, pink, purple, green, orange, blue
     'theme_mode': 'system', // light, dark, system
+    'amoledDark': false, // AMOLED pure black in dark mode
+    'uiDensity': 'standard', // compact, standard, comfortable
     'newFavoriteAddTo': 'end', // start, end
     'moveFavoriteAfterRead': 'none', // none, end, start
     'proxy': 'system', // direct, system, proxy string

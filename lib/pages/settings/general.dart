@@ -57,6 +57,22 @@ class _GeneralSettingsState extends State<GeneralSettings> {
             App.forceRebuild();
           },
         ).toSliver(),
+        _SwitchSetting(
+          title: "AMOLED Dark".tl,
+          subtitle: "Pure black background in dark mode".tl,
+          settingKey: "amoledDark",
+          onChanged: () => App.forceRebuild(),
+        ).toSliver(),
+        SelectSetting(
+          title: "UI Density".tl,
+          settingKey: "uiDensity",
+          optionTranslation: {
+            "compact": "Compact".tl,
+            "standard": "Standard".tl,
+            "comfortable": "Comfortable".tl,
+          },
+          onChanged: () => App.forceRebuild(),
+        ).toSliver(),
         SliverToBoxAdapter(
           child: _CustomTabsSetting(),
         ),

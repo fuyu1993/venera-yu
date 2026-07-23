@@ -287,10 +287,10 @@ class ComicTile extends StatelessWidget {
       final height = constrains.maxHeight - 16;
 
       Widget image = Container(
-        width: height * 0.68,
+        width: height * 0.72,
         height: double.infinity,
         decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerHighest,
+          color: colorScheme.secondaryContainer,
           borderRadius: BorderRadius.circular(8),
           boxShadow: comicCoverShadows(context),
         ),
@@ -374,8 +374,8 @@ class ComicTile extends StatelessWidget {
 
         Widget image = Container(
           decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(12),
+            color: colorScheme.secondaryContainer,
+            borderRadius: BorderRadius.circular(8),
             boxShadow: comicCoverShadows(context),
           ),
           clipBehavior: Clip.antiAlias,
@@ -433,7 +433,7 @@ class ComicTile extends StatelessWidget {
                           child: DecoratedBox(
                             decoration: BoxDecoration(
                               borderRadius: const BorderRadius.vertical(
-                                top: Radius.circular(12),
+                                top: Radius.circular(8),
                               ),
                               gradient: LinearGradient(
                                 begin: Alignment.topCenter,
@@ -950,6 +950,87 @@ class _ReadingHistoryPainter extends CustomPainter {
   }
 }
 
+/// 漫画网格加载骨架屏。用 shimmer 占位卡片替换裸 CircularProgressIndicator，
+/// 与详情页/聚合搜索的加载态保持一致。布局复用 [SliverGridDelegateWithComics]，
+/// 自动匹配当前 brief/detailed 显示模式与缩放。
+class ComicGridSkeleton extends StatelessWidget {
+  const ComicGridSkeleton({super.key, this.itemCount = 12});
+
+  final int itemCount;
+
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer(
+      child: GridView.builder(
+        padding: EdgeInsets.zero,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: SliverGridDelegateWithComics(),
+        itemCount: itemCount,
+        itemBuilder: (context, _) => const _SkeletonComicTile(),
+      ),
+    );
+  }
+}
+
+class _SkeletonComicTile extends StatelessWidget {
+  const _SkeletonComicTile();
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final isBrief = appdata.settings['comicDisplayMode'] == 'brief';
+    final base = cs.surfaceContainerHighest;
+    Widget box(double w, double h, [double r = 6]) => Container(
+          width: w == double.infinity ? null : w,
+          height: h == double.infinity ? null : h,
+          decoration: BoxDecoration(
+            color: base,
+            borderRadius: BorderRadius.circular(r),
+          ),
+        );
+
+    if (isBrief) {
+      return Padding(
+        padding: const EdgeInsets.all(6),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: box(double.infinity, double.infinity, 8)),
+            const SizedBox(height: 6),
+            box(double.infinity, 12, 4),
+            const SizedBox(height: 4),
+            box(60, 10, 4),
+          ],
+        ),
+      );
+    }
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: Row(
+        children: [
+          box(80, double.infinity, 8),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                box(double.infinity, 14, 4),
+                const SizedBox(height: 8),
+                box(140, 12, 4),
+                const SizedBox(height: 6),
+                box(90, 10, 4),
+                const SizedBox(height: 6),
+                box(70, 10, 4),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class SliverGridComics extends StatefulWidget {
   const SliverGridComics(
       {super.key,
@@ -1106,6 +1187,9 @@ class _SliverGridComics extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (comics.isEmpty) {
+      return const SliverToBoxAdapter(child: EmptyState());
+    }
     return SliverGrid(
       delegate: SliverChildBuilderDelegate((context, index) {
         if (index == comics.length - 1) {
@@ -1504,9 +1588,7 @@ class ComicListState extends State<ComicList> {
         children: [
           if (widget.errorLeading != null) widget.errorLeading!,
           const Expanded(
-            child: Center(
-              child: CircularProgressIndicator(),
-            ),
+            child: ComicGridSkeleton(),
           ),
         ],
       );
@@ -1555,9 +1637,7 @@ class ComicListState extends State<ComicList> {
         children: [
           if (widget.errorLeading != null) widget.errorLeading!,
           const Expanded(
-            child: Center(
-              child: CircularProgressIndicator(),
-            ),
+            child: ComicGridSkeleton(),
           ),
         ],
       );
