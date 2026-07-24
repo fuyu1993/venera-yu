@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:venera/adaptive/adaptive_platform.dart';
 import 'package:venera/components/components.dart';
 import 'package:venera/foundation/app.dart';
 import 'package:venera/foundation/appdata.dart';
@@ -101,7 +103,7 @@ class _ExplorePageState extends State<ExplorePage>
         child: FloatingActionButton(
           key: const Key("FAB"),
           onPressed: refresh,
-          child: const Icon(LucideIcons.refresh_ccw),
+          child: Icon(adaptiveIcon(LucideIcons.refresh_ccw, CupertinoIcons.arrow_counterclockwise)),
         ),
       );
 
@@ -149,7 +151,7 @@ class _ExplorePageState extends State<ExplorePage>
         tabs: pages.map((e) => buildTab(e)).toList(),
         controller: controller,
         actionButton: TabActionButton(
-          icon: const Icon(LucideIcons.plus),
+          icon: Icon(adaptiveIcon(LucideIcons.plus, CupertinoIcons.plus)),
           text: "Add".tl,
           onPressed: addPage,
         ),

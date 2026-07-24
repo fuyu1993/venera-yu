@@ -1343,8 +1343,8 @@ class ComicListState extends State<ComicList> {
         'nextUrl': _nextUrl,
       };
 
-  void restoreState(Map<String, dynamic>? state) {
-    if (state == null || !enablePageStorage) {
+  void restoreState(Object? state) {
+    if (state is! Map<String, dynamic> || !enablePageStorage) {
       return;
     }
     _maxPage = state['maxPage'];
@@ -1408,7 +1408,7 @@ class ComicListState extends State<ComicList> {
                   });
                 }
               : null,
-          icon: const Icon(LucideIcons.circle_chevron_left, size: 20),
+          icon: Icon(adaptiveIcon(LucideIcons.circle_chevron_left, CupertinoIcons.chevron_left), size: 20),
           tooltip: "Back".tl,
         ),
         Expanded(
@@ -1485,7 +1485,7 @@ class ComicListState extends State<ComicList> {
                   });
                 }
               : null,
-          icon: const Icon(LucideIcons.circle_chevron_right, size: 20),
+          icon: Icon(adaptiveIcon(LucideIcons.circle_chevron_right, CupertinoIcons.chevron_right), size: 20),
           tooltip: "Next".tl,
         ),
       ],
@@ -1670,7 +1670,7 @@ class ComicListState extends State<ComicList> {
               children: [
                 Row(
                   children: [
-                    const Icon(LucideIcons.circle_alert),
+                    Icon(adaptiveIcon(LucideIcons.circle_alert, CupertinoIcons.exclamationmark_circle)),
                     const SizedBox(width: 8),
                     Expanded(child: Text(_error!, maxLines: 3)),
                   ],

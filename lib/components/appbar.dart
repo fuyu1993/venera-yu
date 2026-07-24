@@ -836,7 +836,7 @@ class _SliverSearchBarDelegate extends SliverPersistentHeaderDelegate {
                   ? const SizedBox()
                   : IconButton(
                       iconSize: 20,
-                      icon: const Icon(LucideIcons.x),
+                      icon: Icon(adaptiveIcon(LucideIcons.x, CupertinoIcons.xmark)),
                       onPressed: () {
                         editingController.clear();
                         onChanged?.call("");
@@ -940,7 +940,7 @@ class _SearchBarState extends State<AppSearchBar> with _SearchBarMixin {
                   ? const SizedBox()
                   : IconButton(
                       iconSize: 20,
-                      icon: const Icon(LucideIcons.x),
+                      icon: Icon(adaptiveIcon(LucideIcons.x, CupertinoIcons.xmark)),
                       onPressed: () {
                         _editingController.clear();
                       },

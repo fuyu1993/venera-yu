@@ -373,7 +373,7 @@ class _MenuButtonState extends State<MenuButton> {
     return Tooltip(
       message: 'more'.tl,
       child: Button.icon(
-        icon: const Icon(LucideIcons.ellipsis),
+        icon: Icon(adaptiveIcon(LucideIcons.ellipsis, CupertinoIcons.ellipsis)),
         onPressed: () {
           var renderBox = context.findRenderObject() as RenderBox;
           var offset = renderBox.localToGlobal(Offset.zero);

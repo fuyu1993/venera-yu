@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:io' as io;
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:url_launcher/url_launcher_string.dart';
+import 'package:venera/adaptive/adaptive_platform.dart';
 import 'package:venera/components/components.dart';
 import 'package:venera/foundation/app.dart';
 import 'package:venera/foundation/appdata.dart';
@@ -222,45 +224,115 @@ class _BodyState extends State<_Body> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(
-              decoration: InputDecoration(
-                hintText: "URL",
-                border: const UnderlineInputBorder(),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-                suffix: IconButton(
+            if (isCupertinoStyle())
+              CupertinoTextField(
+                placeholder: "URL",
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: CupertinoColors.separator.resolveFrom(context),
+                      width: 0.5,
+                    ),
+                  ),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                suffix: CupertinoButton(
+                  padding: EdgeInsets.zero,
                   onPressed: () => handleAddSource(url),
-                  icon: const Icon(LucideIcons.check),
+                  child: Icon(CupertinoIcons.checkmark),
                 ),
-              ),
-              onChanged: (value) {
-                url = value;
-              },
-              onSubmitted: handleAddSource,
-            ).paddingHorizontal(16).paddingBottom(8),
+                onChanged: (value) {
+                  url = value;
+                },
+                onSubmitted: handleAddSource,
+              ).paddingHorizontal(16).paddingBottom(4)
+            else
+              TextField(
+                decoration: InputDecoration(
+                  hintText: "URL",
+                  border: const UnderlineInputBorder(),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                  suffix: IconButton(
+                    onPressed: () => handleAddSource(url),
+                    icon: const Icon(LucideIcons.check),
+                  ),
+                ),
+                onChanged: (value) {
+                  url = value;
+                },
+                onSubmitted: handleAddSource,
+              ).paddingHorizontal(16).paddingBottom(8),
             Wrap(
-              spacing: 8,
-              runSpacing: 8,
+              spacing: 6,
+              runSpacing: 4,
               children: [
-                FilledButton.tonalIcon(
-                  icon: Icon(LucideIcons.file_text),
-                  label: Text("Comic Source list".tl),
-                  onPressed: () {
-                    showPopUpWidget(
-                      App.rootContext,
-                      _ComicSourceList(handleAddSource),
-                    );
-                  },
-                ),
-                FilledButton.tonalIcon(
-                  icon: Icon(LucideIcons.file_plus),
-                  label: Text("Use a config file".tl),
-                  onPressed: _selectFile,
-                ),
-                FilledButton.tonalIcon(
-                  icon: Icon(LucideIcons.circle_question_mark),
-                  label: Text("Help".tl),
-                  onPressed: help,
-                ),
+                if (isCupertinoStyle())
+                  CupertinoButton.filled(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    onPressed: () {
+                      showPopUpWidget(
+                        App.rootContext,
+                        _ComicSourceList(handleAddSource),
+                      );
+                    },
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(CupertinoIcons.doc_text, size: 16),
+                        const SizedBox(width: 4),
+                        Text("Comic Source list".tl),
+                      ],
+                    ),
+                  )
+                else
+                  FilledButton.tonalIcon(
+                    icon: Icon(LucideIcons.file_text),
+                    label: Text("Comic Source list".tl),
+                    onPressed: () {
+                      showPopUpWidget(
+                        App.rootContext,
+                        _ComicSourceList(handleAddSource),
+                      );
+                    },
+                  ),
+                if (isCupertinoStyle())
+                  CupertinoButton.filled(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    onPressed: _selectFile,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(CupertinoIcons.doc, size: 16),
+                        const SizedBox(width: 4),
+                        Text("Use a config file".tl),
+                      ],
+                    ),
+                  )
+                else
+                  FilledButton.tonalIcon(
+                    icon: Icon(LucideIcons.file_plus),
+                    label: Text("Use a config file".tl),
+                    onPressed: _selectFile,
+                  ),
+                if (isCupertinoStyle())
+                  CupertinoButton.filled(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    onPressed: help,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(CupertinoIcons.question_circle, size: 16),
+                        const SizedBox(width: 4),
+                        Text("Help".tl),
+                      ],
+                    ),
+                  )
+                else
+                  FilledButton.tonalIcon(
+                    icon: Icon(LucideIcons.circle_question_mark),
+                    label: Text("Help".tl),
+                    onPressed: help,
+                  ),
                 _CheckUpdatesButton(),
               ],
             ).paddingHorizontal(12).paddingVertical(8),
@@ -715,6 +787,26 @@ class _CheckUpdatesButtonState extends State<_CheckUpdatesButton> {
 
   @override
   Widget build(BuildContext context) {
+    if (isCupertinoStyle()) {
+      return CupertinoButton.filled(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        onPressed: check,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            isLoading
+                ? SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CupertinoActivityIndicator(),
+                  )
+                : Icon(CupertinoIcons.arrow_counterclockwise, size: 18),
+            const SizedBox(width: 6),
+            Text("Check updates".tl),
+          ],
+        ),
+      );
+    }
     return FilledButton.tonalIcon(
       icon: isLoading
           ? SizedBox(
@@ -853,7 +945,7 @@ class _SliverComicSourceState extends State<_SliverComicSource> {
               turns: _collapsed ? 0 : 0.5,
               duration: const Duration(milliseconds: 200),
               child: Icon(
-                LucideIcons.chevron_down,
+                adaptiveIcon(LucideIcons.chevron_down, CupertinoIcons.chevron_down),
                 color: context.colorScheme.onSurfaceVariant,
               ),
             ),
@@ -908,21 +1000,21 @@ class _SliverComicSourceState extends State<_SliverComicSource> {
             message: "Edit".tl,
             child: IconButton(
               onPressed: () => widget.edit(source),
-              icon: const Icon(LucideIcons.square_pen),
+              icon: Icon(adaptiveIcon(LucideIcons.square_pen, CupertinoIcons.pen)),
             ),
           ),
           Tooltip(
             message: "Update".tl,
             child: IconButton(
               onPressed: () => widget.update(source),
-              icon: const Icon(LucideIcons.refresh_ccw),
+              icon: Icon(adaptiveIcon(LucideIcons.refresh_ccw, CupertinoIcons.arrow_counterclockwise)),
             ),
           ),
           Tooltip(
             message: "Delete".tl,
             child: IconButton(
               onPressed: () => widget.delete(source),
-              icon: const Icon(LucideIcons.trash),
+              icon: Icon(adaptiveIcon(LucideIcons.trash, CupertinoIcons.trash)),
             ),
           ),
         ],
@@ -935,7 +1027,10 @@ class _SliverComicSourceState extends State<_SliverComicSource> {
         SliverToBoxAdapter(
           child: Column(
             children: [
-              header,
+              Material(
+                color: Colors.transparent,
+                child: header,
+              ),
               Container(
                 margin: const EdgeInsets.symmetric(horizontal: 8),
                 decoration: BoxDecoration(
@@ -1016,6 +1111,7 @@ class _SliverComicSourceState extends State<_SliverComicSource> {
                 current;
           }
           yield ListTile(
+            visualDensity: const VisualDensity(vertical: -4),
             title: Text((item.value['title'] as String).ts(source.key)),
             trailing: Select(
               current: (current as String).ts(source.key),
@@ -1035,6 +1131,7 @@ class _SliverComicSourceState extends State<_SliverComicSource> {
         } else if (type == "switch") {
           var current = source.data['settings'][key] ?? item.value['default'];
           yield ListTile(
+            visualDensity: const VisualDensity(vertical: -4),
             title: Text((item.value['title'] as String).ts(source.key)),
             trailing: Switch(
               value: current,
@@ -1049,6 +1146,7 @@ class _SliverComicSourceState extends State<_SliverComicSource> {
           var current =
               source.data['settings'][key] ?? item.value['default'] ?? '';
           yield ListTile(
+            visualDensity: const VisualDensity(vertical: -4),
             title: Text((item.value['title'] as String).ts(source.key)),
             subtitle: Text(
               current,
@@ -1108,6 +1206,7 @@ class _SliverComicSourceState extends State<_SliverComicSource> {
           yield item.builder!(context);
         } else {
           yield ListTile(
+            visualDensity: const VisualDensity(vertical: -4),
             title: Text(item.title.tl),
             subtitle: item.data == null ? null : Text(item.data!()),
             onTap: item.onTap,

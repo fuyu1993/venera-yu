@@ -121,7 +121,7 @@ class _LeftBarState extends State<_LeftBar> implements FolderList {
       child: Row(
         children: [
           Icon(
-            LucideIcons.activity,
+            adaptiveIcon(LucideIcons.activity, CupertinoIcons.chart_bar),
             color: context.colorScheme.secondary,
           ),
           const SizedBox(width: 12),
@@ -130,7 +130,7 @@ class _LeftBarState extends State<_LeftBar> implements FolderList {
           MenuButton(
             entries: [
               MenuEntry(
-                icon: LucideIcons.plus,
+                icon: adaptiveIcon(LucideIcons.plus, CupertinoIcons.plus),
                 text: 'Create Folder'.tl,
                 onClick: () {
                   newFolder().then((value) {
@@ -141,7 +141,7 @@ class _LeftBarState extends State<_LeftBar> implements FolderList {
                 },
               ),
               MenuEntry(
-                icon: LucideIcons.arrow_down_up,
+                icon: adaptiveIcon(LucideIcons.arrow_down_up, CupertinoIcons.arrow_up_arrow_down),
                 text: 'Sort'.tl,
                 onClick: () {
                   sortFolders().then((value) {
@@ -173,14 +173,14 @@ class _LeftBarState extends State<_LeftBar> implements FolderList {
       child: Row(
         children: [
           Icon(
-            LucideIcons.cloud,
+            adaptiveIcon(LucideIcons.cloud, CupertinoIcons.cloud),
             color: context.colorScheme.secondary,
           ),
           const SizedBox(width: 12),
           Text("Network".tl),
           const Spacer(),
           IconButton(
-            icon: const Icon(LucideIcons.settings),
+            icon: Icon(adaptiveIcon(LucideIcons.settings, CupertinoIcons.settings)),
             onPressed: () {
               showPopUpWidget(
                 App.rootContext,

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:venera/adaptive/adaptive_platform.dart';
 import 'package:venera/components/components.dart';
 import 'package:venera/foundation/app.dart';
 import 'package:venera/foundation/comic_source/comic_source.dart';
@@ -233,22 +235,22 @@ class _HistoryPageState extends State<HistoryPage> {
   Widget build(BuildContext context) {
     List<Widget> selectActions = [
       IconButton(
-          icon: const Icon(LucideIcons.square_check),
+          icon: Icon(adaptiveIcon(LucideIcons.square_check, CupertinoIcons.checkmark_square)),
           tooltip: "Select All".tl,
           onPressed: selectAll
       ),
       IconButton(
-          icon: const Icon(LucideIcons.x),
+          icon: Icon(adaptiveIcon(LucideIcons.x, CupertinoIcons.xmark)),
           tooltip: "Deselect".tl,
           onPressed: deSelect
       ),
       IconButton(
-          icon: const Icon(LucideIcons.flip_horizontal_2),
+          icon: Icon(adaptiveIcon(LucideIcons.flip_horizontal_2, CupertinoIcons.arrow_right_arrow_left)),
           tooltip: "Invert Selection".tl,
           onPressed: invertSelection
       ),
       IconButton(
-        icon: const Icon(LucideIcons.trash),
+        icon: Icon(adaptiveIcon(LucideIcons.trash, CupertinoIcons.trash)),
         tooltip: "Delete".tl,
         onPressed: selectedComics.isEmpty
             ? null
@@ -268,12 +270,12 @@ class _HistoryPageState extends State<HistoryPage> {
 
     List<Widget> normalActions = [
       IconButton(
-        icon: const Icon(LucideIcons.refresh_ccw),
+        icon: Icon(adaptiveIcon(LucideIcons.refresh_ccw, CupertinoIcons.arrow_counterclockwise)),
         tooltip: 'Refresh All Histories'.tl,
         onPressed: _refreshAllHistories,
       ),
       IconButton(
-        icon: const Icon(LucideIcons.clipboard_check),
+        icon: Icon(adaptiveIcon(LucideIcons.clipboard_check, CupertinoIcons.checkmark_square)),
         tooltip: multiSelectMode ? "Exit Multi-Select".tl : "Multi-Select".tl,
         onPressed: () {
           setState(() {
@@ -310,7 +312,7 @@ class _HistoryPageState extends State<HistoryPage> {
             );
           },
           child: IconButton(
-            icon: const Icon(LucideIcons.x),
+            icon: Icon(adaptiveIcon(LucideIcons.x, CupertinoIcons.xmark)),
             onPressed: () {
               controller.show();
             },
@@ -339,7 +341,7 @@ class _HistoryPageState extends State<HistoryPage> {
               actions: multiSelectMode
                   ? [
                       IconButton(
-                        icon: const Icon(LucideIcons.x),
+                        icon: Icon(adaptiveIcon(LucideIcons.x, CupertinoIcons.xmark)),
                         tooltip: "Cancel".tl,
                         onPressed: () {
                           setState(() {
@@ -380,14 +382,14 @@ class _HistoryPageState extends State<HistoryPage> {
               menuBuilder: (c) {
                 return [
                   MenuEntry(
-                    icon: LucideIcons.refresh_ccw,
+                    icon: adaptiveIcon(LucideIcons.refresh_ccw, CupertinoIcons.arrow_counterclockwise),
                     text: 'Refresh Info'.tl,
                     onClick: () {
                       _refreshHistory(c as History);
                     },
                   ),
                   MenuEntry(
-                    icon: LucideIcons.minus,
+                    icon: adaptiveIcon(LucideIcons.minus, CupertinoIcons.minus),
                     text: 'Remove'.tl,
                     color: context.colorScheme.error,
                     onClick: () {

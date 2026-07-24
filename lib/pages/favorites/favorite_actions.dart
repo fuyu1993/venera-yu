@@ -281,7 +281,7 @@ Future<void> sortFolders() async {
           Tooltip(
             message: "Help".tl,
             child: IconButton(
-              icon: const Icon(LucideIcons.circle_question_mark),
+              icon: Icon(adaptiveIcon(LucideIcons.circle_question_mark, CupertinoIcons.question_circle)),
               onPressed: () {
                 showInfoDialog(
                   context: context,

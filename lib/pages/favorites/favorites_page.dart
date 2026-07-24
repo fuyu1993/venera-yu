@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_reorderable_grid_view/widgets/reorderable_builder.dart';
+import 'package:venera/adaptive/adaptive_platform.dart';
 import 'package:venera/components/components.dart';
 import 'package:venera/components/comics_toolbar.dart';
 import 'package:venera/foundation/app.dart';
@@ -161,7 +163,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
               message: "Folders".tl,
               child: context.width <= _kTwoPanelChangeWidth
                   ? IconButton(
-                      icon: const Icon(LucideIcons.menu),
+                      icon: Icon(adaptiveIcon(LucideIcons.menu, CupertinoIcons.line_horizontal_3)),
                       color: context.colorScheme.primary,
                       onPressed: showFolderSelector,
                     )

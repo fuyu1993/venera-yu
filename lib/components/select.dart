@@ -69,7 +69,7 @@ class Select extends StatelessWidget {
               child: Text(current ?? ' ', style: ts.s14),
             ),
             const SizedBox(width: 8),
-            Icon(LucideIcons.arrow_down, color: context.colorScheme.primary),
+            Icon(adaptiveIcon(LucideIcons.arrow_down, CupertinoIcons.chevron_down), color: context.colorScheme.primary),
           ],
         ).padding(const EdgeInsets.symmetric(horizontal: 12, vertical: 4)),
       ),
@@ -198,7 +198,7 @@ class AnimatedCheckWidget extends AnimatedWidget {
           widthFactor: animation.value,
           child: ClipRRect(
             child: Icon(
-              LucideIcons.check,
+              adaptiveIcon(LucideIcons.check, CupertinoIcons.checkmark),
               size: iconSize,
               color: Theme.of(context).colorScheme.primary,
             ),

@@ -113,7 +113,7 @@ class _NormalFavoritePageState extends State<_NormalFavoritePage> {
           message: "Folders".tl,
           child: context.width <= _kTwoPanelChangeWidth
               ? IconButton(
-                  icon: const Icon(LucideIcons.menu),
+                  icon: Icon(adaptiveIcon(LucideIcons.menu, CupertinoIcons.line_horizontal_3)),
                   color: context.colorScheme.primary,
                   onPressed: showFolders,
                 )
@@ -127,7 +127,7 @@ class _NormalFavoritePageState extends State<_NormalFavoritePage> {
           Tooltip(
             message: "Refresh".tl,
             child: IconButton(
-              icon: const Icon(LucideIcons.refresh_ccw),
+              icon: Icon(adaptiveIcon(LucideIcons.refresh_ccw, CupertinoIcons.arrow_counterclockwise)),
               onPressed: () {
                 // Force refresh bypassing cache
                 NetworkCacheManager().clear();
@@ -137,7 +137,7 @@ class _NormalFavoritePageState extends State<_NormalFavoritePage> {
           ),
           MenuButton(entries: [
             MenuEntry(
-              icon: LucideIcons.refresh_ccw,
+              icon: adaptiveIcon(LucideIcons.refresh_ccw, CupertinoIcons.arrow_counterclockwise),
               text: "Convert to local".tl,
               onClick: () {
                 importNetworkFolder(widget.data.key, 9999999, null, null);
@@ -151,7 +151,7 @@ class _NormalFavoritePageState extends State<_NormalFavoritePage> {
           message: "Folders".tl,
           child: context.width <= _kTwoPanelChangeWidth
               ? IconButton(
-                  icon: const Icon(LucideIcons.menu),
+                  icon: Icon(adaptiveIcon(LucideIcons.menu, CupertinoIcons.line_horizontal_3)),
                   color: context.colorScheme.primary,
                   onPressed: context
                       .findAncestorStateOfType<_FavoritesPageState>()!
@@ -173,7 +173,7 @@ class _NormalFavoritePageState extends State<_NormalFavoritePage> {
       menuBuilder: (comic) {
         return [
           MenuEntry(
-            icon: LucideIcons.trash,
+            icon: adaptiveIcon(LucideIcons.trash, CupertinoIcons.trash),
             text: "Remove".tl,
             onClick: () async {
               var res = await _deleteComic(
@@ -244,7 +244,7 @@ class _MultiFolderFavoritesPageState extends State<_MultiFolderFavoritesPage> {
         message: "Folders".tl,
         child: context.width <= _kTwoPanelChangeWidth
             ? IconButton(
-                icon: const Icon(LucideIcons.menu),
+                icon: Icon(adaptiveIcon(LucideIcons.menu, CupertinoIcons.line_horizontal_3)),
                 color: context.colorScheme.primary,
                 onPressed: showFolders,
               )
@@ -261,7 +261,7 @@ class _MultiFolderFavoritesPageState extends State<_MultiFolderFavoritesPage> {
         message: "Folders".tl,
         child: context.width <= _kTwoPanelChangeWidth
             ? IconButton(
-                icon: const Icon(LucideIcons.menu),
+                icon: Icon(adaptiveIcon(LucideIcons.menu, CupertinoIcons.line_horizontal_3)),
                 color: context.colorScheme.primary,
                 onPressed: showFolders,
               )
@@ -360,8 +360,8 @@ class _MultiFolderFavoritesPageState extends State<_MultiFolderFavoritesPage> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text("Create a folder".tl),
-                        const Icon(
-                          LucideIcons.plus,
+                        Icon(
+                          adaptiveIcon(LucideIcons.plus, CupertinoIcons.plus),
                           size: 18,
                         ),
                       ],
@@ -414,7 +414,7 @@ class _FolderTile extends StatelessWidget {
           child: Row(
             children: [
               Icon(
-                LucideIcons.folder,
+                adaptiveIcon(LucideIcons.folder, CupertinoIcons.folder),
                 size: 28,
                 color: Theme.of(context).colorScheme.secondary,
               ),
@@ -433,11 +433,11 @@ class _FolderTile extends StatelessWidget {
               ),
               if (deleteFolder != null)
                 IconButton(
-                  icon: const Icon(LucideIcons.trash),
+                  icon: Icon(adaptiveIcon(LucideIcons.trash, CupertinoIcons.trash)),
                   onPressed: () => onDeleteFolder(context),
                 )
               else
-                const Icon(LucideIcons.arrow_right),
+                Icon(adaptiveIcon(LucideIcons.arrow_right, CupertinoIcons.chevron_right)),
             ],
           ),
         ),
@@ -568,7 +568,7 @@ class _FavoriteFolder extends StatelessWidget {
         actions: [
           MenuButton(entries: [
             MenuEntry(
-              icon: LucideIcons.refresh_ccw,
+              icon: adaptiveIcon(LucideIcons.refresh_ccw, CupertinoIcons.arrow_counterclockwise),
               text: "Convert to local".tl,
               onClick: () {
                 importNetworkFolder(data.key, 9999999, title, folderID);
@@ -588,7 +588,7 @@ class _FavoriteFolder extends StatelessWidget {
       menuBuilder: (comic) {
         return [
           MenuEntry(
-            icon: LucideIcons.trash,
+            icon: adaptiveIcon(LucideIcons.trash, CupertinoIcons.trash),
             text: "Remove".tl,
             onClick: () async {
               var res = await _deleteComic(

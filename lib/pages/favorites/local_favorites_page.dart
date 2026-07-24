@@ -296,7 +296,7 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
               message: "Folders".tl,
               child: context.width <= _kTwoPanelChangeWidth
                   ? IconButton(
-                      icon: const Icon(LucideIcons.menu),
+                      icon: Icon(adaptiveIcon(LucideIcons.menu, CupertinoIcons.line_horizontal_3)),
                       color: context.colorScheme.primary,
                       onPressed: favPage.showFolderSelector,
                     )
@@ -348,7 +348,7 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
                     },
                     child: Builder(builder: (context) {
                       return IconButton(
-                        icon: const Icon(LucideIcons.refresh_ccw),
+                        icon: Icon(adaptiveIcon(LucideIcons.refresh_ccw, CupertinoIcons.arrow_counterclockwise)),
                         onPressed: () {
                           Flyout.of(context).show();
                         },
@@ -361,7 +361,7 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
                 MenuButton(
                   entries: [
                     MenuEntry(
-                      icon: LucideIcons.square_pen,
+                      icon: adaptiveIcon(LucideIcons.square_pen, CupertinoIcons.pen),
                       text: "Rename".tl,
                       onClick: () {
                         showInputDialog(
@@ -385,7 +385,7 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
                       },
                     ),
                     MenuEntry(
-                      icon: LucideIcons.arrow_down_up,
+                      icon: adaptiveIcon(LucideIcons.arrow_down_up, CupertinoIcons.arrow_up_arrow_down),
                       text: "Reorder".tl,
                       onClick: () {
                         context.to(
@@ -407,7 +407,7 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
                       },
                     ),
                     MenuEntry(
-                      icon: LucideIcons.cloud_upload,
+                      icon: adaptiveIcon(LucideIcons.cloud_upload, CupertinoIcons.cloud_upload),
                       text: "Export".tl,
                       onClick: () {
                         var json = LocalFavoritesManager().folderToJson(
@@ -420,7 +420,7 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
                       },
                     ),
                     MenuEntry(
-                      icon: LucideIcons.refresh_ccw,
+                      icon: adaptiveIcon(LucideIcons.refresh_ccw, CupertinoIcons.arrow_counterclockwise),
                       text: "Update Comics Info".tl,
                       onClick: () {
                         updateComicsInfo(widget.folder).then((newComics) {
@@ -433,7 +433,7 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
                       },
                     ),
                     MenuEntry(
-                      icon: LucideIcons.trash,
+                      icon: adaptiveIcon(LucideIcons.trash, CupertinoIcons.trash),
                       text: "Delete Folder".tl,
                       color: context.colorScheme.error,
                       onClick: () {
@@ -494,7 +494,7 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
             leading: Tooltip(
               message: "Cancel".tl,
               child: IconButton(
-                icon: const Icon(LucideIcons.x),
+                icon: Icon(adaptiveIcon(LucideIcons.x, CupertinoIcons.xmark)),
                 onPressed: () {
                   setState(() {
                     multiSelectMode = false;
@@ -509,29 +509,29 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
               MenuButton(entries: [
                 if (!isAllFolder)
                   MenuEntry(
-                      icon: LucideIcons.arrow_up_from_line,
+                      icon: adaptiveIcon(LucideIcons.arrow_up_from_line, CupertinoIcons.arrow_up_to_line),
                       text: "Move to folder".tl,
                       onClick: () => favoriteOption('move')),
                 if (!isAllFolder)
                   MenuEntry(
-                      icon: LucideIcons.copy,
+                      icon: adaptiveIcon(LucideIcons.copy, CupertinoIcons.doc_on_doc),
                       text: "Copy to folder".tl,
                       onClick: () => favoriteOption('add')),
                 MenuEntry(
-                    icon: LucideIcons.square_check,
+                    icon: adaptiveIcon(LucideIcons.square_check, CupertinoIcons.checkmark_square),
                     text: "Select All".tl,
                     onClick: selectAll),
                 MenuEntry(
-                    icon: LucideIcons.x,
+                    icon: adaptiveIcon(LucideIcons.x, CupertinoIcons.xmark),
                     text: "Deselect".tl,
                     onClick: _cancel),
                 MenuEntry(
-                    icon: LucideIcons.flip_horizontal_2,
+                    icon: adaptiveIcon(LucideIcons.flip_horizontal_2, CupertinoIcons.arrow_right_arrow_left),
                     text: "Invert Selection".tl,
                     onClick: invertSelection),
                 if (!isAllFolder)
                   MenuEntry(
-                      icon: LucideIcons.trash,
+                      icon: adaptiveIcon(LucideIcons.trash, CupertinoIcons.trash),
                       text: "Delete Comic".tl,
                       color: context.colorScheme.error,
                       onClick: () {
@@ -547,13 +547,13 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
                         );
                       }),
                 MenuEntry(
-                  icon: LucideIcons.download,
+                  icon: adaptiveIcon(LucideIcons.download, CupertinoIcons.down_arrow),
                   text: "Download".tl,
                   onClick: downloadSelected,
                 ),
                 if (selectedComics.length == 1)
                   MenuEntry(
-                    icon: LucideIcons.copy,
+                    icon: adaptiveIcon(LucideIcons.copy, CupertinoIcons.doc_on_doc),
                     text: "Copy Title".tl,
                     onClick: () {
                       Clipboard.setData(
@@ -568,7 +568,7 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
                   ),
                 if (selectedComics.length == 1)
                   MenuEntry(
-                    icon: LucideIcons.list,
+                    icon: adaptiveIcon(LucideIcons.list, CupertinoIcons.list_bullet),
                     text: "Read".tl,
                     onClick: () {
                       final c = selectedComics.keys.first as FavoriteItem;
@@ -581,7 +581,7 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
                   ),
                 if (selectedComics.length == 1)
                   MenuEntry(
-                    icon: LucideIcons.chevron_right,
+                    icon: adaptiveIcon(LucideIcons.chevron_right, CupertinoIcons.chevron_right),
                     text: "Jump to Detail".tl,
                     onClick: () {
                       final c = selectedComics.keys.first as FavoriteItem;
@@ -603,7 +603,7 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
             leading: Tooltip(
               message: "Cancel".tl,
               child: IconButton(
-                icon: const Icon(LucideIcons.x),
+                icon: Icon(adaptiveIcon(LucideIcons.x, CupertinoIcons.xmark)),
                 onPressed: () {
                   setState(() {
                     setState(() {
@@ -655,7 +655,7 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
               return [
                 if (!isAllFolder)
                   MenuEntry(
-                    icon: LucideIcons.trash,
+                    icon: adaptiveIcon(LucideIcons.trash, CupertinoIcons.trash),
                     text: "Delete".tl,
                     onClick: () {
                       LocalFavoritesManager().deleteComicWithId(
@@ -666,7 +666,7 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
                     },
                   ),
                 MenuEntry(
-                  icon: LucideIcons.check,
+                  icon: adaptiveIcon(LucideIcons.check, CupertinoIcons.checkmark),
                   text: "Select".tl,
                   onClick: () {
                     setState(() {
@@ -684,7 +684,7 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
                   },
                 ),
                 MenuEntry(
-                  icon: LucideIcons.download,
+                  icon: adaptiveIcon(LucideIcons.download, CupertinoIcons.down_arrow),
                   text: "Download".tl,
                   onClick: () {
                     downloadComic(c as FavoriteItem);
@@ -695,7 +695,7 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
                 ),
                 if (appdata.settings["onClickFavorite"] == "viewDetail")
                   MenuEntry(
-                    icon: LucideIcons.book_open,
+                    icon: adaptiveIcon(LucideIcons.book_open, CupertinoIcons.book),
                     text: "Read".tl,
                     onClick: () {
                       _readFavorite(c as FavoriteItem);
@@ -825,7 +825,7 @@ class _LocalFavoritesPageState extends State<_LocalFavoritesPage> {
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      const Icon(LucideIcons.plus, size: 20),
+                                      Icon(adaptiveIcon(LucideIcons.plus, CupertinoIcons.plus), size: 20),
                                       const SizedBox(width: 4),
                                       Text("New Folder".tl),
                                     ],
@@ -1095,7 +1095,7 @@ class _ReorderComicsPageState extends State<_ReorderComicsPage> {
           Tooltip(
             message: "Information".tl,
             child: IconButton(
-              icon: const Icon(LucideIcons.info),
+              icon: Icon(adaptiveIcon(LucideIcons.info, CupertinoIcons.info_circle)),
               onPressed: () {
                 showInfoDialog(
                   context: context,
@@ -1108,7 +1108,7 @@ class _ReorderComicsPageState extends State<_ReorderComicsPage> {
           Tooltip(
             message: "Reverse".tl,
             child: IconButton(
-              icon: const Icon(LucideIcons.arrow_left_right),
+              icon: Icon(adaptiveIcon(LucideIcons.arrow_left_right, CupertinoIcons.arrow_left_right)),
               onPressed: () {
                 setState(() {
                   comics = comics.reversed.toList();
