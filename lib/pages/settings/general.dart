@@ -10,6 +10,13 @@ class GeneralSettings extends StatefulWidget {
 class _GeneralSettingsState extends State<GeneralSettings> {
   @override
   Widget build(BuildContext context) {
+    if (isCupertinoStyle()) {
+      return _buildCupertino();
+    }
+    return _buildMaterial();
+  }
+
+  Widget _buildMaterial() {
     return SmoothCustomScrollView(
       slivers: [
         SliverAppbar(title: Text("General".tl)),
@@ -87,6 +94,100 @@ class _GeneralSettingsState extends State<GeneralSettings> {
           child: _CustomTabsSetting(),
         ),
       ],
+    );
+  }
+
+  Widget _buildCupertino() {
+    return CupertinoPageScaffold(
+      child: CustomScrollView(
+        slivers: [
+          CupertinoSliverNavigationBar(
+            largeTitle: Text("General".tl),
+            previousPageTitle: "Settings".tl,
+          ),
+          SliverToBoxAdapter(
+            child: CupertinoListSection.insetGrouped(
+              header: Text("Language & Appearance".tl),
+              children: [
+                SelectSetting(
+                  title: "Language".tl,
+                  settingKey: "language",
+                  optionTranslation: const {
+                    "system": "System",
+                    "zh-CN": "简体中文",
+                    "zh-TW": "繁體中文",
+                    "en-US": "English",
+                  },
+                  onChanged: () => App.forceRebuild(),
+                ),
+                SelectSetting(
+                  title: "Appearance".tl,
+                  settingKey: "theme_mode",
+                  optionTranslation: {
+                    "system": "System".tl,
+                    "light": "Light".tl,
+                    "dark": "Dark".tl,
+                  },
+                  onChanged: () => App.forceRebuild(),
+                ),
+                SelectSetting(
+                  title: "Theme".tl,
+                  settingKey: "color",
+                  optionTranslation: {
+                    "system": "System".tl,
+                    "red": "Red".tl,
+                    "pink": "Pink".tl,
+                    "purple": "Purple".tl,
+                    "green": "Green".tl,
+                    "orange": "Orange".tl,
+                    "blue": "Blue".tl,
+                    "yellow": "Yellow".tl,
+                    "cyan": "Cyan".tl,
+                    "indigo": "Indigo".tl,
+                  },
+                  onChanged: () => App.forceRebuild(),
+                ),
+                _SwitchSetting(
+                  title: "AMOLED Dark".tl,
+                  subtitle: "Pure black background in dark mode".tl,
+                  settingKey: "amoledDark",
+                  onChanged: () => App.forceRebuild(),
+                ),
+              ],
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: CupertinoListSection.insetGrouped(
+              header: Text("Display".tl),
+              children: [
+                SelectSetting(
+                  title: "UI Density".tl,
+                  settingKey: "uiDensity",
+                  optionTranslation: {
+                    "compact": "Compact".tl,
+                    "standard": "Standard".tl,
+                    "comfortable": "Comfortable".tl,
+                  },
+                  onChanged: () => App.forceRebuild(),
+                ),
+                SelectSetting(
+                  title: "UI Style".tl,
+                  settingKey: "uiStyle",
+                  optionTranslation: {
+                    "system": "System".tl,
+                    "cupertino": "Native".tl,
+                    "material": "Material".tl,
+                  },
+                  onChanged: () => App.forceRebuild(),
+                ),
+              ],
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: _CustomTabsSetting(),
+          ),
+        ],
+      ),
     );
   }
 }

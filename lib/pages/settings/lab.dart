@@ -10,6 +10,13 @@ class LabSettings extends StatefulWidget {
 class _LabSettingsState extends State<LabSettings> {
   @override
   Widget build(BuildContext context) {
+    if (isCupertinoStyle()) {
+      return _buildCupertino();
+    }
+    return _buildMaterial();
+  }
+
+  Widget _buildMaterial() {
     final devMode = appdata.settings['lab_developerMode'] == true;
     final remoteEnabled = appdata.settings['enableRemoteLibrary'] == true;
     return SmoothCustomScrollView(
@@ -58,6 +65,71 @@ class _LabSettingsState extends State<LabSettings> {
           ).toSliver(),
         const SliverToBoxAdapter(child: SizedBox(height: 16)),
       ],
+    );
+  }
+
+  Widget _buildCupertino() {
+    final devMode = appdata.settings['lab_developerMode'] == true;
+    final remoteEnabled = appdata.settings['enableRemoteLibrary'] == true;
+    return CupertinoPageScaffold(
+      child: CustomScrollView(
+        slivers: [
+          CupertinoSliverNavigationBar(
+            largeTitle: Text("Lab".tl),
+            previousPageTitle: "Settings".tl,
+          ),
+          SliverToBoxAdapter(
+            child: CupertinoListSection.insetGrouped(
+              header: Text("Experimental".tl),
+              children: [
+                _SwitchSetting(
+                  title: "Hide Thumbnails".tl,
+                  subtitle: "Use placeholder icons instead of cover images".tl,
+                  settingKey: "lab_hideThumbnails",
+                ),
+                _SwitchSetting(
+                  title: "Developer Mode".tl,
+                  subtitle: "Show extra developer options and debug info".tl,
+                  settingKey: "lab_developerMode",
+                  onChanged: () => setState(() {}),
+                ),
+                if (devMode)
+                  _CallbackSetting(
+                    title: "Developer Options".tl,
+                    subtitle: "Network logs / Memory / Cache stats".tl,
+                    actionTitle: "Open".tl,
+                    callback: () => context.to(() => const DeveloperSettings()),
+                  ),
+              ],
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: CupertinoListSection.insetGrouped(
+              header: Text("Remote Library".tl),
+              children: [
+                _SwitchSetting(
+                  title: "Enable Remote Library".tl,
+                  subtitle: "Read comics from remote WebDAV storage".tl,
+                  settingKey: "enableRemoteLibrary",
+                  onChanged: () => setState(() {}),
+                ),
+                if (remoteEnabled)
+                  _CallbackSetting(
+                    title: "Remote Library WebDAV Settings".tl,
+                    subtitle: "Configure remote storage address and credentials".tl,
+                    actionTitle: "Configure".tl,
+                    callback: () {
+                      showDialog(
+                        context: context,
+                        builder: (_) => const _RemoteWebDavSetting(),
+                      );
+                    },
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

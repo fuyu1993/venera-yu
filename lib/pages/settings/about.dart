@@ -12,6 +12,13 @@ class _AboutSettingsState extends State<AboutSettings> {
 
   @override
   Widget build(BuildContext context) {
+    if (isCupertinoStyle()) {
+      return _buildCupertino();
+    }
+    return _buildMaterial();
+  }
+
+  Widget _buildMaterial() {
     return SmoothCustomScrollView(
       slivers: [
         SliverAppbar(title: Text("About".tl)),
@@ -70,6 +77,80 @@ class _AboutSettingsState extends State<AboutSettings> {
         ).toSliver(),
 
       ],
+    );
+  }
+
+  Widget _buildCupertino() {
+    return CupertinoPageScaffold(
+      child: CustomScrollView(
+        slivers: [
+          CupertinoSliverNavigationBar(
+            largeTitle: Text("About".tl),
+            previousPageTitle: "Settings".tl,
+          ),
+          SliverToBoxAdapter(
+            child: Column(
+              children: [
+                const SizedBox(height: 32),
+                Center(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(18),
+                    child: const Image(
+                      image: AssetImage("assets/app_icon.png"),
+                      width: 80,
+                      height: 80,
+                      filterQuality: FilterQuality.medium,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  "V${App.version}",
+                  style: CupertinoTheme.of(context).textTheme.textStyle,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  "漫匣 is a free and open-source app for comic reading.".tl,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: CupertinoColors.secondaryLabel.resolveFrom(context),
+                  ),
+                ),
+                const SizedBox(height: 24),
+              ],
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: CupertinoListSection.insetGrouped(
+              children: [
+                CupertinoListTile(
+                  title: Text("Check for updates".tl),
+                  trailing: isCheckingUpdate
+                      ? const CupertinoActivityIndicator()
+                      : CupertinoButton(
+                          padding: EdgeInsets.zero,
+                          onPressed: () {
+                            setState(() {
+                              isCheckingUpdate = true;
+                            });
+                            checkUpdateUi().then((value) {
+                              setState(() {
+                                isCheckingUpdate = false;
+                              });
+                            });
+                          },
+                          child: Text("Check".tl),
+                        ),
+                ),
+                _SwitchSetting(
+                  title: "Check for updates on startup".tl,
+                  settingKey: "checkUpdateOnStart",
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

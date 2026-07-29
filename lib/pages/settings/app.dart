@@ -10,6 +10,13 @@ class AppSettings extends StatefulWidget {
 class _AppSettingsState extends State<AppSettings> {
   @override
   Widget build(BuildContext context) {
+    if (isCupertinoStyle()) {
+      return _buildCupertino();
+    }
+    return _buildMaterial();
+  }
+
+  Widget _buildMaterial() {
     return SmoothCustomScrollView(
       slivers: [
         SliverAppbar(title: Text("App".tl)),
@@ -139,6 +146,166 @@ class _AppSettingsState extends State<AppSettings> {
           actionTitle: 'Set'.tl,
         ).toSliver(),
       ],
+    );
+  }
+
+  Widget _buildCupertino() {
+    return CupertinoPageScaffold(
+      child: CustomScrollView(
+        slivers: [
+          CupertinoSliverNavigationBar(
+            largeTitle: Text("App".tl),
+            previousPageTitle: "Settings".tl,
+          ),
+          SliverToBoxAdapter(
+            child: CupertinoListSection.insetGrouped(
+              header: Text("Storage".tl),
+              children: [
+                CupertinoListTile(
+                  title: Text("Storage Path".tl),
+                  subtitle: Text(
+                    LocalManager().path,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 13),
+                  ),
+                  trailing: CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(text: LocalManager().path));
+                      context.showMessage(message: "Path copied to clipboard".tl);
+                    },
+                    child: const Icon(CupertinoIcons.doc_on_clipboard, size: 20),
+                  ),
+                ),
+                _CallbackSetting(
+                  title: "Set New Storage Path".tl,
+                  actionTitle: "Set".tl,
+                  callback: () async {
+                    String? result;
+                    if (App.isAndroid) {
+                      var picker = DirectoryPicker();
+                      result = (await picker.pickDirectory())?.path;
+                    } else if (App.isIOS) {
+                      result = await selectDirectoryIOS();
+                    } else {
+                      result = await selectDirectory();
+                    }
+                    if (result == null) return;
+                    var loadingDialog = showLoadingDialog(
+                      App.rootContext,
+                      barrierDismissible: false,
+                      allowCancel: false,
+                    );
+                    var res = await LocalManager().setNewPath(result);
+                    loadingDialog.close();
+                    if (res != null) {
+                      context.showMessage(message: res);
+                    } else {
+                      context.showMessage(message: "Path set successfully".tl);
+                      setState(() {});
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: CupertinoListSection.insetGrouped(
+              header: Text("Cache".tl),
+              children: [
+                _CallbackSetting(
+                  title: "Clear Cache".tl,
+                  subtitle: bytesToReadableString(CacheManager().currentSize),
+                  actionTitle: "Clear".tl,
+                  callback: () async {
+                    var loadingDialog = showLoadingDialog(
+                      App.rootContext,
+                      barrierDismissible: false,
+                      allowCancel: false,
+                    );
+                    await CacheManager().clear();
+                    loadingDialog.close();
+                    context.showMessage(message: "Cache cleared".tl);
+                    setState(() {});
+                  },
+                ),
+                _CallbackSetting(
+                  title: "Cache Limit".tl,
+                  subtitle: "${appdata.settings['cacheSize']} MB",
+                  callback: () {
+                    showInputDialog(
+                      context: context,
+                      title: "Set Cache Limit".tl,
+                      hintText: "Size in MB".tl,
+                      inputValidator: RegExp(r"^\d+$"),
+                      onConfirm: (value) {
+                        appdata.settings['cacheSize'] = int.parse(value);
+                        appdata.saveData();
+                        setState(() {});
+                        CacheManager().setLimitSize(appdata.settings['cacheSize']);
+                        return null;
+                      },
+                    );
+                  },
+                  actionTitle: 'Set'.tl,
+                ),
+              ],
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: CupertinoListSection.insetGrouped(
+              header: Text("Data".tl),
+              children: [
+                _CallbackSetting(
+                  title: "Export App Data".tl,
+                  callback: () async {
+                    var controller = showLoadingDialog(context);
+                    var file = await exportAppData(false);
+                    await saveFile(filename: "data.venera", file: file);
+                    controller.close();
+                  },
+                  actionTitle: 'Export'.tl,
+                ),
+                _CallbackSetting(
+                  title: "Import App Data".tl,
+                  callback: () async {
+                    var controller = showLoadingDialog(context);
+                    var file = await selectFile(ext: ['venera', 'picadata']);
+                    if (file != null) {
+                      var cacheFile =
+                          File(FilePath.join(App.cachePath, "import_data_temp"));
+                      await file.saveTo(cacheFile.path);
+                      try {
+                        if (file.name.endsWith('picadata')) {
+                          await importPicaData(cacheFile);
+                        } else {
+                          await importAppData(cacheFile);
+                        }
+                      } catch (e, s) {
+                        Log.error("Import data", e.toString(), s);
+                        context.showMessage(message: "Failed to import data".tl);
+                      } finally {
+                        cacheFile.deleteIgnoreError();
+                        App.forceRebuild();
+                      }
+                    }
+                    controller.close();
+                  },
+                  actionTitle: 'Import'.tl,
+                ),
+                _CallbackSetting(
+                  title: "Data Sync".tl,
+                  callback: () async {
+                    showPopUpWidget(context, const _WebdavSetting());
+                  },
+                  actionTitle: 'Set'.tl,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

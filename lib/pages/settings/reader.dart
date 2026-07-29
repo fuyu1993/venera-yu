@@ -96,6 +96,34 @@ class _ReaderSettingsState extends State<ReaderSettings> {
         !isEnabledSpecificSettings &&
         appdata.settings.isDeviceSpecificSettingsEnabled();
 
+    if (isCupertinoStyle()) {
+      return _buildCupertino(
+        context,
+        comicId,
+        sourceKey,
+        key,
+        isEnabledSpecificSettings,
+        useDeviceSpecificSettings,
+      );
+    }
+    return _buildMaterial(
+      context,
+      comicId,
+      sourceKey,
+      key,
+      isEnabledSpecificSettings,
+      useDeviceSpecificSettings,
+    );
+  }
+
+  Widget _buildMaterial(
+    BuildContext context,
+    String? comicId,
+    String? sourceKey,
+    String key,
+    bool isEnabledSpecificSettings,
+    bool useDeviceSpecificSettings,
+  ) {
     return SmoothCustomScrollView(
       slivers: [
         SliverAppbar(title: Text("Reading".tl)),
@@ -447,6 +475,402 @@ class _ReaderSettingsState extends State<ReaderSettings> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildCupertino(
+    BuildContext context,
+    String? comicId,
+    String? sourceKey,
+    String key,
+    bool isEnabledSpecificSettings,
+    bool useDeviceSpecificSettings,
+  ) {
+    final readerMode = appdata.settings['readerMode'] as String? ?? '';
+    final isGallery = readerMode.startsWith('gallery');
+    final isContinuous = readerMode.startsWith('continuous');
+    final multiPic = appdata.settings['readerScreenPicNumberForLandscape'] > 1 ||
+        appdata.settings['readerScreenPicNumberForPortrait'] > 1;
+
+    return CupertinoPageScaffold(
+      child: CustomScrollView(
+        slivers: [
+          CupertinoSliverNavigationBar(
+            largeTitle: Text("Reading".tl),
+            previousPageTitle: "Settings".tl,
+          ),
+          // Scope section
+          if (comicId != null && sourceKey != null)
+            SliverToBoxAdapter(
+              child: CupertinoListSection.insetGrouped(
+                header: Text("Settings Scope".tl),
+                children: [
+                  CupertinoListTile(
+                    title: Text("Comic specific settings".tl),
+                    trailing: CupertinoSwitch(
+                      value: isEnabledSpecificSettings,
+                      onChanged: (b) {
+                        setState(() {
+                          appdata.settings.setEnabledComicSpecificSettings(
+                            comicId,
+                            sourceKey,
+                            b,
+                          );
+                        });
+                      },
+                    ),
+                  ),
+                  if (isEnabledSpecificSettings)
+                    CupertinoListTile(
+                      title: Text(
+                        "Reset comic specific settings".tl,
+                        style: const TextStyle(
+                          color: CupertinoColors.destructiveRed,
+                        ),
+                      ),
+                      onTap: () {
+                        setState(() {
+                          appdata.settings.resetComicReaderSettings(key);
+                        });
+                      },
+                    ),
+                ],
+              ),
+            ),
+          if (comicId == null)
+            SliverToBoxAdapter(
+              child: CupertinoListSection.insetGrouped(
+                header: Text("Settings Scope".tl),
+                children: [
+                  CupertinoListTile(
+                    title: Text("Device specific settings".tl),
+                    trailing: CupertinoSwitch(
+                      value: useDeviceSpecificSettings,
+                      onChanged: (b) {
+                        setState(() {
+                          appdata.settings.setEnabledDeviceSpecificSettings(b);
+                        });
+                        appdata.saveData();
+                      },
+                    ),
+                  ),
+                  if (useDeviceSpecificSettings)
+                    CupertinoListTile(
+                      title: Text(
+                        "Reset device specific settings".tl,
+                        style: const TextStyle(
+                          color: CupertinoColors.destructiveRed,
+                        ),
+                      ),
+                      onTap: () {
+                        setState(() {
+                          appdata.settings.resetDeviceReaderSettings();
+                        });
+                        appdata.saveData();
+                      },
+                    ),
+                ],
+              ),
+            ),
+          // Navigation section
+          SliverToBoxAdapter(
+            child: CupertinoListSection.insetGrouped(
+              header: Text("Navigation".tl),
+              children: [
+                _SwitchSetting(
+                  title: "Tap to turn Pages".tl,
+                  settingKey: "enableTapToTurnPages",
+                  onChanged: () => widget.onChanged?.call("enableTapToTurnPages"),
+                  comicId: isEnabledSpecificSettings ? widget.comicId : null,
+                  comicSource: isEnabledSpecificSettings ? widget.comicSource : null,
+                  useDeviceSettings: useDeviceSpecificSettings,
+                ),
+                _SwitchSetting(
+                  title: "Reverse tap to turn Pages".tl,
+                  settingKey: "reverseTapToTurnPages",
+                  onChanged: () => widget.onChanged?.call("reverseTapToTurnPages"),
+                  comicId: isEnabledSpecificSettings ? widget.comicId : null,
+                  comicSource: isEnabledSpecificSettings ? widget.comicSource : null,
+                  useDeviceSettings: useDeviceSpecificSettings,
+                ),
+                _SwitchSetting(
+                  title: "Page animation".tl,
+                  settingKey: "enablePageAnimation",
+                  onChanged: () => widget.onChanged?.call("enablePageAnimation"),
+                  comicId: isEnabledSpecificSettings ? widget.comicId : null,
+                  comicSource: isEnabledSpecificSettings ? widget.comicSource : null,
+                  useDeviceSettings: useDeviceSpecificSettings,
+                ),
+                SelectSetting(
+                  title: "Reading mode".tl,
+                  settingKey: "readerMode",
+                  optionTranslation: {
+                    "galleryLeftToRight": "Gallery (L→R)".tl,
+                    "galleryRightToLeft": "Gallery (R→L)".tl,
+                    "galleryTopToBottom": "Gallery (T→B)".tl,
+                    "continuousLeftToRight": "Continuous (L→R)".tl,
+                    "continuousRightToLeft": "Continuous (R→L)".tl,
+                    "continuousTopToBottom": "Continuous (T→B)".tl,
+                  },
+                  onChanged: () {
+                    setState(() {});
+                    var mode = appdata.settings['readerMode'];
+                    if (mode?.toLowerCase().startsWith('continuous') ?? false) {
+                      appdata.settings['readerScreenPicNumberForLandscape'] = 1;
+                      widget.onChanged?.call('readerScreenPicNumberForLandscape');
+                      appdata.settings['readerScreenPicNumberForPortrait'] = 1;
+                      widget.onChanged?.call('readerScreenPicNumberForPortrait');
+                    }
+                    widget.onChanged?.call("readerMode");
+                  },
+                  comicId: isEnabledSpecificSettings ? widget.comicId : null,
+                  comicSource: isEnabledSpecificSettings ? widget.comicSource : null,
+                  useDeviceSettings: useDeviceSpecificSettings,
+                ),
+                _SliderSetting(
+                  title: "Auto page turning interval".tl,
+                  settingsIndex: "autoPageTurningInterval",
+                  interval: 1,
+                  min: 1,
+                  max: 20,
+                  onChanged: () {
+                    setState(() {});
+                    widget.onChanged?.call("autoPageTurningInterval");
+                  },
+                  comicId: isEnabledSpecificSettings ? widget.comicId : null,
+                  comicSource: isEnabledSpecificSettings ? widget.comicSource : null,
+                  useDeviceSettings: useDeviceSpecificSettings,
+                ),
+              ],
+            ),
+          ),
+          // Gallery settings (conditional)
+          if (isGallery)
+            SliverToBoxAdapter(
+              child: CupertinoListSection.insetGrouped(
+                header: Text("Gallery Mode".tl),
+                children: [
+                  _SliderSetting(
+                    title: "Landscape pics per screen".tl,
+                    settingsIndex: "readerScreenPicNumberForLandscape",
+                    interval: 1,
+                    min: 1,
+                    max: 5,
+                    onChanged: () {
+                      setState(() {});
+                      widget.onChanged?.call("readerScreenPicNumberForLandscape");
+                    },
+                    comicId: isEnabledSpecificSettings ? widget.comicId : null,
+                    comicSource: isEnabledSpecificSettings ? widget.comicSource : null,
+                    useDeviceSettings: useDeviceSpecificSettings,
+                  ),
+                  _SliderSetting(
+                    title: "Portrait pics per screen".tl,
+                    settingsIndex: "readerScreenPicNumberForPortrait",
+                    interval: 1,
+                    min: 1,
+                    max: 5,
+                    onChanged: () => widget.onChanged?.call("readerScreenPicNumberForPortrait"),
+                    comicId: isEnabledSpecificSettings ? widget.comicId : null,
+                    comicSource: isEnabledSpecificSettings ? widget.comicSource : null,
+                    useDeviceSettings: useDeviceSpecificSettings,
+                  ),
+                  if (multiPic)
+                    _SwitchSetting(
+                      title: "Show single image on first page".tl,
+                      settingKey: "showSingleImageOnFirstPage",
+                      onChanged: () => widget.onChanged?.call("showSingleImageOnFirstPage"),
+                      comicId: isEnabledSpecificSettings ? widget.comicId : null,
+                      comicSource: isEnabledSpecificSettings ? widget.comicSource : null,
+                      useDeviceSettings: useDeviceSpecificSettings,
+                    ),
+                ],
+              ),
+            ),
+          // Continuous mode settings (conditional)
+          if (isContinuous)
+            SliverToBoxAdapter(
+              child: CupertinoListSection.insetGrouped(
+                header: Text("Continuous Mode".tl),
+                children: [
+                  _SliderSetting(
+                    title: "Mouse scroll speed".tl,
+                    settingsIndex: "readerScrollSpeed",
+                    interval: 0.1,
+                    min: 0.5,
+                    max: 3,
+                    onChanged: () => widget.onChanged?.call("readerScrollSpeed"),
+                    comicId: isEnabledSpecificSettings ? widget.comicId : null,
+                    comicSource: isEnabledSpecificSettings ? widget.comicSource : null,
+                    useDeviceSettings: useDeviceSpecificSettings,
+                  ),
+                  _SwitchSetting(
+                    title: "Limit image width".tl,
+                    settingKey: "limitImageWidth",
+                    onChanged: () => widget.onChanged?.call("limitImageWidth"),
+                    comicId: isEnabledSpecificSettings ? widget.comicId : null,
+                    comicSource: isEnabledSpecificSettings ? widget.comicSource : null,
+                    useDeviceSettings: useDeviceSpecificSettings,
+                  ),
+                ],
+              ),
+            ),
+          // Zoom section
+          SliverToBoxAdapter(
+            child: CupertinoListSection.insetGrouped(
+              header: Text("Zoom".tl),
+              children: [
+                _SwitchSetting(
+                  title: "Double tap to zoom".tl,
+                  settingKey: "enableDoubleTapToZoom",
+                  onChanged: () {
+                    setState(() {});
+                    widget.onChanged?.call("enableDoubleTapToZoom");
+                  },
+                  comicId: isEnabledSpecificSettings ? widget.comicId : null,
+                  comicSource: isEnabledSpecificSettings ? widget.comicSource : null,
+                  useDeviceSettings: useDeviceSpecificSettings,
+                ),
+                _SwitchSetting(
+                  title: "Long press to zoom".tl,
+                  settingKey: "enableLongPressToZoom",
+                  onChanged: () {
+                    setState(() {});
+                    widget.onChanged?.call("enableLongPressToZoom");
+                  },
+                  comicId: isEnabledSpecificSettings ? widget.comicId : null,
+                  comicSource: isEnabledSpecificSettings ? widget.comicSource : null,
+                  useDeviceSettings: useDeviceSpecificSettings,
+                ),
+                if (appdata.settings['enableLongPressToZoom'] == true)
+                  SelectSetting(
+                    title: "Long press zoom position".tl,
+                    settingKey: "longPressZoomPosition",
+                    optionTranslation: {
+                      "press": "Press position".tl,
+                      "center": "Screen center".tl,
+                    },
+                    comicId: isEnabledSpecificSettings ? widget.comicId : null,
+                    comicSource: isEnabledSpecificSettings ? widget.comicSource : null,
+                    useDeviceSettings: useDeviceSpecificSettings,
+                  ),
+              ],
+            ),
+          ),
+          // Display section
+          SliverToBoxAdapter(
+            child: CupertinoListSection.insetGrouped(
+              header: Text("Display".tl),
+              children: [
+                _SwitchSetting(
+                  title: "Time & battery in reader".tl,
+                  settingKey: "enableClockAndBatteryInfoInReader",
+                  onChanged: () => widget.onChanged?.call("enableClockAndBatteryInfoInReader"),
+                  comicId: isEnabledSpecificSettings ? widget.comicId : null,
+                  comicSource: isEnabledSpecificSettings ? widget.comicSource : null,
+                  useDeviceSettings: useDeviceSpecificSettings,
+                ),
+                _SwitchSetting(
+                  title: "Show system status bar".tl,
+                  settingKey: "showSystemStatusBar",
+                  onChanged: () => widget.onChanged?.call("showSystemStatusBar"),
+                  comicId: isEnabledSpecificSettings ? widget.comicId : null,
+                  comicSource: isEnabledSpecificSettings ? widget.comicSource : null,
+                  useDeviceSettings: useDeviceSpecificSettings,
+                ),
+                _SwitchSetting(
+                  title: "Show page number".tl,
+                  settingKey: "showPageNumberInReader",
+                  onChanged: () => widget.onChanged?.call("showPageNumberInReader"),
+                  comicId: isEnabledSpecificSettings ? widget.comicId : null,
+                  comicSource: isEnabledSpecificSettings ? widget.comicSource : null,
+                  useDeviceSettings: useDeviceSpecificSettings,
+                ),
+              ],
+            ),
+          ),
+          // Interaction section
+          SliverToBoxAdapter(
+            child: CupertinoListSection.insetGrouped(
+              header: Text("Interaction".tl),
+              children: [
+                SelectSetting(
+                  title: "Quick collect image".tl,
+                  settingKey: "quickCollectImage",
+                  optionTranslation: {
+                    "No": "Not enable".tl,
+                    "DoubleTap": "Double Tap".tl,
+                    "Swipe": "Swipe".tl,
+                  },
+                  onChanged: () => widget.onChanged?.call("quickCollectImage"),
+                  help: "Quickly collect images by sliding".tl,
+                  comicId: isEnabledSpecificSettings ? widget.comicId : null,
+                  comicSource: isEnabledSpecificSettings ? widget.comicSource : null,
+                  useDeviceSettings: useDeviceSpecificSettings,
+                ),
+                if (App.isAndroid)
+                  _SwitchSetting(
+                    title: "Volume keys to turn page".tl,
+                    settingKey: "enableTurnPageByVolumeKey",
+                    onChanged: () => widget.onChanged?.call("enableTurnPageByVolumeKey"),
+                    comicId: isEnabledSpecificSettings ? widget.comicId : null,
+                    comicSource: isEnabledSpecificSettings ? widget.comicSource : null,
+                    useDeviceSettings: useDeviceSpecificSettings,
+                  ),
+              ],
+            ),
+          ),
+          // Image processing section
+          SliverToBoxAdapter(
+            child: CupertinoListSection.insetGrouped(
+              header: Text("Image Processing".tl),
+              children: [
+                _CallbackSetting(
+                  title: "Custom Image Processing".tl,
+                  callback: () => context.to(() => _CustomImageProcessing()),
+                  actionTitle: "Edit".tl,
+                ),
+                _SliderSetting(
+                  title: "Images preloaded".tl,
+                  settingsIndex: "preloadImageCount",
+                  interval: 1,
+                  min: 1,
+                  max: 16,
+                  comicId: isEnabledSpecificSettings ? widget.comicId : null,
+                  comicSource: isEnabledSpecificSettings ? widget.comicSource : null,
+                  useDeviceSettings: useDeviceSpecificSettings,
+                ),
+              ],
+            ),
+          ),
+          // Comments section
+          SliverToBoxAdapter(
+            child: CupertinoListSection.insetGrouped(
+              header: Text("Comments".tl),
+              children: [
+                _SwitchSetting(
+                  title: "Show Chapter Comments".tl,
+                  settingKey: "showChapterComments",
+                  onChanged: _onShowChapterCommentsChanged,
+                  comicId: isEnabledSpecificSettings ? widget.comicId : null,
+                  comicSource: isEnabledSpecificSettings ? widget.comicSource : null,
+                  useDeviceSettings: useDeviceSpecificSettings,
+                ),
+                if (_isChapterCommentsAtEndSupported())
+                  _SwitchSetting(
+                    title: "Show Comments at Chapter End".tl,
+                    settingKey: "showChapterCommentsAtEnd",
+                    onChanged: () => widget.onChanged?.call("showChapterCommentsAtEnd"),
+                    comicId: isEnabledSpecificSettings ? widget.comicId : null,
+                    comicSource: isEnabledSpecificSettings ? widget.comicSource : null,
+                    useDeviceSettings: useDeviceSpecificSettings,
+                  ),
+              ],
+            ),
+          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 32)),
+        ],
+      ),
     );
   }
 }

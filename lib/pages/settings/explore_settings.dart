@@ -10,6 +10,13 @@ class ExploreSettings extends StatefulWidget {
 class _ExploreSettingsState extends State<ExploreSettings> {
   @override
   Widget build(BuildContext context) {
+    if (isCupertinoStyle()) {
+      return _buildCupertino();
+    }
+    return _buildMaterial();
+  }
+
+  Widget _buildMaterial() {
     return SmoothCustomScrollView(
       slivers: [
         SliverAppbar(title: Text("Explore".tl)),
@@ -107,6 +114,140 @@ class _ExploreSettingsState extends State<ExploreSettings> {
           },
         ).toSliver(),
       ],
+    );
+  }
+
+  Widget _buildCupertino() {
+    return CupertinoPageScaffold(
+      child: CustomScrollView(
+        slivers: [
+          CupertinoSliverNavigationBar(
+            largeTitle: Text("Explore".tl),
+            previousPageTitle: "Settings".tl,
+          ),
+          SliverToBoxAdapter(
+            child: CupertinoListSection.insetGrouped(
+              header: Text("Comic Tiles".tl),
+              children: [
+                SelectSetting(
+                  title: "Display mode of comic tile".tl,
+                  settingKey: "comicDisplayMode",
+                  optionTranslation: {
+                    "detailed": "Detailed".tl,
+                    "brief": "Brief".tl,
+                  },
+                ),
+                _SliderSetting(
+                  title: "Size of comic tile".tl,
+                  settingsIndex: "comicTileScale",
+                  interval: 0.05,
+                  min: 0.5,
+                  max: 1.5,
+                ),
+                _SwitchSetting(
+                  title: "Show favorite status on comic tile".tl,
+                  settingKey: "showFavoriteStatusOnTile",
+                ),
+                _SwitchSetting(
+                  title: "Show history on comic tile".tl,
+                  settingKey: "showHistoryStatusOnTile",
+                ),
+              ],
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: CupertinoListSection.insetGrouped(
+              header: Text("Pages & Sources".tl),
+              children: [
+                _PopupWindowSetting(
+                  title: "Explore Pages".tl,
+                  builder: setExplorePagesWidget,
+                ),
+                _PopupWindowSetting(
+                  title: "Category Pages".tl,
+                  builder: setCategoryPagesWidget,
+                ),
+                _PopupWindowSetting(
+                  title: "Network Favorite Pages".tl,
+                  builder: setFavoritesPagesWidget,
+                ),
+                _PopupWindowSetting(
+                  title: "Search Sources".tl,
+                  builder: setSearchSourcesWidget,
+                ),
+                SelectSetting(
+                  title: "Default Search Target".tl,
+                  settingKey: "defaultSearchTarget",
+                  optionTranslation: {
+                    '_aggregated_': "Aggregated".tl,
+                    ...((){
+                      var map = <String, String>{};
+                      for (var c in ComicSource.all()) {
+                        map[c.key] = c.name;
+                      }
+                      return map;
+                    }()),
+                  },
+                ),
+                SelectSetting(
+                  title: "Auto Language Filters".tl,
+                  settingKey: "autoAddLanguageFilter",
+                  optionTranslation: {
+                    'none': "None".tl,
+                    'chinese': "Chinese",
+                    'english': "English",
+                    'japanese': "Japanese",
+                  },
+                ),
+              ],
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: CupertinoListSection.insetGrouped(
+              header: Text("Reading".tl),
+              children: [
+                _SwitchSetting(
+                  title: "Reverse default chapter order".tl,
+                  settingKey: "reverseChapterOrder",
+                ),
+                SelectSetting(
+                  title: "Initial Page".tl,
+                  settingKey: "initialPage",
+                  optionTranslation: {
+                    '0': "Home Page".tl,
+                    '1': "Favorites Page".tl,
+                    '2': "Explore Page".tl,
+                    '3': "Categories Page".tl,
+                  },
+                ),
+                SelectSetting(
+                  title: "Display mode of comic list".tl,
+                  settingKey: "comicListDisplayMode",
+                  optionTranslation: {
+                    "paging": "Paging".tl,
+                    "Continuous": "Continuous".tl,
+                  },
+                ),
+              ],
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: CupertinoListSection.insetGrouped(
+              header: Text("Blocking".tl),
+              children: [
+                _PopupWindowSetting(
+                  title: "Keyword blocking".tl,
+                  builder: () => const _ManageBlockingWordView(),
+                ),
+                _PopupWindowSetting(
+                  title: "Comment keyword blocking".tl,
+                  builder: () => const _ManageBlockingCommentWordView(),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

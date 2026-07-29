@@ -10,6 +10,13 @@ class NetworkSettings extends StatefulWidget {
 class _NetworkSettingsState extends State<NetworkSettings> {
   @override
   Widget build(BuildContext context) {
+    if (isCupertinoStyle()) {
+      return _buildCupertino();
+    }
+    return _buildMaterial();
+  }
+
+  Widget _buildMaterial() {
     return SmoothCustomScrollView(
       slivers: [
         SliverAppbar(title: Text("Network".tl)),
@@ -29,6 +36,40 @@ class _NetworkSettingsState extends State<NetworkSettings> {
           max: 16,
         ).toSliver(),
       ],
+    );
+  }
+
+  Widget _buildCupertino() {
+    return CupertinoPageScaffold(
+      child: CustomScrollView(
+        slivers: [
+          CupertinoSliverNavigationBar(
+            largeTitle: Text("Network".tl),
+            previousPageTitle: "Settings".tl,
+          ),
+          SliverToBoxAdapter(
+            child: CupertinoListSection.insetGrouped(
+              children: [
+                _PopupWindowSetting(
+                  title: "Proxy".tl,
+                  builder: () => const _ProxySettingView(),
+                ),
+                _PopupWindowSetting(
+                  title: "DNS Overrides".tl,
+                  builder: () => const _DNSOverrides(),
+                ),
+                _SliderSetting(
+                  title: "Download Threads".tl,
+                  settingsIndex: 'downloadThreads',
+                  interval: 1,
+                  min: 1,
+                  max: 16,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
